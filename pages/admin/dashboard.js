@@ -10,156 +10,167 @@ export default function AdminDashboard() {
   const [campaignRequests, setCampaignRequests] = useState([])
   const [tab, setTab] = useState('campaigns')
   const [loading, setLoading] = useState(true)
+  const [selectedParticipation, setSelectedParticipation] = useState(null)
   const [showForm, setShowForm] = useState(false)
-  const [newCampaign, setNewCampaign] = useState({
-    name: '',
-    product_name: '',
-    description: '',
-    deadline: '',
-    form_type: 'basic',
-  })
+  const [newCampaign, setNewCampaign] = useState({ name: '', product_name: '', description: '', form_type: 'basic' })
 
   useEffect(() => {
-    const init = async () => {
+    const checkAdmin = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/client/login'); return }
-      const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single()
-      if (userData?.role !== 'admin') { router.push('/client/dashboard'); return }
-      await fetchData()
-      setLoading(false)
+      const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
+      if (userData?.role !== 'admin') { router.push('/client/login'); return }
+      fetchData()
     }
-    init()
+    checkAdmin()
   }, [])
 
   const fetchData = async () => {
-    const { data: c } = await supabase.from('campaigns').select('*').order('created_at', { ascending: false })
-    setCampaigns(c || [])
-    const { data: p } = await supabase.from('participations').select('*, campaigns(name), users(name, instagram)').order('created_at', { ascending: false })
-    setParticipations(p || [])
-    const { data: cl } = await supabase.from('clients').select('*').order('created_at', { ascending: false })
-    setClients(cl || [])
-    const { data: cr } = await supabase.from('campaign_requests').select('*').order('created_at', { ascending: false })
-    setCampaignRequests(cr || [])
+    const [c, p, cl, cr] = await Promise.all([
+      supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
+      supabase.from('participations').select('*, campaigns(name, product_name)').order('created_at', { ascending: false }),
+      supabase.from('clients').select('*').order('created_at', { ascending: false }),
+      supabase.from('campaign_requests').select('*').order('created_at', { ascending: false }),
+    ])
+    setCampaigns(c.data || [])
+    setParticipations(p.data || [])
+    setClients(cl.data || [])
+    setCampaignRequests(cr.data || [])
+    setLoading(false)
   }
 
   const handleCreateCampaign = async (e) => {
     e.preventDefault()
     const { error } = await supabase.from('campaigns').insert(newCampaign)
     if (error) { alert('오류: ' + error.message); return }
-    alert('캠페인이 등록되었습니다!')
+    alert('캠페인이 생성되었습니다!')
     setShowForm(false)
-    setNewCampaign({ name: '', product_name: '', description: '', deadline: '', form_type: 'basic' })
+    setNewCampaign({ name: '', product_name: '', description: '', form_type: 'basic' })
     fetchData()
   }
 
   const handleStatusUpdate = async (id, status) => {
     await supabase.from('participations').update({ status }).eq('id', id)
     fetchData()
+    if (selectedParticipation?.id === id) setSelectedParticipation(prev => ({ ...prev, status }))
   }
 
   const handlePaymentUpdate = async (id) => {
     await supabase.from('participations').update({ payment_status: '지급완료' }).eq('id', id)
     fetchData()
+    if (selectedParticipation?.id === id) setSelectedParticipation(prev => ({ ...prev, payment_status: '지급완료' }))
   }
 
   const handleRequestApprove = async (id) => {
     const request = campaignRequests.find(r => r.id === id)
     if (!request) return
-
-    // 캠페인 자동 생성
-    const { error: campaignError } = await supabase.from('campaigns').insert({
+    const { data: newCampaignData, error: campaignError } = await supabase.from('campaigns').insert({
       name: request.product_name + ' 캠페인',
       product_name: request.product_name,
       description: request.company_name + ' 시딩 캠페인',
       form_type: 'basic',
       client_id: request.client_id,
       campaign_request_id: id,
-    })
+    }).select().single()
     if (campaignError) { alert('캠페인 생성 오류: ' + campaignError.message); return }
-
-    await supabase.from('campaign_requests').update({ status: '승인' }).eq('id', id)
+    await supabase.from('campaign_requests').update({ status: '승인', campaign_id: newCampaignData.id }).eq('id', id)
     fetchData()
     alert('승인되었습니다! 캠페인이 자동 생성되었습니다.')
   }
 
   const handleRequestReject = async (id) => {
-    await supabase.from('campaign_requests').update({ status: '거절' }).eq('id', id)
+    const reason = window.prompt('거절 사유를 입력해주세요:')
+    if (!reason) return
+    await supabase.from('campaign_requests').update({ status: '거절', rejection_reason: reason }).eq('id', id)
     fetchData()
   }
 
-  const requestStatusColor = (status) => {
+  const getFileUrl = (path) => {
+    if (!path) return null
+    if (path.startsWith('http')) return path
+    const { data } = supabase.storage.from('influencer-files').getPublicUrl(path)
+    return data?.publicUrl
+  }
+
+  const statusColor = (status) => {
     const map = {
-      '검토중': 'bg-yellow-100 text-yellow-700',
-      '승인': 'bg-green-100 text-green-700',
+      '신청': 'bg-yellow-100 text-yellow-700',
+      '승인': 'bg-blue-100 text-blue-700',
+      '제품발송': 'bg-purple-100 text-purple-700',
+      '콘텐츠확인': 'bg-orange-100 text-orange-700',
+      '완료': 'bg-green-100 text-green-700',
       '거절': 'bg-red-100 text-red-700',
     }
     return map[status] || 'bg-gray-100 text-gray-700'
   }
+
+  const requestStatusColor = (status) => {
+    const map = { '검토중': 'bg-yellow-100 text-yellow-700', '승인': 'bg-green-100 text-green-700', '거절': 'bg-red-100 text-red-700' }
+    return map[status] || 'bg-gray-100 text-gray-700'
+  }
+
+  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '완료']
+
+  const getStepIndex = (status) => STEPS.indexOf(status)
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
 
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-purple-700">관리자 대시보드</h1>
+        <h1 className="text-xl font-bold text-purple-700">🛠 관리자 대시보드</h1>
         <button onClick={async () => { await supabase.auth.signOut(); router.push('/client/login') }} className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex gap-3 mb-6 flex-wrap">
-          <button onClick={() => setTab('campaigns')} className={`px-5 py-2 rounded-xl font-semibold transition ${tab === 'campaigns' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>캠페인 관리</button>
-          <button onClick={() => setTab('participations')} className={`px-5 py-2 rounded-xl font-semibold transition ${tab === 'participations' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>참여 현황</button>
-          <button onClick={() => setTab('requests')} className={`px-5 py-2 rounded-xl font-semibold transition ${tab === 'requests' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>
-            캠페인 요청
-            {campaignRequests.filter(r => r.status === '검토중').length > 0 && (
-              <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {campaignRequests.filter(r => r.status === '검토중').length}
-              </span>
-            )}
-          </button>
-          <button onClick={() => setTab('clients')} className={`px-5 py-2 rounded-xl font-semibold transition ${tab === 'clients' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>고객사 목록</button>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* 탭 메뉴 */}
+        <div className="flex gap-2 mb-6 flex-wrap">
+          {[
+            { id: 'campaigns', label: '📋 캠페인 관리' },
+            { id: 'participations', label: '👥 인플루언서 현황' },
+            { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '검토중').length },
+            { id: 'clients', label: '🏢 고객사 목록' },
+          ].map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition flex items-center gap-2 ${tab === t.id ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-purple-50'}`}>
+              {t.label}
+              {t.count > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{t.count}</span>}
+            </button>
+          ))}
         </div>
 
+        {/* 캠페인 관리 탭 */}
         {tab === 'campaigns' && (
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold text-gray-800">캠페인 목록</h2>
-              <button onClick={() => setShowForm(!showForm)} className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-700 transition">
-                {showForm ? '닫기' : '+ 새 캠페인 등록'}
-              </button>
+              <button onClick={() => setShowForm(!showForm)} className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-700">+ 새 캠페인</button>
             </div>
-
             {showForm && (
-              <form onSubmit={handleCreateCampaign} className="bg-white rounded-2xl shadow p-6 mb-6 flex flex-col gap-4">
-                <h3 className="font-bold text-gray-700">새 캠페인 등록</h3>
-                <input className="border rounded-xl px-4 py-3" placeholder="캠페인 이름 *" value={newCampaign.name} onChange={e => setNewCampaign({...newCampaign, name: e.target.value})} required />
-                <input className="border rounded-xl px-4 py-3" placeholder="제품명 *" value={newCampaign.product_name} onChange={e => setNewCampaign({...newCampaign, product_name: e.target.value})} required />
-                <textarea className="border rounded-xl px-4 py-3" placeholder="캠페인 설명" rows={3} value={newCampaign.description} onChange={e => setNewCampaign({...newCampaign, description: e.target.value})} />
-                <input className="border rounded-xl px-4 py-3" type="date" placeholder="마감일" value={newCampaign.deadline} onChange={e => setNewCampaign({...newCampaign, deadline: e.target.value})} />
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">신청 폼 타입 *</label>
-                  <select className="w-full border rounded-xl px-4 py-3 text-gray-700" value={newCampaign.form_type} onChange={e => setNewCampaign({...newCampaign, form_type: e.target.value})} required>
-                    <option value="basic">기본 폼 (일반 캠페인)</option>
-                    <option value="liquor">주류 폼 (주류 소비 성향 항목 포함)</option>
-                  </select>
-                </div>
-                <button type="submit" className="bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition">등록하기</button>
+              <form onSubmit={handleCreateCampaign} className="bg-white rounded-2xl shadow p-6 mb-6 space-y-3">
+                <input required placeholder="캠페인 이름" value={newCampaign.name} onChange={e => setNewCampaign({...newCampaign, name: e.target.value})} className="w-full border rounded-xl px-4 py-3" />
+                <input required placeholder="제품명" value={newCampaign.product_name} onChange={e => setNewCampaign({...newCampaign, product_name: e.target.value})} className="w-full border rounded-xl px-4 py-3" />
+                <textarea placeholder="설명" value={newCampaign.description} onChange={e => setNewCampaign({...newCampaign, description: e.target.value})} className="w-full border rounded-xl px-4 py-3" rows={3} />
+                <select value={newCampaign.form_type} onChange={e => setNewCampaign({...newCampaign, form_type: e.target.value})} className="w-full border rounded-xl px-4 py-3">
+                  <option value="basic">기본 폼</option>
+                  <option value="liquor">주류 폼</option>
+                </select>
+                <button type="submit" className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold">생성하기</button>
               </form>
             )}
-
             <div className="grid gap-4">
               {campaigns.map(c => (
-                <div key={c.id} onClick={() => router.push('/client/' + c.id)} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-md transition flex justify-between items-center">
-                  <div>
-                    <p className="font-bold text-gray-800">{c.name}</p>
-                    <p className="text-sm text-gray-500">{c.product_name} · {c.deadline ? '마감: ' + c.deadline : '마감일 미설정'}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
+                <div key={c.id} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-md transition" onClick={() => { setTab('participations') }}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-gray-800 text-lg">{c.name}</p>
+                      <p className="text-sm text-gray-500">{c.product_name}</p>
+                    </div>
                     <span className={`text-xs px-3 py-1 rounded-full font-semibold ${c.form_type === 'liquor' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {c.form_type === 'liquor' ? '🍶 주류 폼' : '📋 기본 폼'}
+                      {c.form_type === 'liquor' ? '🍶 주류' : '📋 일반'}
                     </span>
-                    <span className="text-purple-600 text-sm font-semibold">상세보기 →</span>
                   </div>
+                  {c.description && <p className="text-sm text-gray-500 mt-2">{c.description}</p>}
                 </div>
               ))}
               {campaigns.length === 0 && <p className="text-center text-gray-400 py-10">등록된 캠페인이 없습니다.</p>}
@@ -167,61 +178,225 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* 인플루언서 현황 탭 */}
         {tab === 'participations' && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">참여 현황</h2>
-            <div className="bg-white rounded-2xl shadow overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-gray-600">인플루언서</th>
-                    <th className="px-4 py-3 text-left text-gray-600">캠페인</th>
-                    <th className="px-4 py-3 text-left text-gray-600">상태</th>
-                    <th className="px-4 py-3 text-left text-gray-600">정산</th>
-                    <th className="px-4 py-3 text-left text-gray-600">액션</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {participations.map(p => (
-                    <tr key={p.id} className="border-t hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium">{p.users?.name || '-'}<br/><span className="text-xs text-gray-400">{p.users?.instagram || ''}</span></td>
-                      <td className="px-4 py-3 text-purple-600 cursor-pointer hover:underline" onClick={() => router.push('/client/' + p.campaign_id)}>{p.campaigns?.name || '-'}</td>
-                      <td className="px-4 py-3">
-                        <select value={p.status} onChange={e => handleStatusUpdate(p.id, e.target.value)} className="border rounded-lg px-2 py-1 text-xs">
-                          <option>신청</option>
-                          <option>승인</option>
-                          <option>제품발송</option>
-                          <option>콘텐츠확인</option>
-                          <option>완료</option>
-                          <option>거절</option>
-                        </select>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-1 rounded-full ${p.payment_status === '지급완료' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                          {p.payment_status || '미지급'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {p.payment_status !== '지급완료' && (
-                          <button onClick={() => handlePaymentUpdate(p.id)} className="text-xs bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 transition">지급완료</button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {participations.length === 0 && <tr><td colSpan={5} className="text-center py-10 text-gray-400">참여 내역이 없습니다.</td></tr>}
-                </tbody>
-              </table>
+          <div className="flex gap-6">
+            {/* 왼쪽: 인플루언서 리스트 */}
+            <div className="w-80 flex-shrink-0">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">인플루언서 현황</h2>
+              <div className="flex flex-col gap-3">
+                {participations.map(p => (
+                  <div key={p.id}
+                    onClick={() => setSelectedParticipation(p)}
+                    className={`bg-white rounded-2xl shadow p-4 cursor-pointer hover:shadow-md transition ${selectedParticipation?.id === p.id ? 'ring-2 ring-purple-500' : ''}`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-bold text-gray-800">{p.apply_data?.name || '-'}</p>
+                        <p className="text-xs text-gray-500">{p.campaigns?.name || '-'}</p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
+                    </div>
+                    {/* 진행바 */}
+                    <div className="flex items-center gap-1 mt-2">
+                      {STEPS.map((step, idx) => (
+                        <div key={step} className="flex items-center gap-1">
+                          <div className={`w-2 h-2 rounded-full ${idx <= getStepIndex(p.status) ? 'bg-purple-500' : 'bg-gray-200'}`} />
+                          {idx < STEPS.length - 1 && <div className={`w-4 h-0.5 ${idx < getStepIndex(p.status) ? 'bg-purple-500' : 'bg-gray-200'}`} />}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {participations.length === 0 && <p className="text-center text-gray-400 py-10">신청 내역이 없습니다.</p>}
+              </div>
+            </div>
+
+            {/* 오른쪽: 상세 정보 */}
+            <div className="flex-1">
+              {selectedParticipation ? (
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">{selectedParticipation.apply_data?.name || '-'}</h3>
+                      <p className="text-sm text-gray-500">{selectedParticipation.campaigns?.name || '-'}</p>
+                    </div>
+                    <span className={`text-sm px-3 py-1 rounded-full font-semibold ${statusColor(selectedParticipation.status)}`}>{selectedParticipation.status}</span>
+                  </div>
+
+                  {/* 진행 상황 바 */}
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-gray-600 mb-3">진행 상황</p>
+                    <div className="flex items-center gap-0">
+                      {STEPS.map((step, idx) => (
+                        <div key={step} className="flex items-center flex-1">
+                          <div className="flex flex-col items-center flex-1">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
+                              idx <= getStepIndex(selectedParticipation.status)
+                                ? 'bg-purple-600 border-purple-600 text-white'
+                                : 'bg-white border-gray-300 text-gray-400'
+                            }`}>
+                              {idx < getStepIndex(selectedParticipation.status) ? '✓' : idx + 1}
+                            </div>
+                            <p className={`text-xs mt-1 font-medium ${idx <= getStepIndex(selectedParticipation.status) ? 'text-purple-600' : 'text-gray-400'}`}>{step}</p>
+                          </div>
+                          {idx < STEPS.length - 1 && (
+                            <div className={`h-0.5 w-full mb-4 ${idx < getStepIndex(selectedParticipation.status) ? 'bg-purple-600' : 'bg-gray-200'}`} />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 기본 정보 */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-400 mb-1">이름</p>
+                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.name || '-'}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-400 mb-1">연락처</p>
+                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.phone || '-'}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-400 mb-1">주소</p>
+                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.address || '-'}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-400 mb-1">인스타그램</p>
+                      <p className="font-semibold text-gray-800">@{selectedParticipation.apply_data?.instagram || '-'}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-400 mb-1">팔로워 수</p>
+                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.followers ? Number(selectedParticipation.apply_data.followers).toLocaleString() + '명' : '-'}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-400 mb-1">원고료</p>
+                      <p className="font-semibold text-purple-600">{selectedParticipation.apply_data?.reward || '-'}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-400 mb-1">은행/계좌</p>
+                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.bank_name || '-'} {selectedParticipation.apply_data?.account_number || ''}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-400 mb-1">정산 상태</p>
+                      <p className={`font-semibold ${selectedParticipation.payment_status === '지급완료' ? 'text-green-600' : 'text-gray-400'}`}>
+                        {selectedParticipation.payment_status === '지급완료' ? '✅ 지급완료' : '⏳ 대기중'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 제출 파일 */}
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-gray-600 mb-3">📁 제출 파일</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: '🪪 신분증', key: 'id_card_url' },
+                        { label: '🏦 통장사본', key: 'bank_book_url' },
+                      ].map(({ label, key }) => {
+                        const url = getFileUrl(selectedParticipation.apply_data?.[key])
+                        return (
+                          <div key={key} className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-xs text-gray-400 mb-1">{label}</p>
+                            {url
+                              ? <a href={url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline text-sm font-semibold">📎 보기</a>
+                              : <p className="text-gray-300 text-sm">미제출</p>}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 콘텐츠 파일 */}
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-gray-600 mb-3">🎬 콘텐츠 파일</p>
+                    <div className="grid grid-cols-1 gap-3">
+                      {/* 클린본 */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="text-sm font-bold text-blue-700">📍 클린본</p>
+                          {selectedParticipation.submit_data?.clean_file_url
+                            ? <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">✅ 제출됨</span>
+                            : <span className="text-xs bg-gray-100 text-gray-400 px-2 py-1 rounded-full">미제출</span>}
+                        </div>
+                        {selectedParticipation.submit_data?.clean_file_url
+                          ? <a href={getFileUrl(selectedParticipation.submit_data.clean_file_url)} target="_blank" rel="noreferrer"
+                              className="text-blue-600 hover:underline text-sm font-semibold">📎 파일 다운로드</a>
+                          : <p className="text-gray-400 text-sm">아직 제출되지 않았습니다.</p>}
+                      </div>
+                      {/* 최종본 */}
+                      <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="text-sm font-bold text-purple-700">📍 최종본</p>
+                          {selectedParticipation.submit_data?.final_file_url
+                            ? <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">✅ 제출됨</span>
+                            : <span className="text-xs bg-gray-100 text-gray-400 px-2 py-1 rounded-full">미제출</span>}
+                        </div>
+                        {selectedParticipation.submit_data?.final_file_url
+                          ? <a href={getFileUrl(selectedParticipation.submit_data.final_file_url)} target="_blank" rel="noreferrer"
+                              className="text-purple-600 hover:underline text-sm font-semibold">📎 파일 다운로드</a>
+                          : <p className="text-gray-400 text-sm">아직 제출되지 않았습니다.</p>}
+                      </div>
+                      {/* 업로드 URL */}
+                      {selectedParticipation.submit_data?.upload_url && (
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                          <p className="text-sm font-bold text-green-700 mb-1">🔗 업로드 URL</p>
+                          <a href={selectedParticipation.submit_data.upload_url} target="_blank" rel="noreferrer"
+                            className="text-green-600 hover:underline text-sm">{selectedParticipation.submit_data.upload_url}</a>
+                        </div>
+                      )}
+                      {/* 서명 계약서 */}
+                      {selectedParticipation.submit_data?.signed_contract_url && (
+                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                          <p className="text-sm font-bold text-orange-700 mb-2">📝 서명된 계약서</p>
+                          <a href={getFileUrl(selectedParticipation.submit_data.signed_contract_url)} target="_blank" rel="noreferrer"
+                            className="text-orange-600 hover:underline text-sm font-semibold">📎 계약서 보기</a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 상태 변경 */}
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-gray-600 mb-3">상태 변경</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {STEPS.map(step => (
+                        <button key={step} onClick={() => handleStatusUpdate(selectedParticipation.id, step)}
+                          className={`px-3 py-2 rounded-xl text-sm font-semibold transition ${selectedParticipation.status === step ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-purple-100'}`}>
+                          {step}
+                        </button>
+                      ))}
+                      <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')}
+                        className={`px-3 py-2 rounded-xl text-sm font-semibold transition ${selectedParticipation.status === '거절' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-red-100'}`}>
+                        거절
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 정산 */}
+                  {selectedParticipation.status === '완료' && selectedParticipation.payment_status !== '지급완료' && (
+                    <button onClick={() => handlePaymentUpdate(selectedParticipation.id)}
+                      className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition">
+                      💰 정산 완료 처리
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow p-10 text-center">
+                  <p className="text-gray-400">왼쪽에서 인플루언서를 선택해주세요.</p>
+                </div>
+              )}
             </div>
           </div>
         )}
 
+        {/* 캠페인 요청 탭 */}
         {tab === 'requests' && (
           <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">고객사 캠페인 요청</h2>
-            <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">캠페인 요청 목록</h2>
+            <div className="grid gap-4">
               {campaignRequests.map(r => (
-                <div key={r.id} className="bg-white rounded-2xl shadow p-6">
-                  <div className="flex justify-between items-start mb-4">
+                <div key={r.id} className="bg-white rounded-2xl shadow p-5">
+                  <div className="flex justify-between items-start mb-3">
                     <div>
                       <p className="font-bold text-gray-800 text-lg">{r.product_name}</p>
                       <p className="text-sm text-gray-500">{r.company_name}</p>
@@ -243,6 +418,11 @@ export default function AdminDashboard() {
                       <button onClick={() => handleRequestReject(r.id)} className="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold hover:bg-red-600 transition">❌ 거절</button>
                     </div>
                   )}
+                  {r.rejection_reason && (
+                    <div className="mt-3 bg-red-50 border border-red-200 rounded-xl p-3">
+                      <p className="text-sm text-red-600"><span className="font-semibold">거절 사유:</span> {r.rejection_reason}</p>
+                    </div>
+                  )}
                 </div>
               ))}
               {campaignRequests.length === 0 && <p className="text-center text-gray-400 py-10">캠페인 요청이 없습니다.</p>}
@@ -250,6 +430,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* 고객사 목록 탭 */}
         {tab === 'clients' && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">고객사 목록</h2>
