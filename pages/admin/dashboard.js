@@ -7,6 +7,7 @@ export default function AdminDashboard() {
   const [campaigns, setCampaigns] = useState([])
   const [participations, setParticipations] = useState([])
   const [clients, setClients] = useState([])
+  const [campaignRequests, setCampaignRequests] = useState([])
   const [tab, setTab] = useState('campaigns')
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -14,7 +15,6 @@ export default function AdminDashboard() {
     name: '',
     product_name: '',
     description: '',
-    reward: '',
     deadline: '',
     form_type: 'basic',
   })
@@ -38,6 +38,8 @@ export default function AdminDashboard() {
     setParticipations(p || [])
     const { data: cl } = await supabase.from('clients').select('*').order('created_at', { ascending: false })
     setClients(cl || [])
+    const { data: cr } = await supabase.from('campaign_requests').select('*').order('created_at', { ascending: false })
+    setCampaignRequests(cr || [])
   }
 
   const handleCreateCampaign = async (e) => {
@@ -46,7 +48,7 @@ export default function AdminDashboard() {
     if (error) { alert('오류: ' + error.message); return }
     alert('캠페인이 등록되었습니다!')
     setShowForm(false)
-    setNewCampaign({ name: '', product_name: '', description: '', reward: '', deadline: '', form_type: 'basic' })
+    setNewCampaign({ name: '', product_name: '', description: '', deadline: '', form_type: 'basic' })
     fetchData()
   }
 
@@ -60,6 +62,26 @@ export default function AdminDashboard() {
     fetchData()
   }
 
+  const handleRequestApprove = async (id) => {
+    await supabase.from('campaign_requests').update({ status: '승인' }).eq('id', id)
+    fetchData()
+    alert('캠페인 요청이 승인되었습니다!')
+  }
+
+  const handleRequestReject = async (id) => {
+    await supabase.from('campaign_requests').update({ status: '거절' }).eq('id', id)
+    fetchData()
+  }
+
+  const requestStatusColor = (status) => {
+    const map = {
+      '검토중': 'bg-yellow-100 text-yellow-700',
+      '승인': 'bg-green-100 text-green-700',
+      '거절': 'bg-red-100 text-red-700',
+    }
+    return map[status] || 'bg-gray-100 text-gray-700'
+  }
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
 
   return (
@@ -70,10 +92,18 @@ export default function AdminDashboard() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex gap-4 mb-6">
-          <button onClick={() => setTab('campaigns')} className={`px-6 py-2 rounded-xl font-semibold transition ${tab === 'campaigns' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>캠페인 관리</button>
-          <button onClick={() => setTab('participations')} className={`px-6 py-2 rounded-xl font-semibold transition ${tab === 'participations' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>참여 현황</button>
-          <button onClick={() => setTab('clients')} className={`px-6 py-2 rounded-xl font-semibold transition ${tab === 'clients' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>고객사 목록</button>
+        <div className="flex gap-3 mb-6 flex-wrap">
+          <button onClick={() => setTab('campaigns')} className={`px-5 py-2 rounded-xl font-semibold transition ${tab === 'campaigns' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>캠페인 관리</button>
+          <button onClick={() => setTab('participations')} className={`px-5 py-2 rounded-xl font-semibold transition ${tab === 'participations' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>참여 현황</button>
+          <button onClick={() => setTab('requests')} className={`px-5 py-2 rounded-xl font-semibold transition ${tab === 'requests' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>
+            캠페인 요청
+            {campaignRequests.filter(r => r.status === '검토중').length > 0 && (
+              <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {campaignRequests.filter(r => r.status === '검토중').length}
+              </span>
+            )}
+          </button>
+          <button onClick={() => setTab('clients')} className={`px-5 py-2 rounded-xl font-semibold transition ${tab === 'clients' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 border'}`}>고객사 목록</button>
         </div>
 
         {tab === 'campaigns' && (
@@ -171,6 +201,41 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {tab === 'requests' && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">고객사 캠페인 요청</h2>
+            <div className="flex flex-col gap-4">
+              {campaignRequests.map(r => (
+                <div key={r.id} className="bg-white rounded-2xl shadow p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="font-bold text-gray-800 text-lg">{r.product_name}</p>
+                      <p className="text-sm text-gray-500">{r.company_name}</p>
+                    </div>
+                    <span className={`text-xs px-3 py-1 rounded-full font-semibold ${requestStatusColor(r.status)}`}>{r.status}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                    <div><p className="text-gray-400">월 버짓</p><p className="font-bold text-purple-600">{r.monthly_budget ? Number(r.monthly_budget).toLocaleString() + '원' : '-'}</p></div>
+                    <div><p className="text-gray-400">제품 가격</p><p className="font-semibold">{r.product_price ? Number(r.product_price).toLocaleString() + '원' : '-'}</p></div>
+                    <div><p className="text-gray-400">최소 인플루언서</p><p className="font-semibold">{r.min_influencers}명</p></div>
+                    <div><p className="text-gray-400">요청일</p><p className="font-semibold">{new Date(r.created_at).toLocaleDateString('ko-KR')}</p></div>
+                    <div className="col-span-2"><p className="text-gray-400">제품 URL</p>
+                      {r.product_url ? <a href={r.product_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">{r.product_url}</a> : <p>-</p>}
+                    </div>
+                  </div>
+                  {r.status === '검토중' && (
+                    <div className="flex gap-3">
+                      <button onClick={() => handleRequestApprove(r.id)} className="flex-1 bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">✅ 승인</button>
+                      <button onClick={() => handleRequestReject(r.id)} className="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold hover:bg-red-600 transition">❌ 거절</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {campaignRequests.length === 0 && <p className="text-center text-gray-400 py-10">캠페인 요청이 없습니다.</p>}
+            </div>
+          </div>
+        )}
+
         {tab === 'clients' && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">고객사 목록</h2>
@@ -185,12 +250,11 @@ export default function AdminDashboard() {
                     <span className="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-semibold">고객사</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-                    <div><p className="text-gray-400">제품명</p><p className="font-semibold">{c.product_name}</p></div>
-                    <div><p className="text-gray-400">제품 가격</p><p className="font-semibold">{c.product_price ? Number(c.product_price).toLocaleString() + '원' : '-'}</p></div>
-                    <div><p className="text-gray-400">월 버짓</p><p className="font-bold text-purple-600">{c.monthly_budget ? Number(c.monthly_budget).toLocaleString() + '원' : '-'}</p></div>
-                    <div><p className="text-gray-400">최소 인플루언서</p><p className="font-semibold">{c.min_influencers}명</p></div>
-                    <div className="col-span-2"><p className="text-gray-400">제품 URL</p>
-                      {c.product_url ? <a href={c.product_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline font-semibold">{c.product_url}</a> : <p>-</p>}
+                    <div><p className="text-gray-400">홈페이지</p>
+                      {c.homepage ? <a href={c.homepage} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline font-semibold">{c.homepage}</a> : <p>-</p>}
+                    </div>
+                    <div><p className="text-gray-400">사업자등록증</p>
+                      {c.business_reg_url ? <span className="text-green-600 font-semibold">✅ 업로드됨</span> : <span className="text-gray-400">미업로드</span>}
                     </div>
                   </div>
                 </div>
