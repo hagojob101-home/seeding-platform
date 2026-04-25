@@ -8,167 +8,168 @@ export default function ClientCampaignDetail() {
   const [campaign, setCampaign] = useState(null)
   const [participations, setParticipations] = useState([])
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
+
+  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '완료']
+
+  const getStepIndex = (status) => STEPS.indexOf(status)
+
+  const stepIcons = ['📋', '✅', '📦', '🎬', '🏆']
 
   useEffect(() => {
     if (!id) return
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/client/login'); return }
-      const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
-      setIsAdmin(userData?.role === 'admin')
-      await fetchData()
+      const { data: cData } = await supabase.from('campaigns').select('*').eq('id', id).single()
+      setCampaign(cData)
+      const { data: pData } = await supabase
+        .from('participations')
+        .select('*')
+        .eq('campaign_id', id)
+        .order('created_at', { ascending: false })
+      setParticipations(pData || [])
       setLoading(false)
     }
     init()
   }, [id])
 
-  const fetchData = async () => {
-    const { data: c } = await supabase.from('campaigns').select('*').eq('id', id).single()
-    setCampaign(c)
-    const { data: p } = await supabase
-      .from('participations')
-      .select('*, users(*)')
-      .eq('campaign_id', id)
-      .order('created_at', { ascending: false })
-    setParticipations(p || [])
+  const handleShip = async (participationId) => {
+    const { error } = await supabase.from('participations').update({ status: '제품발송' }).eq('id', participationId)
+    if (error) { alert('오류: ' + error.message); return }
+    setParticipations(prev => prev.map(p => p.id === participationId ? { ...p, status: '제품발송' } : p))
+    alert('제품 발송 완료로 변경되었습니다!')
   }
 
-  const handleShipment = async (participationId) => {
-    await supabase.from('participations').update({ status: '제품발송' }).eq('id', participationId)
-    await fetchData()
-  }
-
-  const handleStatusUpdate = async (pid, status) => {
-    await supabase.from('participations').update({ status }).eq('id', pid)
-    await fetchData()
-  }
-
-  const handlePaymentUpdate = async (pid) => {
-    await supabase.from('participations').update({ payment_status: '지급완료' }).eq('id', pid)
-    await fetchData()
-  }
-
-  const steps = ['신청', '승인', '제품발송', '콘텐츠확인', '완료']
-  const stepIcons = ['📋', '✅', '📦', '🎬', '🏆']
-
-  const getStepIndex = (status) => {
-    const map = { '신청': 0, '승인': 1, '제품발송': 2, '콘텐츠확인': 3, '완료': 4, '거절': -1 }
-    return map[status] ?? 0
+  const statusColor = (status) => {
+    const map = {
+      '신청': 'bg-yellow-100 text-yellow-700',
+      '승인': 'bg-blue-100 text-blue-700',
+      '제품발송': 'bg-purple-100 text-purple-700',
+      '콘텐츠확인': 'bg-orange-100 text-orange-700',
+      '완료': 'bg-green-100 text-green-700',
+      '거절': 'bg-red-100 text-red-700',
+    }
+    return map[status] || 'bg-gray-100 text-gray-700'
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="text-gray-500 hover:text-purple-600">← 뒤로</button>
-          <h1 className="text-xl font-bold text-purple-700">{campaign?.name}</h1>
+          <button onClick={() => router.push('/client/dashboard')} className="text-gray-400 hover:text-blue-600 text-sm">← 뒤로</button>
+          <h1 className="text-lg font-bold text-blue-700">{campaign?.name}</h1>
         </div>
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-bold text-gray-800">👥 인플루언서 진행 현황 ({participations.length}명)</h2>
+          <h2 className="text-lg font-bold text-gray-800">
+            👥 인플루언서 진행 현황 ({participations.length}명)
+          </h2>
         </div>
 
-        <div className="flex flex-col gap-6">
-          {participations.map(p => {
-            const currentStep = getStepIndex(p.status)
-            const isRejected = p.status === '거절'
-
-            return (
-              <div key={p.id} className="bg-white rounded-2xl shadow p-6">
-                {/* 인플루언서 정보 */}
-                <div className="flex justify-between items-start mb-5">
-                  <div className="flex flex-col gap-1">
-                    <p className="font-bold text-gray-800 text-lg">{p.apply_data?.name || p.users?.name || '-'}</p>
-                    <p className="text-sm text-gray-500">📱 {p.apply_data?.phone || '-'}</p>
-                    <p className="text-sm text-gray-500">📍 {p.apply_data?.address || '-'}</p>
-                    <p className="text-sm text-gray-500">📸 {p.apply_data?.instagram || '-'} · 팔로워 {p.apply_data?.followers ? Number(p.apply_data.followers).toLocaleString() : '-'}</p>
+        {participations.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
+            <p>아직 신청한 인플루언서가 없습니다.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {participations.map(p => {
+              const stepIdx = getStepIndex(p.status)
+              return (
+                <div key={p.id} className="bg-white rounded-2xl shadow p-6">
+                  {/* 인플루언서 기본 정보 */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="font-bold text-gray-800 text-lg">{p.apply_data?.name || '-'}</p>
+                      <div className="flex gap-4 text-sm text-gray-500 mt-1">
+                        <span>📱 {p.apply_data?.phone || '-'}</span>
+                        <span>📍 {p.apply_data?.address || '-'}</span>
+                      </div>
+                      <div className="flex gap-4 text-sm text-gray-500 mt-1">
+                        <span>📸 @{p.apply_data?.instagram || '-'} · 팔로워 {p.apply_data?.followers ? Number(p.apply_data.followers).toLocaleString() : '-'}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-purple-600 text-lg">{p.apply_data?.reward || (p.fee ? Number(p.fee).toLocaleString() + '원' : '-')}</p>
+                      <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-purple-600 text-lg">{p.apply_data?.reward || '-'}</p>
-                    {isRejected && <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">거절</span>}
-                  </div>
-                </div>
 
-                {/* 진행 상황 바 */}
-                {!isRejected && (
-                  <div className="mb-5">
-                    <div className="flex items-center justify-between relative">
-                      <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 z-0" />
-                      <div
-                        className="absolute top-5 left-0 h-1 bg-green-500 z-0 transition-all"
-                        style={{ width: currentStep === 0 ? '0%' : `${(currentStep / (steps.length - 1)) * 100}%` }}
-                      />
-                      {steps.map((label, i) => (
-                        <div key={i} className="flex flex-col items-center z-10">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${
-                            i < currentStep ? 'bg-green-500 text-white' :
-                            i === currentStep ? 'bg-green-500 text-white ring-4 ring-green-200' :
-                            'bg-gray-200 text-gray-400'
-                          }`}>
-                            {stepIcons[i]}
+                  {/* 진행 상황 바 */}
+                  <div className="mb-4">
+                    <div className="flex items-center">
+                      {STEPS.map((step, idx) => (
+                        <div key={step} className="flex items-center flex-1">
+                          <div className="flex flex-col items-center">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg border-2 transition-all ${
+                              idx < stepIdx
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : idx === stepIdx
+                                ? 'bg-blue-500 border-blue-500 text-white'
+                                : 'bg-white border-gray-200 text-gray-300'
+                            }`}>
+                              {idx < stepIdx ? '✓' : stepIcons[idx]}
+                            </div>
+                            <p className={`text-xs mt-1 font-medium whitespace-nowrap ${
+                              idx <= stepIdx ? 'text-blue-600' : 'text-gray-300'
+                            }`}>{step}</p>
                           </div>
-                          <p className={`text-xs mt-2 font-semibold ${i <= currentStep ? 'text-green-600' : 'text-gray-400'}`}>{label}</p>
+                          {idx < STEPS.length - 1 && (
+                            <div className={`h-1 flex-1 mx-1 mb-4 rounded ${
+                              idx < stepIdx ? 'bg-green-400' : 'bg-gray-200'
+                            }`} />
+                          )}
                         </div>
                       ))}
                     </div>
                   </div>
-                )}
 
-                {/* 버튼 영역 */}
-                <div className="flex gap-3 flex-wrap mt-2">
-                  {/* 고객사: 제품발송 버튼만 */}
-                  {!isAdmin && p.status === '승인' && (
-                    <button
-                      onClick={() => handleShipment(p.id)}
-                      className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition"
-                    >
-                      📦 제품 발송 완료
-                    </button>
+                  {/* 발송 버튼 - 승인 상태일 때만 */}
+                  {p.status === '승인' && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() => handleShip(p.id)}
+                        className="bg-purple-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-purple-700 transition text-sm"
+                      >
+                        📦 제품 발송 완료
+                      </button>
+                    </div>
                   )}
 
-                  {/* 관리자: 상태 변경 */}
-                  {isAdmin && (
-                    <>
-                      <select
-                        value={p.status}
-                        onChange={e => handleStatusUpdate(p.id, e.target.value)}
-                        className="border rounded-xl px-4 py-2 text-sm font-semibold text-gray-700"
-                      >
-                        <option>신청</option>
-                        <option>승인</option>
-                        <option>제품발송</option>
-                        <option>콘텐츠확인</option>
-                        <option>완료</option>
-                        <option>거절</option>
-                      </select>
-                      {p.payment_status !== '지급완료' && (
-                        <button
-                          onClick={() => handlePaymentUpdate(p.id)}
-                          className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-600 transition"
-                        >
-                          💰 지급완료
-                        </button>
-                      )}
-                      {p.payment_status === '지급완료' && (
-                        <span className="text-sm text-green-600 font-semibold px-4 py-2">✅ 정산완료</span>
-                      )}
-                    </>
+                  {/* 콘텐츠 제출 여부 */}
+                  {p.submit_data && (
+                    <div className="mt-4 bg-orange-50 border border-orange-200 rounded-xl p-4">
+                      <p className="text-sm font-bold text-orange-700 mb-2">🎬 콘텐츠 제출됨</p>
+                      <div className="flex gap-3 flex-wrap">
+                        {p.submit_data.clean_file_url && (
+                          <a href={p.submit_data.clean_file_url} target="_blank" rel="noreferrer"
+                            className="text-blue-600 hover:underline text-sm font-semibold bg-blue-50 px-3 py-1 rounded-lg">
+                            📍 클린본 보기
+                          </a>
+                        )}
+                        {p.submit_data.final_file_url && (
+                          <a href={p.submit_data.final_file_url} target="_blank" rel="noreferrer"
+                            className="text-purple-600 hover:underline text-sm font-semibold bg-purple-50 px-3 py-1 rounded-lg">
+                            📍 최종본 보기
+                          </a>
+                        )}
+                        {p.submit_data.upload_url && (
+                          <a href={p.submit_data.upload_url} target="_blank" rel="noreferrer"
+                            className="text-green-600 hover:underline text-sm font-semibold bg-green-50 px-3 py-1 rounded-lg">
+                            🔗 업로드 URL
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            )
-          })}
-          {participations.length === 0 && (
-            <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
-              <p>아직 신청한 인플루언서가 없습니다.</p>
-            </div>
-          )}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
