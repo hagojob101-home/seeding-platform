@@ -28,9 +28,13 @@ export default async function handler(req, res) {
     const bank_account = apply.bank_account || ''
     const resident_number = apply.resident_number || ''
     const followers = parseInt(apply.followers) || 0
-    let reward = '50,000'
-    if (followers >= 30000) reward = '300,000'
-    else if (followers >= 10000) reward = '150,000'
+    let reward = apply.reward || '50,000원'
+    // reward에서 '원' 제거하고 숫자만 추출
+    reward = reward.replace('원', '').replace(',', '').trim()
+    const rewardNum = parseInt(reward)
+    if (!isNaN(rewardNum)) {
+      reward = rewardNum.toLocaleString()
+    }
 
     const today = new Date()
     const startDate = `${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`
