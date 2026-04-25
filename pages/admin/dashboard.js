@@ -63,9 +63,23 @@ export default function AdminDashboard() {
   }
 
   const handleRequestApprove = async (id) => {
+    const request = campaignRequests.find(r => r.id === id)
+    if (!request) return
+
+    // 캠페인 자동 생성
+    const { error: campaignError } = await supabase.from('campaigns').insert({
+      name: request.product_name + ' 캠페인',
+      product_name: request.product_name,
+      description: request.company_name + ' 시딩 캠페인',
+      form_type: 'basic',
+      client_id: request.client_id,
+      campaign_request_id: id,
+    })
+    if (campaignError) { alert('캠페인 생성 오류: ' + campaignError.message); return }
+
     await supabase.from('campaign_requests').update({ status: '승인' }).eq('id', id)
     fetchData()
-    alert('캠페인 요청이 승인되었습니다!')
+    alert('승인되었습니다! 캠페인이 자동 생성되었습니다.')
   }
 
   const handleRequestReject = async (id) => {
