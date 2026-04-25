@@ -22,6 +22,7 @@ export default function Apply() {
     agree_ad: false,
     bank_name: '',
     bank_account: '',
+    resident_number: '',
   })
   const [idFile, setIdFile] = useState(null)
   const [bankFile, setBankFile] = useState(null)
@@ -91,6 +92,7 @@ export default function Apply() {
         agree_ad: form.agree_ad,
         bank_name: form.bank_name,
         bank_account: form.bank_account,
+        resident_number: form.resident_number,
         id_file_url,
         bank_file_url,
       }
@@ -141,6 +143,12 @@ export default function Apply() {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">이름 *</label>
             <input className="w-full border rounded-xl px-4 py-3" placeholder="실명 입력" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">주민등록번호 *</label>
+            <input className="w-full border rounded-xl px-4 py-3" placeholder="000000-0000000" value={form.resident_number} onChange={e => setForm({...form, resident_number: e.target.value})} required />
+            <p className="text-xs text-gray-400 mt-1">계약서 작성 및 세금 신고 목적으로만 사용됩니다. 안전하게 보관됩니다.</p>
           </div>
 
           <div>

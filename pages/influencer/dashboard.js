@@ -1,147 +1,142 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
 
 export default function InfluencerDashboard() {
   const router = useRouter()
   const [user, setUser] = useState(null)
-  const [profile, setProfile] = useState(null)
   const [participations, setParticipations] = useState([])
-  const [campaigns, setCampaigns] = useState([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState('내 참여')
-  const [applying, setApplying] = useState(null)
+  const [downloadingId, setDownloadingId] = useState(null)
 
   useEffect(() => {
-    const getUser = async () => {
+    const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/influencer/login'); return }
       setUser(user)
-      const { data: profileData } = await supabase.from('users').select('*').eq('id', user.id).single()
-      setProfile(profileData)
-      const { data: parts } = await supabase.from('participations').select('*, campaigns(*)').eq('influencer_id', user.id)
-      setParticipations(parts || [])
-      const { data: camps } = await supabase.from('campaigns').select('*').eq('status', '모집중').order('created_at', { ascending: false })
-      setCampaigns(camps || [])
+      const { data } = await supabase
+        .from('participations')
+        .select('*, campaigns(*)')
+        .eq('influencer_id', user.id)
+        .order('created_at', { ascending: false })
+      setParticipations(data || [])
       setLoading(false)
     }
-    getUser()
+    init()
   }, [])
 
-  const applyForCampaign = async (campaignId) => {
-    const alreadyApplied = participations.some(p => p.campaign_id === campaignId)
-    if (alreadyApplied) { alert('이미 신청한 캠페인입니다!'); return }
-    setApplying(campaignId)
-    await supabase.from('participations').insert({ influencer_id: user.id, campaign_id: campaignId, status: '신청' })
-    const { data: parts } = await supabase.from('participations').select('*, campaigns(*)').eq('influencer_id', user.id)
-    setParticipations(parts || [])
-    setApplying(null)
-    alert('신청이 완료되었습니다!')
+  const handleDownloadContract = async (participationId) => {
+    setDownloadingId(participationId)
+    try {
+      const res = await fetch('/api/generate-contract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participation_id: participationId }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        alert('오류: ' + err.error)
+        return
+      }
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = '계약서.pdf'
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      alert('다운로드 오류: ' + err.message)
+    }
+    setDownloadingId(null)
   }
 
-  const handleUpload = async (id, link) => {
-    if (!link) return
-    await supabase.from('participations').update({ upload_link: link, status: '업로드' }).eq('id', id)
-    const { data } = await supabase.from('participations').select('*, campaigns(*)').eq('influencer_id', user.id)
-    setParticipations(data || [])
-    alert('업로드 링크가 제출되었습니다!')
+  const statusColor = (status) => {
+    const map = {
+      '신청': 'bg-yellow-100 text-yellow-700',
+      '승인': 'bg-blue-100 text-blue-700',
+      '제품발송': 'bg-purple-100 text-purple-700',
+      '콘텐츠확인': 'bg-orange-100 text-orange-700',
+      '완료': 'bg-green-100 text-green-700',
+      '거절': 'bg-red-100 text-red-700',
+    }
+    return map[status] || 'bg-gray-100 text-gray-700'
   }
 
-  const statusSteps = ['신청', '계약', '발송', '수령', '업로드', '완료']
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><p>로딩 중...</p></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl shadow p-6 mb-6">
-          <h1 className="text-2xl font-bold text-purple-700 mb-1">안녕하세요, {profile?.name}님!</h1>
-          <p className="text-gray-500">@{profile?.insta_id}</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+        <h1 className="text-xl font-bold text-purple-700">인플루언서 대시보드</h1>
+        <button onClick={async () => { await supabase.auth.signOut(); router.push('/influencer/login') }} className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
+      </nav>
+
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-gray-800 mb-1">안녕하세요! 👋</h2>
+          <p className="text-gray-500 text-sm">{user?.email}</p>
         </div>
-        <div className="flex gap-3 mb-6">
-          {['내 참여', '캠페인 신청', '원고료 안내'].map(t => (
-            <button key={t} onClick={() => setTab(t)} className={tab === t ? 'px-4 py-2 rounded-xl font-semibold text-sm bg-purple-600 text-white' : 'px-4 py-2 rounded-xl font-semibold text-sm bg-white text-gray-600 shadow'}>{t}</button>
-          ))}
+
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-gray-800">참여 중인 캠페인</h2>
+          <button onClick={() => router.push('/campaigns')} className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-700 transition">
+            + 캠페인 신청하기
+          </button>
         </div>
-        {tab === '원고료 안내' && (
-          <div className="bg-purple-50 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-purple-700 mb-3">원고료 안내</h2>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white rounded-xl p-4 text-center shadow-sm">
-                <p className="text-sm text-gray-500">~1만 팔로워</p>
-                <p className="text-xl font-bold text-purple-600">5만원</p>
-              </div>
-              <div className="bg-white rounded-xl p-4 text-center shadow-sm">
-                <p className="text-sm text-gray-500">1만~3만 팔로워</p>
-                <p className="text-xl font-bold text-purple-600">15만원</p>
-              </div>
-              <div className="bg-white rounded-xl p-4 text-center shadow-sm">
-                <p className="text-sm text-gray-500">3만~10만 팔로워</p>
-                <p className="text-xl font-bold text-purple-600">30만원</p>
-              </div>
-            </div>
+
+        {participations.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow p-10 text-center">
+            <p className="text-gray-400 mb-4">아직 참여 중인 캠페인이 없습니다.</p>
+            <button onClick={() => router.push('/campaigns')} className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+              캠페인 둘러보기
+            </button>
           </div>
-        )}
-        {tab === '캠페인 신청' && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-700 mb-3">모집 중인 캠페인</h2>
-            {campaigns.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow p-8 text-center text-gray-400">현재 모집 중인 캠페인이 없습니다.</div>
-            ) : campaigns.map((c) => {
-              const alreadyApplied = participations.some(p => p.campaign_id === c.id)
-              return (
-                <div key={c.id} className="bg-white rounded-2xl shadow p-6 mb-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-bold text-lg">{c.name}</h3>
-                      <p className="text-gray-500 text-sm mt-1">제품: {c.product_name}</p>
-                      {c.description && <p className="text-gray-400 text-sm mt-2">{c.description}</p>}
-                    </div>
-                    <button onClick={() => applyForCampaign(c.id)} disabled={alreadyApplied || applying === c.id} className={alreadyApplied ? 'px-4 py-2 rounded-xl text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed' : 'px-4 py-2 rounded-xl text-sm font-semibold bg-purple-600 text-white'}>
-                      {applying === c.id ? '신청 중...' : alreadyApplied ? '신청완료' : '신청하기'}
+        ) : (
+          <div className="flex flex-col gap-4">
+            {participations.map(p => (
+              <div key={p.id} className="bg-white rounded-2xl shadow p-6">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-bold text-gray-800 text-lg">{p.campaigns?.name || '-'}</h3>
+                    <p className="text-sm text-gray-500">{p.campaigns?.product_name || ''}</p>
+                  </div>
+                  <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>
+                    {p.status}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                  <span>리워드: {p.campaigns?.reward || '-'}</span>
+                  <span>·</span>
+                  <span className={`font-semibold ${p.payment_status === '지급완료' ? 'text-green-600' : 'text-gray-400'}`}>
+                    {p.payment_status === '지급완료' ? '✅ 정산완료' : '⏳ 정산대기'}
+                  </span>
+                </div>
+
+                <div className="flex gap-3 flex-wrap">
+                  {p.status === '승인' && (
+                    <button
+                      onClick={() => handleDownloadContract(p.id)}
+                      disabled={downloadingId === p.id}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-600 transition"
+                    >
+                      {downloadingId === p.id ? '생성 중...' : '📄 계약서 다운로드'}
                     </button>
-                  </div>
+                  )}
+                  {(p.status === '승인' || p.status === '제품발송' || p.status === '콘텐츠확인') && (
+                    <button
+                      onClick={() => router.push('/influencer/submit?participation_id=' + p.id)}
+                      className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-600 transition"
+                    >
+                      📤 콘텐츠 제출
+                    </button>
+                  )}
                 </div>
-              )
-            })}
-          </div>
-        )}
-        {tab === '내 참여' && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-700 mb-3">참여 캠페인</h2>
-            {participations.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow p-8 text-center text-gray-400">
-                <p>아직 참여 중인 캠페인이 없어요.</p>
-                <button onClick={() => setTab('캠페인 신청')} className="mt-3 text-purple-600 font-semibold text-sm">캠페인 신청하러 가기</button>
-              </div>
-            ) : participations.map((p) => (
-              <div key={p.id} className="bg-white rounded-2xl shadow p-6 mb-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-bold text-lg">{p.campaigns?.name}</h3>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">{p.status}</span>
-                </div>
-                <p className="text-gray-500 text-sm mb-4">제품: {p.campaigns?.product_name}</p>
-                <div className="flex gap-2 mb-4 flex-wrap">
-                  {statusSteps.map((step, i) => (
-                    <span key={i} className={p.status === step ? 'px-3 py-1 rounded-full text-xs font-semibold bg-purple-600 text-white' : 'px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-400'}>{step}</span>
-                  ))}
-                </div>
-                {p.status === '수령' && (
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500 mb-2">업로드한 링크를 입력해주세요:</p>
-                    <div className="flex gap-2">
-                      <input id={"upload-" + p.id} className="border rounded-xl px-3 py-2 flex-1 text-sm" placeholder="https://www.instagram.com/reel/..." />
-                      <button onClick={() => { const el = document.getElementById("upload-" + p.id); handleUpload(p.id, el.value) }} className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold">제출</button>
-                    </div>
-                  </div>
-                )}
-                {p.upload_link && <p className="text-sm text-blue-500 mt-2">업로드 링크: <a href={p.upload_link} target="_blank" rel="noreferrer" className="underline">{p.upload_link}</a></p>}
-                {p.payment_status === '지급완료' && <p className="text-sm text-green-600 mt-2 font-semibold">원고료 지급 완료!</p>}
               </div>
             ))}
           </div>
         )}
-        <button onClick={() => supabase.auth.signOut().then(() => router.push('/'))} className="mt-4 text-sm text-gray-400 hover:text-gray-600">로그아웃</button>
       </div>
     </div>
   )
