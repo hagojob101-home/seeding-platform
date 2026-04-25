@@ -42,13 +42,23 @@ export default function InfluencerDashboard() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = '계약서.pdf'
+      a.download = 'contract.pdf'
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (err) {
       alert('다운로드 오류: ' + err.message)
     }
     setDownloadingId(null)
+  }
+
+  const formatReward = (p) => {
+    const reward = p.apply_data?.reward
+    if (reward) return reward
+    const r = p.campaigns?.reward
+    if (!r) return '-'
+    const num = parseInt(String(r).replace(/,/g, ''))
+    if (isNaN(num)) return r
+    return num.toLocaleString() + '원'
   }
 
   const statusColor = (status) => {
@@ -107,7 +117,7 @@ export default function InfluencerDashboard() {
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                  <span>리워드: {p.campaigns?.reward || '-'}</span>
+                  <span>원고료: <span className="font-bold text-purple-700">{formatReward(p)}</span></span>
                   <span>·</span>
                   <span className={`font-semibold ${p.payment_status === '지급완료' ? 'text-green-600' : 'text-gray-400'}`}>
                     {p.payment_status === '지급완료' ? '✅ 정산완료' : '⏳ 정산대기'}
