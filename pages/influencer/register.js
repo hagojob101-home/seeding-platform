@@ -1,4 +1,3 @@
-cat > pages/influencer/register.js << 'EOF'
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
@@ -34,10 +33,10 @@ export default function Register() {
         <h2 className="text-2xl font-bold text-center mb-6 text-purple-700">인플루언서 회원가입</h2>
         {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input className="border rounded-xl px-4 py-3 focus:outline-purple-400" placeholder="이름" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
-          <input className="border rounded-xl px-4 py-3 focus:outline-purple-400" placeholder="인스타그램 아이디 (@제외)" value={form.insta_id} onChange={e => setForm({...form, insta_id: e.target.value})} required />
-          <input className="border rounded-xl px-4 py-3 focus:outline-purple-400" placeholder="이메일" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
-          <input className="border rounded-xl px-4 py-3 focus:outline-purple-400" placeholder="비밀번호" type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
+          <input className="border rounded-xl px-4 py-3" placeholder="이름" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+          <input className="border rounded-xl px-4 py-3" placeholder="인스타그램 아이디 (@제외)" value={form.insta_id} onChange={e => setForm({...form, insta_id: e.target.value})} required />
+          <input className="border rounded-xl px-4 py-3" placeholder="이메일" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
+          <input className="border rounded-xl px-4 py-3" placeholder="비밀번호" type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
           <button type="submit" disabled={loading} className="bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
             {loading ? '가입 중...' : '회원가입'}
           </button>
