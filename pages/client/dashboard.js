@@ -6,10 +6,18 @@ export default function ClientDashboard() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [clientInfo, setClientInfo] = useState(null)
-  const [campaigns, setCampaigns] = useState([])
+  const [requests, setRequests] = useState([])
   const [participations, setParticipations] = useState([])
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [showRequestForm, setShowRequestForm] = useState(false)
+  const [requestForm, setRequestForm] = useState({
+    monthly_budget: '',
+    product_url: '',
+    product_name: '',
+    product_price: '',
+    min_influencers: '',
+  })
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -18,55 +26,72 @@ export default function ClientDashboard() {
       setUser(user)
 
       const { data: userData } = await supabase.from('users').select('*').eq('id', user.id).single()
-      if (userData?.role === 'admin') {
-        setIsAdmin(true)
-        router.push('/admin/dashboard')
-        return
-      }
+      if (userData?.role === 'admin') { router.push('/admin/dashboard'); return }
 
       const { data: clientData } = await supabase.from('clients').select('*').eq('user_id', user.id).single()
       setClientInfo(clientData)
 
-      const { data: c } = await supabase.from('campaigns').select('*').eq('client_id', user.id).order('created_at', { ascending: false })
-      setCampaigns(c || [])
-
-      if (c && c.length > 0) {
-        const campaignIds = c.map(camp => camp.id)
-        const { data: p } = await supabase
-          .from('participations')
-          .select('*, campaigns(*), users(*)')
-          .in('campaign_id', campaignIds)
-          .order('created_at', { ascending: false })
-        setParticipations(p || [])
-      }
-
+      await fetchData(user.id)
       setLoading(false)
     }
     init()
   }, [])
 
-  const totalBudget = clientInfo?.monthly_budget || 0
-  const usedBudget = participations
-    .filter(p => p.status === '승인' || p.status === '제품발송' || p.status === '콘텐츠확인' || p.status === '완료')
-    .reduce((sum, p) => {
-      const reward = p.apply_data?.reward || '0'
-      const num = parseInt(String(reward).replace(/[^0-9]/g, '')) || 0
-      return sum + num
-    }, 0)
-  const budgetPercent = totalBudget > 0 ? Math.min(Math.round((usedBudget / totalBudget) * 100), 100) : 0
-
-  const handleShipment = async (participationId) => {
-    await supabase.from('participations').update({ status: '제품발송' }).eq('id', participationId)
-    const campaignIds = campaigns.map(c => c.id)
-    const { data: p } = await supabase
-      .from('participations')
-      .select('*, campaigns(*), users(*)')
-      .in('campaign_id', campaignIds)
+  const fetchData = async (uid) => {
+    const { data: r } = await supabase
+      .from('campaign_requests')
+      .select('*')
+      .eq('client_id', uid)
       .order('created_at', { ascending: false })
-    setParticipations(p || [])
+    setRequests(r || [])
+
+    const approvedIds = (r || []).filter(req => req.status === '승인').map(req => req.id)
+    if (approvedIds.length > 0) {
+      const { data: p } = await supabase
+        .from('participations')
+        .select('*, campaigns(*), users(*)')
+        .in('campaign_request_id', approvedIds)
+        .order('created_at', { ascending: false })
+      setParticipations(p || [])
+    }
+  }
+
+  const handleRequestSubmit = async (e) => {
+    e.preventDefault()
+    setSubmitting(true)
+    try {
+      const { data: clientData } = await supabase.from('clients').select('company_name').eq('user_id', user.id).single()
+      const { error } = await supabase.from('campaign_requests').insert({
+        client_id: user.id,
+        company_name: clientData?.company_name || '',
+        monthly_budget: parseInt(requestForm.monthly_budget),
+        product_url: requestForm.product_url,
+        product_name: requestForm.product_name,
+        product_price: parseInt(requestForm.product_price),
+        min_influencers: parseInt(requestForm.min_influencers),
+        status: '검토중',
+      })
+      if (error) throw error
+      alert('캠페인 요청이 완료되었습니다! 관리자 검토 후 승인됩니다.')
+      setShowRequestForm(false)
+      setRequestForm({ monthly_budget: '', product_url: '', product_name: '', product_price: '', min_influencers: '' })
+      await fetchData(user.id)
+    } catch (err) {
+      alert('오류: ' + err.message)
+    }
+    setSubmitting(false)
   }
 
   const statusColor = (status) => {
+    const map = {
+      '검토중': 'bg-yellow-100 text-yellow-700',
+      '승인': 'bg-green-100 text-green-700',
+      '거절': 'bg-red-100 text-red-700',
+    }
+    return map[status] || 'bg-gray-100 text-gray-700'
+  }
+
+  const participationStatusColor = (status) => {
     const map = {
       '신청': 'bg-yellow-100 text-yellow-700',
       '승인': 'bg-blue-100 text-blue-700',
@@ -76,6 +101,22 @@ export default function ClientDashboard() {
       '거절': 'bg-red-100 text-red-700',
     }
     return map[status] || 'bg-gray-100 text-gray-700'
+  }
+
+  const approvedRequests = requests.filter(r => r.status === '승인')
+  const totalBudget = approvedRequests.reduce((sum, r) => sum + (r.monthly_budget || 0), 0)
+  const usedBudget = participations
+    .filter(p => ['승인', '제품발송', '콘텐츠확인', '완료'].includes(p.status))
+    .reduce((sum, p) => {
+      const reward = p.apply_data?.reward || '0'
+      const num = parseInt(String(reward).replace(/[^0-9]/g, '')) || 0
+      return sum + num
+    }, 0)
+  const budgetPercent = totalBudget > 0 ? Math.min(Math.round((usedBudget / totalBudget) * 100), 100) : 0
+
+  const handleShipment = async (participationId) => {
+    await supabase.from('participations').update({ status: '제품발송' }).eq('id', participationId)
+    await fetchData(user.id)
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
@@ -89,88 +130,139 @@ export default function ClientDashboard() {
 
       <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6">
 
-        {/* 버짓 현황 */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="font-bold text-gray-700 mb-4">💰 월 버짓 현황</h2>
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
-            <span>사용: <span className="font-bold text-purple-700">{usedBudget.toLocaleString()}원</span></span>
-            <span>총 버짓: <span className="font-bold">{totalBudget.toLocaleString()}원</span></span>
-          </div>
-          <div className="w-full bg-gray-100 rounded-full h-4 mb-2">
-            <div
-              className={`h-4 rounded-full transition-all ${budgetPercent >= 90 ? 'bg-red-500' : budgetPercent >= 70 ? 'bg-orange-400' : 'bg-purple-500'}`}
-              style={{ width: budgetPercent + '%' }}
-            />
-          </div>
-          <p className="text-right text-sm font-bold text-gray-600">{budgetPercent}% 소진</p>
+        {/* 캠페인 요청하기 버튼 */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-bold text-gray-800">캠페인 요청 현황</h2>
+          <button
+            onClick={() => setShowRequestForm(!showRequestForm)}
+            className="bg-gray-900 text-white px-5 py-2 rounded-xl font-semibold hover:bg-gray-700 transition"
+          >
+            {showRequestForm ? '닫기' : '+ 캠페인 요청하기'}
+          </button>
         </div>
 
-        {/* 제품 정보 */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="font-bold text-gray-700 mb-4">📦 제품 정보</h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><p className="text-gray-400">제품명</p><p className="font-semibold">{clientInfo?.product_name || '-'}</p></div>
-            <div><p className="text-gray-400">제품 가격</p><p className="font-semibold">{clientInfo?.product_price ? Number(clientInfo.product_price).toLocaleString() + '원' : '-'}</p></div>
-            <div><p className="text-gray-400">최소 인플루언서 수</p><p className="font-semibold">{clientInfo?.min_influencers || '-'}명</p></div>
-            <div><p className="text-gray-400">제품 URL</p>
-              {clientInfo?.product_url ? (
-                <a href={clientInfo.product_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline font-semibold">링크 보기</a>
-              ) : <p className="font-semibold">-</p>}
+        {/* 캠페인 요청 폼 */}
+        {showRequestForm && (
+          <form onSubmit={handleRequestSubmit} className="bg-white rounded-2xl shadow p-6 flex flex-col gap-4">
+            <h3 className="font-bold text-gray-700 text-lg">새 캠페인 요청</h3>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">시딩 제품명 *</label>
+              <input className="w-full border rounded-xl px-4 py-3" placeholder="예: 부즈앤버즈 꿀술" value={requestForm.product_name} onChange={e => setRequestForm({...requestForm, product_name: e.target.value})} required />
             </div>
-          </div>
-        </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">제품 URL *</label>
+              <input className="w-full border rounded-xl px-4 py-3" placeholder="https://..." value={requestForm.product_url} onChange={e => setRequestForm({...requestForm, product_url: e.target.value})} required />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">제품 가격 *</label>
+              <input className="w-full border rounded-xl px-4 py-3" type="number" placeholder="예: 50000" value={requestForm.product_price} onChange={e => setRequestForm({...requestForm, product_price: e.target.value})} required />
+              {requestForm.product_price && <p className="text-xs text-purple-600 mt-1">{Number(requestForm.product_price).toLocaleString()}원</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">1개월 버짓 *</label>
+              <input className="w-full border rounded-xl px-4 py-3" type="number" placeholder="예: 1000000" value={requestForm.monthly_budget} onChange={e => setRequestForm({...requestForm, monthly_budget: e.target.value})} required />
+              {requestForm.monthly_budget && <p className="text-xs text-purple-600 mt-1">{Number(requestForm.monthly_budget).toLocaleString()}원</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">최소 인플루언서 수 *</label>
+              <input className="w-full border rounded-xl px-4 py-3" type="number" placeholder="예: 10" value={requestForm.min_influencers} onChange={e => setRequestForm({...requestForm, min_influencers: e.target.value})} required />
+            </div>
+            <button type="submit" disabled={submitting} className="bg-gray-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-700 transition">
+              {submitting ? '요청 중...' : '요청하기'}
+            </button>
+          </form>
+        )}
 
-        {/* 인플루언서 현황 */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="font-bold text-gray-700 mb-4">👥 인플루언서 현황</h2>
-          {participations.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-6">아직 매칭된 인플루언서가 없습니다. 관리자가 곧 매칭해드릴게요!</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-gray-600">인플루언서</th>
-                    <th className="px-4 py-3 text-left text-gray-600">캠페인</th>
-                    <th className="px-4 py-3 text-left text-gray-600">팔로워</th>
-                    <th className="px-4 py-3 text-left text-gray-600">원고료</th>
-                    <th className="px-4 py-3 text-left text-gray-600">상태</th>
-                    <th className="px-4 py-3 text-left text-gray-600">제품발송</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {participations.map(p => (
-                    <tr key={p.id} className="border-t hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <p className="font-semibold">{p.apply_data?.name || p.users?.name || '-'}</p>
-                        <p className="text-xs text-gray-400">{p.apply_data?.instagram || '-'}</p>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">{p.campaigns?.name || '-'}</td>
-                      <td className="px-4 py-3">{p.apply_data?.followers ? Number(p.apply_data.followers).toLocaleString() : '-'}</td>
-                      <td className="px-4 py-3 font-semibold text-purple-600">{p.apply_data?.reward || '-'}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {p.status === '승인' && (
-                          <button
-                            onClick={() => handleShipment(p.id)}
-                            className="bg-purple-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-purple-700 transition"
-                          >
-                            📦 발송완료
-                          </button>
-                        )}
-                        {p.status === '제품발송' && <span className="text-xs text-purple-500 font-semibold">발송완료</span>}
-                        {p.status === '콘텐츠확인' && <span className="text-xs text-orange-500 font-semibold">콘텐츠검토중</span>}
-                        {p.status === '완료' && <span className="text-xs text-green-500 font-semibold">✅ 완료</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* 요청 목록 */}
+        <div className="flex flex-col gap-3">
+          {requests.map(r => (
+            <div key={r.id} className="bg-white rounded-2xl shadow p-5">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <p className="font-bold text-gray-800">{r.product_name}</p>
+                  <p className="text-sm text-gray-500">버짓: {r.monthly_budget ? Number(r.monthly_budget).toLocaleString() + '원' : '-'} · 최소 {r.min_influencers}명</p>
+                </div>
+                <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusColor(r.status)}`}>{r.status}</span>
+              </div>
+              {r.product_url && (
+                <a href={r.product_url} target="_blank" rel="noreferrer" className="text-xs text-purple-600 hover:underline">{r.product_url}</a>
+              )}
+            </div>
+          ))}
+          {requests.length === 0 && (
+            <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
+              <p className="mb-2">아직 캠페인 요청이 없습니다.</p>
+              <p className="text-sm">위의 버튼을 눌러 첫 캠페인을 요청해보세요!</p>
             </div>
           )}
         </div>
+
+        {/* 승인된 캠페인 버짓 현황 */}
+        {approvedRequests.length > 0 && (
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h2 className="font-bold text-gray-700 mb-4">💰 버짓 소진 현황</h2>
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>사용: <span className="font-bold text-purple-700">{usedBudget.toLocaleString()}원</span></span>
+              <span>총 버짓: <span className="font-bold">{totalBudget.toLocaleString()}원</span></span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-4 mb-2">
+              <div
+                className={`h-4 rounded-full transition-all ${budgetPercent >= 90 ? 'bg-red-500' : budgetPercent >= 70 ? 'bg-orange-400' : 'bg-purple-500'}`}
+                style={{ width: budgetPercent + '%' }}
+              />
+            </div>
+            <p className="text-right text-sm font-bold text-gray-600">{budgetPercent}% 소진</p>
+          </div>
+        )}
+
+        {/* 인플루언서 리스트 */}
+        {approvedRequests.length > 0 && (
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h2 className="font-bold text-gray-700 mb-4">👥 인플루언서 현황</h2>
+            {participations.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-6">관리자가 인플루언서를 매칭 중입니다. 잠시만 기다려주세요!</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-gray-600">인플루언서</th>
+                      <th className="px-4 py-3 text-left text-gray-600">팔로워</th>
+                      <th className="px-4 py-3 text-left text-gray-600">원고료</th>
+                      <th className="px-4 py-3 text-left text-gray-600">상태</th>
+                      <th className="px-4 py-3 text-left text-gray-600">제품발송</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {participations.map(p => (
+                      <tr key={p.id} className="border-t hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <p className="font-semibold">{p.apply_data?.name || p.users?.name || '-'}</p>
+                          <p className="text-xs text-gray-400">{p.apply_data?.instagram || '-'}</p>
+                        </td>
+                        <td className="px-4 py-3">{p.apply_data?.followers ? Number(p.apply_data.followers).toLocaleString() : '-'}</td>
+                        <td className="px-4 py-3 font-semibold text-purple-600">{p.apply_data?.reward || '-'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${participationStatusColor(p.status)}`}>{p.status}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {p.status === '승인' && (
+                            <button onClick={() => handleShipment(p.id)} className="bg-purple-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-purple-700 transition">
+                              📦 발송완료
+                            </button>
+                          )}
+                          {p.status === '제품발송' && <span className="text-xs text-purple-500 font-semibold">발송완료</span>}
+                          {p.status === '콘텐츠확인' && <span className="text-xs text-orange-500 font-semibold">콘텐츠검토중</span>}
+                          {p.status === '완료' && <span className="text-xs text-green-500 font-semibold">✅ 완료</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

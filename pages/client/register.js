@@ -10,12 +10,9 @@ export default function ClientRegister() {
     email: '',
     password: '',
     company_name: '',
-    monthly_budget: '',
-    product_url: '',
-    product_name: '',
-    product_price: '',
-    min_influencers: '',
+    homepage: '',
   })
+  const [bizFile, setBizFile] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -30,16 +27,22 @@ export default function ClientRegister() {
       })
       if (signUpError) throw signUpError
 
+      let business_reg_url = ''
+      if (bizFile && data.user) {
+        const { data: uploadData, error: upErr } = await supabase.storage
+          .from('documents')
+          .upload(data.user.id + '/biz_reg_' + Date.now(), bizFile)
+        if (upErr) throw upErr
+        business_reg_url = uploadData.path
+      }
+
       if (data.user) {
         const { error: insertError } = await supabase.from('clients').insert({
           user_id: data.user.id,
           email: form.email,
           company_name: form.company_name,
-          monthly_budget: parseInt(form.monthly_budget.replace(/,/g, '')),
-          product_url: form.product_url,
-          product_name: form.product_name,
-          product_price: parseInt(form.product_price.replace(/,/g, '')),
-          min_influencers: parseInt(form.min_influencers),
+          homepage: form.homepage,
+          business_reg_url,
         })
         if (insertError) throw insertError
 
@@ -51,7 +54,7 @@ export default function ClientRegister() {
         })
       }
 
-      alert('회원가입이 완료되었습니다!')
+      alert('회원가입이 완료되었습니다! 로그인해주세요.')
       router.push('/client/login')
     } catch (err) {
       setError(err.message)
@@ -63,6 +66,7 @@ export default function ClientRegister() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center py-10 px-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg">
         <div className="text-center mb-8">
+          <div className="text-3xl mb-2">🏢</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">고객사 회원가입</h1>
           <p className="text-gray-500 text-sm">시딩 플랫폼 파트너로 등록해주세요</p>
         </div>
@@ -71,7 +75,7 @@ export default function ClientRegister() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
-          <div className="border-b pb-4 mb-2">
+          <div>
             <p className="text-xs font-bold text-gray-400 uppercase mb-3">계정 정보</p>
             <div className="flex flex-col gap-3">
               <input
@@ -94,7 +98,7 @@ export default function ClientRegister() {
           </div>
 
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase mb-3">회사 & 제품 정보</p>
+            <p className="text-xs font-bold text-gray-400 uppercase mb-3">회사 정보</p>
             <div className="flex flex-col gap-3">
               <input
                 className="border rounded-xl px-4 py-3"
@@ -105,56 +109,20 @@ export default function ClientRegister() {
               />
               <input
                 className="border rounded-xl px-4 py-3"
-                placeholder="시딩할 제품명 *"
-                value={form.product_name}
-                onChange={e => setForm({...form, product_name: e.target.value})}
-                required
+                placeholder="홈페이지 URL (예: https://company.com)"
+                value={form.homepage}
+                onChange={e => setForm({...form, homepage: e.target.value})}
               />
-              <input
-                className="border rounded-xl px-4 py-3"
-                placeholder="제품 URL * (쇼핑몰 링크)"
-                value={form.product_url}
-                onChange={e => setForm({...form, product_url: e.target.value})}
-                required
-              />
-              <input
-                className="border rounded-xl px-4 py-3"
-                placeholder="제품 가격 * (예: 50000)"
-                type="number"
-                value={form.product_price}
-                onChange={e => setForm({...form, product_price: e.target.value})}
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase mb-3">예산 정보</p>
-            <div className="flex flex-col gap-3">
               <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">사업자등록증 업로드 *</label>
                 <input
-                  className="border rounded-xl px-4 py-3 w-full"
-                  placeholder="1개월 버짓 * (예: 1000000)"
-                  type="number"
-                  value={form.monthly_budget}
-                  onChange={e => setForm({...form, monthly_budget: e.target.value})}
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="w-full border rounded-xl px-4 py-3"
+                  onChange={e => setBizFile(e.target.files[0])}
                   required
                 />
-                {form.monthly_budget && (
-                  <p className="text-xs text-purple-600 mt-1 ml-1">
-                    = {Number(form.monthly_budget).toLocaleString()}원
-                  </p>
-                )}
-              </div>
-              <div>
-                <input
-                  className="border rounded-xl px-4 py-3 w-full"
-                  placeholder="최소 인플루언서 수 * (예: 10)"
-                  type="number"
-                  value={form.min_influencers}
-                  onChange={e => setForm({...form, min_influencers: e.target.value})}
-                  required
-                />
+                <p className="text-xs text-gray-400 mt-1">JPG, PNG, PDF 가능</p>
               </div>
             </div>
           </div>
