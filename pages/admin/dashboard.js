@@ -130,6 +130,7 @@ export default function AdminDashboard() {
             { id: 'participations', label: '👥 인플루언서 현황' },
             { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '검토중').length },
             { id: 'clients', label: '🏢 고객사 목록' },
+          { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.payment_request_status === '신청' && p.payment_status !== '지급완료').length },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`px-4 py-2 rounded-xl font-semibold text-sm transition flex items-center gap-2 ${tab === t.id ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-purple-50'}`}>
@@ -455,6 +456,60 @@ export default function AdminDashboard() {
                 </div>
               ))}
               {clients.length === 0 && <p className="text-center text-gray-400 py-10">등록된 고객사가 없습니다.</p>}
+            </div>
+          </div>
+        )}
+
+        {/* 정산 관리 탭 */}
+        {tab === 'payments' && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">💰 정산 관리</h2>
+            <div className="grid gap-4">
+              {participations.filter(p => p.payment_request_status === '신청').length === 0 ? (
+                <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
+                  <p>정산 신청 내역이 없습니다.</p>
+                </div>
+              ) : (
+                participations.filter(p => p.payment_request_status === '신청').map(p => (
+                  <div key={p.id} className="bg-white rounded-2xl shadow p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className="font-bold text-gray-800 text-lg">{p.apply_data?.name || '-'}</p>
+                        <p className="text-sm text-gray-500">{p.campaigns?.name || '-'}</p>
+                      </div>
+                      {p.payment_status === '지급완료' ? (
+                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">✅ 지급완료</span>
+                      ) : (
+                        <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">⏳ 정산대기</span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-400 mb-1">원고료</p>
+                        <p className="font-bold text-purple-600">{p.apply_data?.reward || '-'}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-400 mb-1">은행/계좌</p>
+                        <p className="font-semibold text-gray-800">{p.apply_data?.bank_name || '-'} {p.apply_data?.account_number || ''}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-400 mb-1">예금주</p>
+                        <p className="font-semibold text-gray-800">{p.apply_data?.account_holder || p.apply_data?.name || '-'}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-400 mb-1">신청일</p>
+                        <p className="font-semibold text-gray-800">{p.payment_request_at ? new Date(p.payment_request_at).toLocaleDateString('ko-KR') : '-'}</p>
+                      </div>
+                    </div>
+                    {p.payment_status !== '지급완료' && (
+                      <button onClick={() => handlePaymentUpdate(p.id)}
+                        className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition">
+                        💰 정산 완료 처리
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
