@@ -57,7 +57,7 @@ export default function InfluencerDashboard() {
       payment_request_at: new Date().toISOString(),
     }).eq('id', participationId)
     if (error) { alert('오류: ' + error.message); return }
-    alert('정산 신청이 완료되었습니다!')
+    alert('정산 신청이 완료되었습니다! 관리자 확인 후 처리됩니다.')
     const { data } = await supabase
       .from('participations')
       .select('*, campaigns(*)')
@@ -173,15 +173,9 @@ export default function InfluencerDashboard() {
                     </div>
                   </div>
 
-                  {/* 원고료 및 정산 상태 */}
+                  {/* 원고료 */}
                   <div className="flex items-center gap-3 mb-4">
                     <span className="text-sm text-gray-500">원고료: <span className="font-bold text-purple-700">{formatReward(p)}</span></span>
-                    {p.payment_status === '지급완료' && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">✅ 정산완료</span>
-                    )}
-                    {p.payment_request_status === '신청' && p.payment_status !== '지급완료' && (
-                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-semibold">⏳ 정산신청중</span>
-                    )}
                   </div>
 
                   {/* 버튼 영역 */}
@@ -196,26 +190,40 @@ export default function InfluencerDashboard() {
                     )}
 
                     {/* 콘텐츠 제출 - 제품발송 상태이고 아직 제출 안 한 경우 */}
-                    {(p.status === '제품발송') && !p.submit_data && (
+                    {p.status === '제품발송' && !p.submit_data && (
                       <button onClick={() => router.push('/influencer/submit?participation_id=' + p.id)}
                         className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-600 transition">
                         📤 콘텐츠 제출
                       </button>
                     )}
 
-                    {/* 콘텐츠 제출됨 표시 */}
-                    {p.submit_data && p.status === '콘텐츠확인' && (
+                    {/* 콘텐츠 검토중 표시 */}
+                    {p.status === '콘텐츠확인' && (
                       <span className="bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-semibold">
                         🎬 콘텐츠 검토중
                       </span>
                     )}
 
-                    {/* 정산 신청 - 완료 상태이고 아직 신청 안 한 경우 */}
-                    {p.status === '완료' && p.payment_status !== '지급완료' && p.payment_request_status !== '신청' && (
+                    {/* 정산 신청 - 완료 상태이고 아직 정산 신청 안 한 경우 */}
+                    {p.status === '완료' && p.payment_request_status !== '신청' && p.payment_status !== '지급완료' && (
                       <button onClick={() => handlePaymentRequest(p.id)}
                         className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-600 transition">
                         💰 정산 신청하기
                       </button>
+                    )}
+
+                    {/* 정산 신청중 표시 */}
+                    {p.payment_request_status === '신청' && p.payment_status !== '지급완료' && (
+                      <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-sm font-semibold">
+                        ⏳ 정산 신청중
+                      </span>
+                    )}
+
+                    {/* 지급완료 표시 */}
+                    {p.payment_status === '지급완료' && (
+                      <span className="bg-green-100 text-green-700 px-4 py-2 rounded-xl text-sm font-semibold">
+                        ✅ 지급완료
+                      </span>
                     )}
                   </div>
                 </div>
