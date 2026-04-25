@@ -17,6 +17,7 @@ export default function Apply() {
     email: '',
     instagram: '',
     youtube: '',
+    followers: '',
     drink_habit: '',
     premium_drink: '',
     agree_ad: false,
@@ -38,6 +39,16 @@ export default function Apply() {
   }, [campaign_id])
 
   const isLiquorCampaign = campaign?.form_type === 'liquor'
+
+  const getReward = (followers) => {
+    const f = parseInt(followers)
+    if (!f || isNaN(f)) return null
+    if (f < 10000) return '50,000원'
+    if (f < 30000) return '150,000원'
+    return '300,000원'
+  }
+
+  const reward = getReward(form.followers)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -89,6 +100,8 @@ export default function Apply() {
         email: form.email,
         instagram: form.instagram,
         youtube: form.youtube,
+        followers: form.followers,
+        reward: reward,
         agree_ad: form.agree_ad,
         bank_name: form.bank_name,
         bank_account: form.bank_account,
@@ -169,6 +182,17 @@ export default function Apply() {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">인스타그램 계정</label>
             <input className="w-full border rounded-xl px-4 py-3" placeholder="@아이디 (없으면 공백)" value={form.instagram} onChange={e => setForm({...form, instagram: e.target.value})} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">인스타그램 팔로워 수 *</label>
+            <input className="w-full border rounded-xl px-4 py-3" type="number" placeholder="예: 15000" value={form.followers} onChange={e => setForm({...form, followers: e.target.value})} required />
+            {reward && (
+              <div className="mt-2 bg-purple-50 rounded-xl px-4 py-3 flex items-center justify-between">
+                <span className="text-sm text-gray-600">적용 원고료</span>
+                <span className="font-bold text-purple-700 text-lg">{reward}</span>
+              </div>
+            )}
           </div>
 
           <div>
