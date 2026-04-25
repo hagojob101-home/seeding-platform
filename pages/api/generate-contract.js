@@ -197,7 +197,7 @@ export default async function handler(req, res) {
     const buffer = Buffer.from(pdfBytes)
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `attachment; filename="contract_${name}.pdf"`)
+    res.setHeader('Content-Disposition', 'attachment; filename="contract.pdf"')
     res.send(buffer)
 
   } catch (err) {
