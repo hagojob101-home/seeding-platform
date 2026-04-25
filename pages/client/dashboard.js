@@ -67,7 +67,7 @@ export default function ClientDashboard() {
         </div>
         <div className="flex gap-3 mb-6">
           {['참여현황', '캠페인관리'].map(t => (
-            <button key={t} onClick={() => setTab(t)} className={['참여현황', '캠페인관리'].indexOf(t) >= 0 && tab === t ? 'px-5 py-2 rounded-xl font-semibold text-sm bg-purple-600 text-white' : 'px-5 py-2 rounded-xl font-semibold text-sm bg-white text-gray-600 shadow'}>{t}</button>
+            <button key={t} onClick={() => setTab(t)} className={tab === t ? 'px-5 py-2 rounded-xl font-semibold text-sm bg-purple-600 text-white' : 'px-5 py-2 rounded-xl font-semibold text-sm bg-white text-gray-600 shadow'}>{t}</button>
           ))}
         </div>
         {tab === '캠페인관리' && (
@@ -87,15 +87,17 @@ export default function ClientDashboard() {
                   <tr>
                     <th className="px-4 py-3 text-left">캠페인명</th>
                     <th className="px-4 py-3 text-left">제품명</th>
+                    <th className="px-4 py-3 text-left">참여자수</th>
                     <th className="px-4 py-3 text-left">상태</th>
                     <th className="px-4 py-3 text-left">생성일</th>
                   </tr>
                 </thead>
                 <tbody>
                   {campaigns.map(c => (
-                    <tr key={c.id} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium">{c.name}</td>
+                    <tr key={c.id} className="border-b hover:bg-purple-50 cursor-pointer" onClick={() => router.push('/client/' + c.id)}>
+                      <td className="px-4 py-3 font-medium text-purple-700">{c.name}</td>
                       <td className="px-4 py-3">{c.product_name}</td>
+                      <td className="px-4 py-3">{participations.filter(p => p.campaign_id === c.id).length}명</td>
                       <td className="px-4 py-3"><span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">{c.status}</span></td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{new Date(c.created_at).toLocaleDateString('ko-KR')}</td>
                     </tr>
@@ -110,7 +112,7 @@ export default function ClientDashboard() {
           <div>
             <div className="grid grid-cols-4 gap-4 mb-6">
               {['전체', '발송', '업로드', '완료'].map(s => (
-                <div key={s} onClick={() => setFilter(s)} className="bg-white rounded-xl p-4 text-center cursor-pointer shadow-sm">
+                <div key={s} onClick={() => setFilter(s)} className="bg-white rounded-xl p-4 text-center cursor-pointer shadow-sm hover:shadow-md transition">
                   <p className="text-2xl font-bold text-purple-600">{s === '전체' ? participations.length : participations.filter(p => p.status === s).length}</p>
                   <p className="text-sm text-gray-500">{s}</p>
                 </div>
@@ -134,8 +136,8 @@ export default function ClientDashboard() {
                     <tr key={p.id} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-3 font-medium">{p.users?.name}</td>
                       <td className="px-4 py-3 text-purple-600">@{p.users?.insta_id}</td>
-                      <td className="px-4 py-3">{p.campaigns?.name}</td>
-                      <td className="px-4 py-3"><span className={statusColor[p.status] || 'bg-gray-100'}>{p.status}</span></td>
+                      <td className="px-4 py-3 text-purple-600 cursor-pointer underline" onClick={() => router.push('/client/' + p.campaign_id)}>{p.campaigns?.name}</td>
+                      <td className="px-4 py-3"><span className={statusColor[p.status] + ' px-2 py-1 rounded-full text-xs font-semibold'}>{p.status}</span></td>
                       <td className="px-4 py-3">{p.upload_link ? <a href={p.upload_link} target="_blank" rel="noreferrer" className="text-blue-500 underline">링크</a> : '-'}</td>
                       <td className="px-4 py-3"><span className={p.payment_status === '지급완료' ? 'text-xs px-2 py-1 rounded-full bg-green-100 text-green-700' : 'text-xs px-2 py-1 rounded-full bg-red-100 text-red-700'}>{p.payment_status || '미지급'}</span></td>
                       <td className="px-4 py-3">
