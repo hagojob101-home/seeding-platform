@@ -70,11 +70,12 @@ export default function ClientDashboard() {
   const rejected = requests.filter(r => r.status === '거절')
 
   const menuItems = [
-    { id: 'home', label: '🏠 홈', },
-    { id: 'request', label: '📋 캠페인 요청하기', },
+    { id: 'home', label: '🏠 홈' },
+    { id: 'request', label: '📋 캠페인 요청하기' },
     { id: 'approved', label: '✅ 승인된 캠페인', count: approved.length },
     { id: 'pending', label: '⏳ 검토중', count: pending.length },
     { id: 'rejected', label: '❌ 거절됨', count: rejected.length },
+    { id: 'mypage', label: '👤 마이페이지' },
   ]
 
   if (loading) return (
@@ -321,6 +322,50 @@ export default function ClientDashboard() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* 마이페이지 탭 */}
+        {activeTab === 'mypage' && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">👤 마이페이지</h2>
+            <div className="bg-white rounded-2xl shadow p-8 max-w-xl">
+              <div className="mb-6 pb-4 border-b">
+                <p className="text-sm text-gray-400 mb-1">로그인 계정</p>
+                <p className="font-bold text-gray-800">{clientInfo?.email}</p>
+              </div>
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-1">회사명</p>
+                  <p className="font-semibold text-gray-800">{clientInfo?.company_name || '-'}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-1">홈페이지</p>
+                  {clientInfo?.homepage
+                    ? <a href={clientInfo.homepage} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-semibold">{clientInfo.homepage}</a>
+                    : <p className="text-gray-400">미등록</p>}
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-1">사업자등록번호</p>
+                  <p className="font-semibold text-gray-800">{clientInfo?.business_reg_number || '-'}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-1">사업자등록증</p>
+                  {clientInfo?.business_reg_url
+                    ? <span className="text-green-600 font-semibold">✅ 등록됨</span>
+                    : <span className="text-orange-400 font-semibold">⚠️ 미등록</span>}
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-1">세금계산서 이메일</p>
+                  <p className="font-semibold text-gray-800">{clientInfo?.tax_email || '-'}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => router.push('/client/mypage')}
+                className="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
+                ✏️ 정보 수정하기
+              </button>
+            </div>
           </div>
         )}
 
