@@ -101,17 +101,19 @@ export default function InfluencerDashboard() {
     return map[status] || 'bg-gray-100 text-gray-700'
   }
 
-  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '정산완료']
-  const stepIcons = ['📋', '✅', '📦', '🎬', '💰']
+  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료']
+  const stepIcons = ['📋', '✅', '📦', '🎬', '🔗', '💰']
   const getStepIndex = (status) => {
     const map = {
       '신청': 0,
       '승인': 1,
       '제품발송': 2,
       '콘텐츠확인': 3,
-      '완료': 4,
+      '업로드확인': 4,
+      '정산완료': 5,
+      '완료': 5,
+      '지급완료': 5,
     }
-    if (status === '지급완료' || status === '완료') return 4
     return map[status] ?? 0
   }
 
