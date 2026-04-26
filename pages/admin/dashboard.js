@@ -49,6 +49,14 @@ export default function AdminDashboard() {
     fetchData()
   }
 
+  const handleDeleteCampaign = async (id, name) => {
+    if (!window.confirm(name + ' 캠페인을 삭제하시겠습니까?')) return
+    const { error } = await supabase.from('campaigns').delete().eq('id', id)
+    if (error) { alert('삭제 오류: ' + error.message); return }
+    alert('캠페인이 삭제되었습니다.')
+    fetchData()
+  }
+
   const handleStatusUpdate = async (id, status) => {
     await supabase.from('participations').update({ status }).eq('id', id)
     fetchData()
@@ -172,6 +180,13 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                   {c.description && <p className="text-sm text-gray-500 mt-2">{c.description}</p>}
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteCampaign(c.id, c.name) }}
+                      className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-lg transition">
+                      🗑 삭제
+                    </button>
+                  </div>
                 </div>
               ))}
               {campaigns.length === 0 && <p className="text-center text-gray-400 py-10">등록된 캠페인이 없습니다.</p>}
