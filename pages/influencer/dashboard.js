@@ -184,7 +184,7 @@ export default function InfluencerDashboard() {
 
                   {/* 버튼 영역 */}
                   <div className="flex gap-3 flex-wrap">
-                    {/* 계약서 다운로드 - 승인 상태 */}
+                    {/* 계약서 다운로드 - 승인 상태일 때만 */}
                     {p.status === '승인' && (
                       <button onClick={() => handleDownloadContract(p.id)}
                         disabled={downloadingId === p.id}
@@ -201,7 +201,14 @@ export default function InfluencerDashboard() {
                       </button>
                     )}
 
-                    {/* 콘텐츠 검토중 표시 */}
+                    {/* 콘텐츠 제출됨 - 제품발송이고 제출한 경우 */}
+                    {p.status === '제품발송' && p.submit_data && (
+                      <span className="bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-semibold">
+                        🎬 콘텐츠 제출됨
+                      </span>
+                    )}
+
+                    {/* 콘텐츠 검토중 */}
                     {p.status === '콘텐츠확인' && (
                       <span className="bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-semibold">
                         🎬 콘텐츠 검토중
@@ -223,10 +230,10 @@ export default function InfluencerDashboard() {
                       </span>
                     )}
 
-                    {/* 지급완료 표시 */}
+                    {/* 지급완료 표시 - 인플루언서에게는 텍스트로만 */}
                     {p.payment_status === '지급완료' && (
                       <span className="bg-green-100 text-green-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                        ✅ 지급완료
+                        ✅ 정산 완료
                       </span>
                     )}
                   </div>
