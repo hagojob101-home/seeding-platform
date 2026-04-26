@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
+import Footer from '../../components/Footer'
 
 export default function InfluencerDashboard() {
   const router = useRouter()
@@ -268,6 +269,7 @@ export default function InfluencerDashboard() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   )
 }
