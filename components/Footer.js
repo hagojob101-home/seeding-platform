@@ -6,7 +6,7 @@ export default function Footer() {
           <div className="text-sm text-gray-500 space-y-1">
             <p className="font-semibold text-gray-700">공오삼</p>
             <p>대표자: 유지혜 | 사업자등록번호: 719-25-02333</p>
-            <p>서울특별시 성동구 연무장 5길 18</p>
+            <p>서울특별시 성동구 연무장 5길 18 에이치디앤택</p>
           </div>
           <div className="text-sm text-gray-400 flex flex-col items-end gap-1">
             <a href="/privacy" className="hover:text-purple-600 transition underline">개인정보처리방침</a>

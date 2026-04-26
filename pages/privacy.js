@@ -85,7 +85,7 @@ export default function Privacy() {
             <p><span className="font-medium">회사명:</span> 공오삼</p>
             <p><span className="font-medium">대표자:</span> 유지혜</p>
             <p><span className="font-medium">사업자등록번호:</span> 719-25-02333</p>
-            <p><span className="font-medium">주소:</span> 서울특별시 성동구 연무장 5길 18</p>
+            <p><span className="font-medium">주소:</span> 서울특별시 성동구 연무장 5길 18 에이치디앤택</p>
             <p><span className="font-medium">개인정보 관련 문의:</span> 대표자에게 직접 문의</p>
           </div>
         </section>
