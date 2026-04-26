@@ -275,6 +275,23 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* 상태 변경 - 상단으로 이동 */}
+                  <div className="mb-6 bg-gray-50 rounded-2xl p-4">
+                    <p className="text-sm font-semibold text-gray-600 mb-3">🔄 상태 변경</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {STEPS.map(step => (
+                        <button key={step} onClick={() => handleStatusUpdate(selectedParticipation.id, step)}
+                          className={`px-3 py-2 rounded-xl text-sm font-semibold transition ${selectedParticipation.status === step ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-purple-100 border border-gray-200'}`}>
+                          {step}
+                        </button>
+                      ))}
+                      <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')}
+                        className={`px-3 py-2 rounded-xl text-sm font-semibold transition ${selectedParticipation.status === '거절' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-red-100 border border-gray-200'}`}>
+                        거절
+                      </button>
+                    </div>
+                  </div>
+
                   {/* 기본 정보 */}
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="bg-gray-50 rounded-xl p-3">
@@ -383,22 +400,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* 상태 변경 */}
-                  <div className="mb-4">
-                    <p className="text-sm font-semibold text-gray-600 mb-3">상태 변경</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {STEPS.map(step => (
-                        <button key={step} onClick={() => handleStatusUpdate(selectedParticipation.id, step)}
-                          className={`px-3 py-2 rounded-xl text-sm font-semibold transition ${selectedParticipation.status === step ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-purple-100'}`}>
-                          {step}
-                        </button>
-                      ))}
-                      <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')}
-                        className={`px-3 py-2 rounded-xl text-sm font-semibold transition ${selectedParticipation.status === '거절' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-red-100'}`}>
-                        거절
-                      </button>
-                    </div>
-                  </div>
+
 
                   {/* 정산 */}
                   {selectedParticipation.status === '완료' && selectedParticipation.payment_status !== '지급완료' && (
