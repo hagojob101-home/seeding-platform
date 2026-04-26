@@ -50,9 +50,21 @@ export default function AdminDashboard() {
   }
 
   const handleDeleteCampaign = async (id, name) => {
-    if (!window.confirm(name + ' 캠페인을 삭제하시겠습니까?')) return
-    const { error } = await supabase.from('campaigns').delete().eq('id', id)
-    if (error) { alert('삭제 오류: ' + error.message); return }
+    const { data: pData } = await supabase.from('participations').select('id').eq('campaign_id', id)
+    const count = pData?.length || 0
+    if (count > 0) {
+      const first = window.confirm('⚠️ ' + name + ' 캠페인에\n인플루언서 신청 내역이 ' + count + '건 있어요.\n\n캠페인을 삭제하시겠어요?')
+      if (!first) return
+      const second = window.confirm('정말 삭제하시겠습니까?\n신청 내역 ' + count + '건이 함께 삭제되며\n복구가 불가능합니다.')
+      if (!second) return
+    } else {
+      const ok = window.confirm(name + ' 캠페인을 삭제하시겠습니까?')
+      if (!ok) return
+    }
+    const { error: pError } = await supabase.from('participations').delete().eq('campaign_id', id)
+    if (pError) { alert('삭제 오류: ' + pError.message); return }
+    const { error: cError } = await supabase.from('campaigns').delete().eq('id', id)
+    if (cError) { alert('삭제 오류: ' + cError.message); return }
     alert('캠페인이 삭제되었습니다.')
     fetchData()
   }
