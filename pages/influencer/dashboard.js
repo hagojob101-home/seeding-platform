@@ -102,8 +102,12 @@ export default function InfluencerDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-purple-700">인플루언서 대시보드</h1>
-        <button onClick={async () => { await supabase.auth.signOut(); router.push('/influencer/login') }}
-          className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.push('/influencer/mypage')}
+            className="text-sm text-purple-600 hover:text-purple-800 font-semibold">👤 마이페이지</button>
+          <button onClick={async () => { await supabase.auth.signOut(); router.push('/influencer/login') }}
+            className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
+        </div>
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-8">

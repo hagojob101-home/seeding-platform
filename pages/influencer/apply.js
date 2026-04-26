@@ -5,261 +5,238 @@ import { useRouter } from 'next/router'
 export default function Apply() {
   const router = useRouter()
   const { campaign_id } = router.query
-  const [loading, setLoading] = useState(false)
-  const [fetchingCampaign, setFetchingCampaign] = useState(true)
+  const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [campaign, setCampaign] = useState(null)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [profileIncomplete, setProfileIncomplete] = useState(false)
   const [form, setForm] = useState({
-    is_adult: '',
-    name: '',
-    address: '',
-    phone: '',
-    email: '',
-    instagram: '',
-    youtube: '',
+    adult_verified: false,
+    ad_consent: false,
     followers: '',
     drink_habit: '',
     premium_drink: '',
-    agree_ad: false,
-    bank_name: '',
-    bank_account: '',
-    resident_number: '',
   })
-  const [idFile, setIdFile] = useState(null)
-  const [bankFile, setBankFile] = useState(null)
+  const [reward, setReward] = useState('')
 
   useEffect(() => {
     if (!campaign_id) return
-    const fetchCampaign = async () => {
-      const { data } = await supabase.from('campaigns').select('*').eq('id', campaign_id).single()
-      setCampaign(data)
-      setFetchingCampaign(false)
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/influencer/login'); return }
+      setUser(user)
+
+      // 프로필 불러오기
+      const { data: profileData } = await supabase.from('users').select('*').eq('id', user.id).single()
+      setProfile(profileData)
+
+      // 프로필 완성 여부 확인
+      if (!profileData?.name || !profileData?.phone || !profileData?.address ||
+          !profileData?.instagram || !profileData?.bank_name || !profileData?.account_number ||
+          !profileData?.id_card_url || !profileData?.bank_book_url) {
+        setProfileIncomplete(true)
+      }
+
+      // 캠페인 불러오기
+      const { data: campaignData } = await supabase.from('campaigns').select('*').eq('id', campaign_id).single()
+      setCampaign(campaignData)
+      setLoading(false)
     }
-    fetchCampaign()
+    init()
   }, [campaign_id])
 
-  const isLiquorCampaign = campaign?.form_type === 'liquor'
-
-  const getReward = (followers) => {
-    const f = parseInt(followers)
-    if (!f || isNaN(f)) return null
-    if (f < 10000) return '50,000원'
-    if (f < 30000) return '150,000원'
-    return '300,000원'
+  const calcReward = (followers) => {
+    const f = parseInt(followers) || 0
+    if (f >= 30000) return '300,000원'
+    if (f >= 10000) return '150,000원'
+    return '50,000원'
   }
 
-  const reward = getReward(form.followers)
+  const handleFollowersChange = (val) => {
+    setForm({...form, followers: val})
+    setReward(calcReward(val))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.is_adult !== '예') {
-      setError('성인(만 19세 이상)만 신청 가능합니다.')
-      return
-    }
-    setLoading(true)
-    setError('')
+    if (!form.adult_verified) { alert('성인 인증에 동의해주세요.'); return }
+    if (!form.ad_consent) { alert('광고 동의에 체크해주세요.'); return }
+    if (!form.followers) { alert('팔로워 수를 입력해주세요.'); return }
+    if (profileIncomplete) { alert('마이페이지에서 기본 정보를 먼저 입력해주세요!'); router.push('/influencer/mypage'); return }
+
+    setSubmitting(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/influencer/login'); return }
-
-      const { data: existing } = await supabase
-        .from('participations')
-        .select('id')
-        .eq('influencer_id', user.id)
-        .eq('campaign_id', campaign_id)
-        .single()
-      if (existing) {
-        setError('이미 신청한 캠페인입니다.')
-        setLoading(false)
-        return
-      }
-
-      let id_file_url = ''
-      let bank_file_url = ''
-
-      if (idFile) {
-        const { data, error: upErr } = await supabase.storage
-          .from('documents')
-          .upload(user.id + '/id_' + Date.now(), idFile)
-        if (upErr) throw upErr
-        id_file_url = data.path
-      }
-      if (bankFile) {
-        const { data, error: upErr } = await supabase.storage
-          .from('documents')
-          .upload(user.id + '/bank_' + Date.now(), bankFile)
-        if (upErr) throw upErr
-        bank_file_url = data.path
-      }
-
-      const submitData = {
-        is_adult: form.is_adult,
-        name: form.name,
-        address: form.address,
-        phone: form.phone,
-        email: form.email,
-        instagram: form.instagram,
-        youtube: form.youtube,
+      const rewardVal = calcReward(form.followers)
+      const applyData = {
+        // 마이페이지에서 불러온 정보
+        name: profile.name,
+        phone: profile.phone,
+        address: profile.address,
+        instagram: profile.instagram,
+        youtube: profile.youtube,
+        bank_name: profile.bank_name,
+        account_number: profile.account_number,
+        account_holder: profile.account_holder,
+        resident_number: profile.resident_number,
+        id_card_url: profile.id_card_url,
+        bank_book_url: profile.bank_book_url,
+        // 캠페인별 입력 정보
         followers: form.followers,
-        reward: reward,
-        agree_ad: form.agree_ad,
-        bank_name: form.bank_name,
-        bank_account: form.bank_account,
-        resident_number: form.resident_number,
-        id_file_url,
-        bank_file_url,
-      }
-      if (isLiquorCampaign) {
-        submitData.drink_habit = form.drink_habit
-        submitData.premium_drink = form.premium_drink
+        reward: rewardVal,
+        adult_verified: form.adult_verified,
+        ad_consent: form.ad_consent,
+        drink_habit: form.drink_habit,
+        premium_drink: form.premium_drink,
       }
 
-      const { error: insertError } = await supabase.from('participations').insert({
+      const { error } = await supabase.from('participations').insert({
+        campaign_id,
         influencer_id: user.id,
-        campaign_id: campaign_id,
         status: '신청',
-        apply_data: submitData,
+        apply_data: applyData,
+        follower_count: parseInt(form.followers),
+        fee: rewardVal.replace(/,/g, '').replace('원', ''),
       })
-      if (insertError) throw insertError
 
-      alert('신청이 완료되었습니다!')
+      if (error) throw error
+      alert('캠페인 신청이 완료되었습니다!')
       router.push('/influencer/dashboard')
     } catch (err) {
-      setError(err.message)
+      alert('오류: ' + err.message)
     }
-    setLoading(false)
+    setSubmitting(false)
   }
 
-  if (fetchingCampaign) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-gray-500">불러오는 중...</p>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-10 px-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-purple-700 mb-2">{campaign?.name || '캠페인 신청'}</h1>
-          <p className="text-gray-500 text-sm">{campaign?.description || ''}</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.push('/campaigns')}
+            className="text-gray-400 hover:text-purple-600 text-sm">← 캠페인 목록</button>
+          <h1 className="text-lg font-bold text-purple-700">캠페인 신청</h1>
         </div>
+      </nav>
 
-        {error && <p className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded-xl">{error}</p>}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">만 19세 이상이신가요? (성인 인증) *</label>
-            <select className="w-full border rounded-xl px-4 py-3 text-gray-700" value={form.is_adult} onChange={e => setForm({...form, is_adult: e.target.value})} required>
-              <option value="">선택해주세요</option>
-              <option value="예">예</option>
-              <option value="아니오">아니오</option>
-            </select>
+      <div className="max-w-xl mx-auto px-4 py-8">
+        {/* 프로필 미완성 경고 */}
+        {profileIncomplete && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+            <p className="text-sm font-bold text-red-700">⚠️ 기본 정보를 먼저 입력해주세요!</p>
+            <p className="text-xs text-red-500 mt-1 mb-3">신청 전 마이페이지에서 정보를 완성해주세요.</p>
+            <button onClick={() => router.push('/influencer/mypage')}
+              className="bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-red-600">
+              마이페이지로 이동 →
+            </button>
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">이름 *</label>
-            <input className="w-full border rounded-xl px-4 py-3" placeholder="실명 입력" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">주민등록번호 *</label>
-            <input className="w-full border rounded-xl px-4 py-3" placeholder="000000-0000000" value={form.resident_number} onChange={e => setForm({...form, resident_number: e.target.value})} required />
-            <p className="text-xs text-gray-400 mt-1">계약서 작성 및 세금 신고 목적으로만 사용됩니다. 안전하게 보관됩니다.</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">주소 *</label>
-            <input className="w-full border rounded-xl px-4 py-3" placeholder="배송 받을 주소" value={form.address} onChange={e => setForm({...form, address: e.target.value})} required />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">연락처 *</label>
-            <input className="w-full border rounded-xl px-4 py-3" placeholder="010-0000-0000" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">이메일 *</label>
-            <input className="w-full border rounded-xl px-4 py-3" type="email" placeholder="이메일 주소" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">인스타그램 계정</label>
-            <input className="w-full border rounded-xl px-4 py-3" placeholder="@아이디 (없으면 공백)" value={form.instagram} onChange={e => setForm({...form, instagram: e.target.value})} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">인스타그램 팔로워 수 *</label>
-            <input className="w-full border rounded-xl px-4 py-3" type="number" placeholder="예: 15000" value={form.followers} onChange={e => setForm({...form, followers: e.target.value})} required />
-            {reward && (
-              <div className="mt-2 bg-purple-50 rounded-xl px-4 py-3 flex items-center justify-between">
-                <span className="text-sm text-gray-600">적용 원고료</span>
-                <span className="font-bold text-purple-700 text-lg">{reward}</span>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">유튜브 채널</label>
-            <input className="w-full border rounded-xl px-4 py-3" placeholder="채널 URL (없으면 공백)" value={form.youtube} onChange={e => setForm({...form, youtube: e.target.value})} />
-          </div>
-
-          {isLiquorCampaign && (
-            <>
+        {/* 캠페인 정보 */}
+        {campaign && (
+          <div className="bg-white rounded-2xl shadow p-6 mb-6">
+            <div className="flex justify-between items-start">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">평소 주류 소비 성향을 가장 잘 설명하는 항목을 선택해주세요. *</label>
-                <select className="w-full border rounded-xl px-4 py-3 text-gray-700" value={form.drink_habit} onChange={e => setForm({...form, drink_habit: e.target.value})} required>
-                  <option value="">선택해주세요</option>
-                  <option value="거의 마시지 않음">거의 마시지 않음</option>
-                  <option value="월 1-2회 가볍게">월 1-2회 가볍게</option>
-                  <option value="주 1-2회 즐기는 편">주 1-2회 즐기는 편</option>
-                  <option value="주 3회 이상 자주 마심">주 3회 이상 자주 마심</option>
-                </select>
+                <h2 className="font-bold text-gray-800 text-lg">{campaign.name}</h2>
+                <p className="text-sm text-gray-500">{campaign.product_name}</p>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">프리미엄 주류(위스키, 증류주, 꿀술 등)를 즐겨 드시는 편인가요? *</label>
-                <select className="w-full border rounded-xl px-4 py-3 text-gray-700" value={form.premium_drink} onChange={e => setForm({...form, premium_drink: e.target.value})} required>
-                  <option value="">선택해주세요</option>
-                  <option value="예, 자주 즐깁니다">예, 자주 즐깁니다</option>
-                  <option value="가끔 즐기는 편">가끔 즐기는 편</option>
-                  <option value="거의 마시지 않음">거의 마시지 않음</option>
-                  <option value="처음 접해보고 싶음">처음 접해보고 싶음</option>
-                </select>
-              </div>
-            </>
-          )}
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">신분증 사본 업로드 *</label>
-            <input type="file" accept="image/*,.pdf" className="w-full border rounded-xl px-4 py-3" onChange={e => setIdFile(e.target.files[0])} required />
-            <p className="text-xs text-gray-400 mt-1">JPG, PNG, PDF 가능 / 개인정보는 안전하게 보관됩니다</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">통장 사본 업로드 *</label>
-            <input type="file" accept="image/*,.pdf" className="w-full border rounded-xl px-4 py-3" onChange={e => setBankFile(e.target.files[0])} required />
-            <p className="text-xs text-gray-400 mt-1">입금을 위한 통장 사본이 필요합니다</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">부계정 광고 동의</label>
-            <div className="flex items-center gap-3">
-              <input type="checkbox" id="agree_ad" checked={form.agree_ad} onChange={e => setForm({...form, agree_ad: e.target.checked})} className="w-4 h-4" />
-              <label htmlFor="agree_ad" className="text-sm text-gray-600">부계정을 통한 추가 광고 집행에 동의합니다 (선택)</label>
+              <span className={`text-xs px-3 py-1 rounded-full font-semibold ${campaign.form_type === 'liquor' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                {campaign.form_type === 'liquor' ? '🍶 주류' : '📋 일반'}
+              </span>
             </div>
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">은행명 *</label>
-            <input className="w-full border rounded-xl px-4 py-3" placeholder="예: 국민은행, 신한은행" value={form.bank_name} onChange={e => setForm({...form, bank_name: e.target.value})} required />
+        {/* 내 프로필 정보 확인 */}
+        {profile && !profileIncomplete && (
+          <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 mb-6">
+            <div className="flex justify-between items-center mb-3">
+              <p className="text-sm font-bold text-purple-700">👤 내 정보 확인</p>
+              <button onClick={() => router.push('/influencer/mypage')}
+                className="text-xs text-purple-500 hover:underline">수정하기 →</button>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div><span className="text-gray-400">이름:</span> <span className="font-semibold">{profile.name}</span></div>
+              <div><span className="text-gray-400">연락처:</span> <span className="font-semibold">{profile.phone}</span></div>
+              <div><span className="text-gray-400">인스타:</span> <span className="font-semibold">@{profile.instagram}</span></div>
+              <div><span className="text-gray-400">은행:</span> <span className="font-semibold">{profile.bank_name}</span></div>
+              <div className="col-span-2"><span className="text-gray-400">주소:</span> <span className="font-semibold">{profile.address}</span></div>
+            </div>
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">계좌번호 *</label>
-            <input className="w-full border rounded-xl px-4 py-3" placeholder="계좌번호 입력 (- 없이)" value={form.bank_account} onChange={e => setForm({...form, bank_account: e.target.value})} required />
-          </div>
+        {/* 신청 폼 */}
+        <div className="bg-white rounded-2xl shadow p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* 팔로워 수 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                인스타그램 팔로워 수 <span className="text-red-500">*</span>
+              </label>
+              <input type="number" value={form.followers}
+                onChange={e => handleFollowersChange(e.target.value)}
+                placeholder="예: 15000" required
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+              {reward && (
+                <div className="mt-2 bg-purple-50 rounded-xl px-4 py-2">
+                  <p className="text-sm text-purple-700">원고료: <span className="font-bold text-lg">{reward}</span></p>
+                </div>
+              )}
+            </div>
 
-          <button type="submit" disabled={loading} className="bg-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-purple-700 transition mt-2">
-            {loading ? '제출 중...' : '신청하기'}
-          </button>
-        </form>
+            {/* 주류 캠페인 추가 필드 */}
+            {campaign?.form_type === 'liquor' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">음주 습관 <span className="text-red-500">*</span></label>
+                  <select value={form.drink_habit} onChange={e => setForm({...form, drink_habit: e.target.value})} required
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300">
+                    <option value="">선택해주세요</option>
+                    <option value="주 1회 미만">주 1회 미만</option>
+                    <option value="주 1~2회">주 1~2회</option>
+                    <option value="주 3회 이상">주 3회 이상</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">선호 프리미엄 주류 <span className="text-red-500">*</span></label>
+                  <input value={form.premium_drink} onChange={e => setForm({...form, premium_drink: e.target.value})}
+                    placeholder="예: 위스키, 와인 등" required
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                </div>
+              </>
+            )}
+
+            {/* 동의 항목 */}
+            <div className="space-y-3 bg-gray-50 rounded-xl p-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={form.adult_verified}
+                  onChange={e => setForm({...form, adult_verified: e.target.checked})}
+                  className="mt-1 w-4 h-4 accent-purple-600" />
+                <span className="text-sm text-gray-700">
+                  <span className="font-semibold text-purple-700">[필수]</span> 본인은 만 19세 이상 성인임을 확인합니다.
+                </span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={form.ad_consent}
+                  onChange={e => setForm({...form, ad_consent: e.target.checked})}
+                  className="mt-1 w-4 h-4 accent-purple-600" />
+                <span className="text-sm text-gray-700">
+                  <span className="font-semibold text-purple-700">[필수]</span> 광고 콘텐츠 제작 및 게시에 동의합니다.
+                </span>
+              </label>
+            </div>
+
+            <button type="submit" disabled={submitting || profileIncomplete}
+              className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition disabled:opacity-50">
+              {submitting ? '신청 중...' : '캠페인 신청하기'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )
