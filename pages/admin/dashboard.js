@@ -118,7 +118,8 @@ export default function AdminDashboard() {
       '승인': 'bg-blue-100 text-blue-700',
       '제품발송': 'bg-purple-100 text-purple-700',
       '콘텐츠확인': 'bg-orange-100 text-orange-700',
-      '완료': 'bg-green-100 text-green-700',
+      '업로드확인': 'bg-cyan-100 text-cyan-700',
+      '정산완료': 'bg-green-100 text-green-700',
       '거절': 'bg-red-100 text-red-700',
     }
     return map[status] || 'bg-gray-100 text-gray-700'
@@ -129,9 +130,20 @@ export default function AdminDashboard() {
     return map[status] || 'bg-gray-100 text-gray-700'
   }
 
-  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '완료']
+  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료']
+  const STEP_LABELS = {
+    '신청': '📋 신청',
+    '승인': '✅ 승인',
+    '제품발송': '📦 제품발송',
+    '콘텐츠확인': '🎬 콘텐츠확인',
+    '업로드확인': '🔗 업로드확인',
+    '정산완료': '💰 정산완료',
+  }
 
-  const getStepIndex = (status) => STEPS.indexOf(status)
+  const getStepIndex = (status) => {
+    const map = { '신청': 0, '승인': 1, '제품발송': 2, '콘텐츠확인': 3, '업로드확인': 4, '정산완료': 5 }
+    return map[status] ?? 0
+  }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
 
@@ -275,21 +287,65 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* 상태 변경 - 상단으로 이동 */}
+                  {/* 상태 변경 - 상단 */}
                   <div className="mb-6 bg-gray-50 rounded-2xl p-4">
                     <p className="text-sm font-semibold text-gray-600 mb-3">🔄 상태 변경</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {STEPS.map(step => (
-                        <button key={step} onClick={() => handleStatusUpdate(selectedParticipation.id, step)}
-                          className={`px-3 py-2 rounded-xl text-sm font-semibold transition ${selectedParticipation.status === step ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-purple-100 border border-gray-200'}`}>
-                          {step}
+                    {/* 신청 단계: 승인/거절 버튼 */}
+                    {selectedParticipation.status === '신청' && (
+                      <div className="flex gap-3">
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '승인')}
+                          className="flex-1 bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">
+                          ✅ 승인
                         </button>
-                      ))}
-                      <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')}
-                        className={`px-3 py-2 rounded-xl text-sm font-semibold transition ${selectedParticipation.status === '거절' ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-red-100 border border-gray-200'}`}>
-                        거절
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')}
+                          className="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold hover:bg-red-600 transition">
+                          ❌ 거절
+                        </button>
+                      </div>
+                    )}
+                    {/* 승인 단계: 제품발송 버튼 */}
+                    {selectedParticipation.status === '승인' && (
+                      <button onClick={() => handleStatusUpdate(selectedParticipation.id, '제품발송')}
+                        className="w-full bg-purple-500 text-white py-2 rounded-xl font-semibold hover:bg-purple-600 transition">
+                        📦 제품 발송 완료
                       </button>
-                    </div>
+                    )}
+                    {/* 제품발송 단계: 콘텐츠확인 버튼 */}
+                    {selectedParticipation.status === '제품발송' && (
+                      <button onClick={() => handleStatusUpdate(selectedParticipation.id, '콘텐츠확인')}
+                        className="w-full bg-orange-500 text-white py-2 rounded-xl font-semibold hover:bg-orange-600 transition">
+                        🎬 콘텐츠 확인 완료
+                      </button>
+                    )}
+                    {/* 콘텐츠확인 단계: 업로드확인 버튼 */}
+                    {selectedParticipation.status === '콘텐츠확인' && (
+                      <button onClick={() => handleStatusUpdate(selectedParticipation.id, '업로드확인')}
+                        className="w-full bg-cyan-500 text-white py-2 rounded-xl font-semibold hover:bg-cyan-600 transition">
+                        🔗 업로드 확인 완료
+                      </button>
+                    )}
+                    {/* 업로드확인 단계: 정산완료 버튼 */}
+                    {selectedParticipation.status === '업로드확인' && (
+                      <button onClick={() => handleStatusUpdate(selectedParticipation.id, '정산완료')}
+                        className="w-full bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">
+                        💰 정산 완료 처리
+                      </button>
+                    )}
+                    {/* 완료/거절 상태 표시 */}
+                    {(selectedParticipation.status === '정산완료' || selectedParticipation.status === '거절') && (
+                      <div className={`text-center py-2 rounded-xl font-semibold text-sm ${selectedParticipation.status === '정산완료' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {selectedParticipation.status === '정산완료' ? '✅ 정산 완료된 건입니다.' : '❌ 거절된 신청입니다.'}
+                      </div>
+                    )}
+                    {/* 이전 단계로 되돌리기 */}
+                    {!['신청', '정산완료', '거절'].includes(selectedParticipation.status) && (
+                      <button onClick={() => {
+                        const prev = STEPS[getStepIndex(selectedParticipation.status) - 1]
+                        if (prev && window.confirm(prev + ' 단계로 되돌리시겠습니까?')) handleStatusUpdate(selectedParticipation.id, prev)
+                      }} className="mt-2 w-full bg-white border border-gray-200 text-gray-500 py-2 rounded-xl text-sm hover:bg-gray-50 transition">
+                        ↩ 이전 단계로
+                      </button>
+                    )}
                   </div>
 
                   {/* 기본 정보 */}
@@ -402,13 +458,7 @@ export default function AdminDashboard() {
 
 
 
-                  {/* 정산 */}
-                  {selectedParticipation.status === '완료' && selectedParticipation.payment_status !== '지급완료' && (
-                    <button onClick={() => handlePaymentUpdate(selectedParticipation.id)}
-                      className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition">
-                      💰 정산 완료 처리
-                    </button>
-                  )}
+
                 </div>
               ) : (
                 <div className="bg-white rounded-2xl shadow p-10 text-center">
