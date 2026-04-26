@@ -46,7 +46,10 @@ export default function Home() {
             <span className="text-3xl font-black text-gradient">053</span>
             <span className="text-xl font-light tracking-[0.3em] text-gray-300 uppercase ml-1">Meta</span>
           </div>
-          <a href="#apply" className="bg-blue-600 text-white px-8 py-3 rounded-full text-sm font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">컨설팅 신청</a>
+          <div className="flex items-center gap-3">
+            <a href="/client/login" className="text-gray-300 hover:text-white px-6 py-3 rounded-full text-sm font-bold transition-all border border-white/10 hover:border-white/30">시딩 플랫폼</a>
+            <a href="#apply" className="bg-blue-600 text-white px-8 py-3 rounded-full text-sm font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">컨설팅 신청</a>
+          </div>
         </div>
       </nav>
 
