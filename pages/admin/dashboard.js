@@ -102,7 +102,9 @@ export default function AdminDashboard() {
   const handleRequestReject = async (id) => {
     const reason = window.prompt('거절 사유를 입력해주세요:')
     if (!reason) return
-    await supabase.from('campaign_requests').update({ status: '거절', rejection_reason: reason }).eq('id', id)
+    const { error } = await supabase.from('campaign_requests').update({ status: '거절', rejection_reason: reason }).eq('id', id)
+    if (error) { alert('오류: ' + error.message); return }
+    alert('거절 처리되었습니다.')
     fetchData()
   }
 
