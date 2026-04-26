@@ -23,6 +23,18 @@ export default function InfluencerDashboard() {
       setLoading(false)
     }
     init()
+    // 30초마다 자동 새로고침
+    const interval = setInterval(async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('participations')
+        .select('*, campaigns(*)')
+        .eq('influencer_id', user.id)
+        .order('created_at', { ascending: false })
+      setParticipations(data || [])
+    }, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const handleDownloadContract = async (participationId) => {
