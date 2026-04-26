@@ -157,21 +157,18 @@ export default function InfluencerMypage() {
 
             {/* SNS 정보 */}
             <div>
-              <p className="text-sm font-bold text-purple-700 mb-3">📱 SNS 정보</p>
+              <p className="text-sm font-bold text-purple-700 mb-3">📱 업로드할 SNS 계정</p>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">인스타그램 아이디 <span className="text-red-500">*</span></label>
-                  <div className="flex items-center border rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-purple-300">
-                    <span className="text-gray-400 mr-1">@</span>
-                    <input value={form.instagram} onChange={e => setForm({...form, instagram: e.target.value})}
-                      placeholder="instagram_id"
-                      className="flex-1 focus:outline-none" />
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">인스타그램 주소 <span className="text-red-500">*</span></label>
+                  <input value={form.instagram} onChange={e => setForm({...form, instagram: e.target.value})}
+                    placeholder="https://www.instagram.com/아이디" required
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">유튜브 채널</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">유튜브 주소</label>
                   <input value={form.youtube} onChange={e => setForm({...form, youtube: e.target.value})}
-                    placeholder="채널명 또는 URL"
+                    placeholder="https://www.youtube.com/@채널명"
                     className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
                 </div>
               </div>
