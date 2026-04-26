@@ -182,13 +182,17 @@ export default function InfluencerDashboard() {
                             <div className={`w-9 h-9 rounded-full flex items-center justify-center text-base border-2 transition-all ${
                               idx < stepIdx
                                 ? 'bg-green-500 border-green-500 text-white'
-                                : idx === stepIdx && (p.status === '콘텐츠확인')
+                                : idx === stepIdx && p.status === '정산완료'
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : idx === stepIdx && p.status === '콘텐츠확인'
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : idx === stepIdx && p.status === '업로드확인'
                                 ? 'bg-green-500 border-green-500 text-white'
                                 : idx === stepIdx
                                 ? 'bg-purple-500 border-purple-500 text-white'
                                 : 'bg-white border-gray-200 text-gray-300'
                             }`}>
-                              {idx < stepIdx ? '✓' : idx === stepIdx && p.status === '콘텐츠확인' ? '✓' : stepIcons[idx]}
+                              {idx < stepIdx ? '✓' : (idx === stepIdx && ['콘텐츠확인','업로드확인','정산완료'].includes(p.status)) ? '✓' : stepIcons[idx]}
                             </div>
                             <p className={`text-xs mt-1 font-medium whitespace-nowrap ${
                               idx <= stepIdx ? 'text-purple-600' : 'text-gray-300'
