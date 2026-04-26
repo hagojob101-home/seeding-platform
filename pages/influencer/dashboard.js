@@ -100,9 +100,19 @@ export default function InfluencerDashboard() {
     return map[status] || 'bg-gray-100 text-gray-700'
   }
 
-  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '완료']
-  const stepIcons = ['📋', '✅', '📦', '🎬', '🏆']
-  const getStepIndex = (status) => STEPS.indexOf(status)
+  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '정산완료']
+  const stepIcons = ['📋', '✅', '📦', '🎬', '💰']
+  const getStepIndex = (status) => {
+    const map = {
+      '신청': 0,
+      '승인': 1,
+      '제품발송': 2,
+      '콘텐츠확인': 3,
+      '완료': 4,
+    }
+    if (status === '지급완료' || status === '완료') return 4
+    return map[status] ?? 0
+  }
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -169,11 +179,13 @@ export default function InfluencerDashboard() {
                             <div className={`w-9 h-9 rounded-full flex items-center justify-center text-base border-2 transition-all ${
                               idx < stepIdx
                                 ? 'bg-green-500 border-green-500 text-white'
+                                : idx === stepIdx && (p.status === '콘텐츠확인')
+                                ? 'bg-green-500 border-green-500 text-white'
                                 : idx === stepIdx
                                 ? 'bg-purple-500 border-purple-500 text-white'
                                 : 'bg-white border-gray-200 text-gray-300'
                             }`}>
-                              {idx < stepIdx ? '✓' : stepIcons[idx]}
+                              {idx < stepIdx ? '✓' : idx === stepIdx && p.status === '콘텐츠확인' ? '✓' : stepIcons[idx]}
                             </div>
                             <p className={`text-xs mt-1 font-medium whitespace-nowrap ${
                               idx <= stepIdx ? 'text-purple-600' : 'text-gray-300'
@@ -190,8 +202,9 @@ export default function InfluencerDashboard() {
                   </div>
 
                   {/* 원고료 */}
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="flex flex-col gap-1 mb-4">
                     <span className="text-sm text-gray-500">원고료: <span className="font-bold text-purple-700">{formatReward(p)}</span></span>
+                    <span className="text-xs text-gray-400">💡 원고료는 업로드 확인 후 차주 목요일에 입금됩니다.</span>
                   </div>
 
                   {/* 버튼 영역 */}
