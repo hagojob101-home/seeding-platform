@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     const [c, p, cl, cr, co] = await Promise.all([
       supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
-      supabase.from('participations').select('*, campaigns(name, product_name), users(name, phone, address, instagram, youtube, bank_name, account_number, account_holder, id_card_url, bank_book_url)').order('created_at', { ascending: false }),
+      supabase.from('participations').select('*, campaigns(name, product_name), users!participations_influencer_id_fkey(name, phone, address, instagram, youtube, bank_name, account_number, account_holder, id_card_url, bank_book_url)').order('created_at', { ascending: false }),
       supabase.from('clients').select('*').order('created_at', { ascending: false }),
       supabase.from('campaign_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('consultations').select('*').order('created_at', { ascending: false }),
