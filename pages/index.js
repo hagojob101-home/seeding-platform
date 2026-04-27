@@ -172,60 +172,53 @@ export default function Home() {
           {/* 라인 그래프 SVG */}
           <div className="bg-white/5 rounded-2xl p-6 mb-6">
             <svg viewBox="0 0 600 300" className="w-full" xmlns="http://www.w3.org/2000/svg">
-              {/* 그리드 라인 */}
-              <line x1="60" y1="20" x2="60" y2="240" stroke="#333" strokeWidth="1"/>
-              <line x1="60" y1="240" x2="580" y2="240" stroke="#333" strokeWidth="1"/>
-              <line x1="60" y1="180" x2="580" y2="180" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
-              <line x1="60" y1="120" x2="580" y2="120" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
-              <line x1="60" y1="60" x2="580" y2="60" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
-
-              {/* Y축 라벨 */}
-              <text x="50" y="244" fill="#666" fontSize="10" textAnchor="end">0</text>
-              <text x="50" y="184" fill="#666" fontSize="10" textAnchor="end">300만</text>
-              <text x="50" y="124" fill="#666" fontSize="10" textAnchor="end">600만</text>
-              <text x="50" y="64" fill="#666" fontSize="10" textAnchor="end">900만</text>
-
               {/* 그라데이션 정의 */}
               <defs>
                 <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3"/>
+                  <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4"/>
                   <stop offset="100%" stopColor="#6366f1" stopOpacity="0"/>
                 </linearGradient>
               </defs>
 
-              {/* 채움 영역 */}
+              {/* 그리드 라인 (X축만) */}
+              <line x1="60" y1="250" x2="560" y2="250" stroke="#333" strokeWidth="1"/>
+              <line x1="60" y1="190" x2="560" y2="190" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
+              <line x1="60" y1="130" x2="560" y2="130" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
+              <line x1="60" y1="70" x2="560" y2="70" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
+
+              {/* 채움 영역 - 4월을 y=30으로 과장 */}
               <polygon
-                points="100,192 220,148 340,96 460,14 100,240"
+                points="100,210 230,180 360,140 490,30 490,250 100,250"
                 fill="url(#lineGrad)"
               />
 
               {/* 메인 라인 */}
               <polyline
-                points="100,192 220,148 340,96 460,14"
+                points="100,210 230,180 360,140 490,30"
                 fill="none"
                 stroke="#6366f1"
-                strokeWidth="3"
+                strokeWidth="3.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
 
               {/* 데이터 포인트 */}
-              <circle cx="100" cy="192" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
-              <circle cx="220" cy="148" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
-              <circle cx="340" cy="96" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
-              <circle cx="460" cy="14" r="6" fill="#60a5fa" stroke="#fff" strokeWidth="2"/>
+              <circle cx="100" cy="210" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
+              <circle cx="230" cy="180" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
+              <circle cx="360" cy="140" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
+              <circle cx="490" cy="30" r="7" fill="#60a5fa" stroke="#fff" strokeWidth="2.5"/>
 
-              {/* 데이터 라벨 - 매출 */}
-              <text x="100" y="178" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">250만</text>
-              <text x="220" y="134" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">497만</text>
-              <text x="340" y="82" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">720만</text>
-              <text x="460" y="8" fill="#60a5fa" fontSize="12" textAnchor="middle" fontWeight="bold">1,074만</text>
+              {/* 데이터 라벨 - 매출 (짤리지 않게 위치 조정) */}
+              <text x="100" y="198" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">250만</text>
+              <text x="230" y="168" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">497만</text>
+              <text x="360" y="128" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">720만</text>
+              <text x="490" y="22" fill="#60a5fa" fontSize="13" textAnchor="middle" fontWeight="bold">1,074만</text>
 
               {/* X축 라벨 - 월 */}
-              <text x="100" y="258" fill="#666" fontSize="11" textAnchor="middle">1월</text>
-              <text x="220" y="258" fill="#666" fontSize="11" textAnchor="middle">2월</text>
-              <text x="340" y="258" fill="#666" fontSize="11" textAnchor="middle">3월</text>
-              <text x="460" y="258" fill="#60a5fa" fontSize="11" textAnchor="middle" fontWeight="bold">4월 ★</text>
+              <text x="100" y="268" fill="#666" fontSize="11" textAnchor="middle">1월</text>
+              <text x="230" y="268" fill="#666" fontSize="11" textAnchor="middle">2월</text>
+              <text x="360" y="268" fill="#666" fontSize="11" textAnchor="middle">3월</text>
+              <text x="490" y="268" fill="#60a5fa" fontSize="11" textAnchor="middle" fontWeight="bold">4월 ★</text>
             </svg>
           </div>
 
