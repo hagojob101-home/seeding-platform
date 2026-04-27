@@ -79,6 +79,7 @@ export default function InfluencerMypage() {
       alert('저장되었습니다!')
       const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
       setProfile(data)
+      router.push('/influencer/dashboard')
     } catch (err) {
       alert('오류: ' + err.message)
     }
