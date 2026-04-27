@@ -138,7 +138,14 @@ export default function AdminDashboard() {
     return map[status] || 'bg-gray-100 text-gray-700'
   }
 
-  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료']
+  const SUPABASE_URL = 'https://cbamysedzpvjovpkrlzx.supabase.co'
+const getStorageUrl = (path) => {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  return `${SUPABASE_URL}/storage/v1/object/public/${path}`
+}
+
+const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료']
   const STEP_LABELS = {
     '신청': '📋 신청',
     '승인': '✅ 승인',
@@ -352,11 +359,11 @@ export default function AdminDashboard() {
                     {/* 신분증/통장 */}
                     <div className="mt-3 flex gap-3">
                       {selectedInfluencer.items[0]?.users?.id_card_url && (
-                        <button onClick={() => setImageModal({ url: selectedInfluencer.items[0].users.id_card_url, title: '🪪 신분증' })}
+                        <button onClick={() => setImageModal({ url: getStorageUrl(selectedInfluencer.items[0].users.id_card_url), title: '🪪 신분증' })}
                           className="text-xs text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">🪪 신분증 보기</button>
                       )}
                       {selectedInfluencer.items[0]?.users?.bank_book_url && (
-                        <button onClick={() => setImageModal({ url: selectedInfluencer.items[0].users.bank_book_url, title: '🏦 통장사본' })}
+                        <button onClick={() => setImageModal({ url: getStorageUrl(selectedInfluencer.items[0].users.bank_book_url), title: '🏦 통장사본' })}
                           className="text-xs text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">🏦 통장사본 보기</button>
                       )}
                     </div>
