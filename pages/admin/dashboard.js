@@ -9,6 +9,8 @@ export default function AdminDashboard() {
   const [participations, setParticipations] = useState([])
   const [clients, setClients] = useState([])
   const [campaignRequests, setCampaignRequests] = useState([])
+  const [consultations, setConsultations] = useState([])
+  const [consultations, setConsultations] = useState([])
   const [tab, setTab] = useState('campaigns')
   const [loading, setLoading] = useState(true)
   const [selectedParticipation, setSelectedParticipation] = useState(null)
@@ -27,16 +29,18 @@ export default function AdminDashboard() {
   }, [])
 
   const fetchData = async () => {
-    const [c, p, cl, cr] = await Promise.all([
+    const [c, p, cl, cr, co] = await Promise.all([
       supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
       supabase.from('participations').select('*, campaigns(name, product_name)').order('created_at', { ascending: false }),
       supabase.from('clients').select('*').order('created_at', { ascending: false }),
       supabase.from('campaign_requests').select('*').order('created_at', { ascending: false }),
+      supabase.from('consultations').select('*').order('created_at', { ascending: false }),
     ])
     setCampaigns(c.data || [])
     setParticipations(p.data || [])
     setClients(cl.data || [])
     setCampaignRequests(cr.data || [])
+    setConsultations(co.data || [])
     setLoading(false)
   }
 
@@ -166,6 +170,7 @@ export default function AdminDashboard() {
             { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '검토중').length },
             { id: 'clients', label: '🏢 고객사 목록' },
           { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.payment_request_status === '신청' && p.payment_status !== '지급완료').length },
+          { id: 'consultations', label: '📞 컨설팅 신청', count: consultations.length },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`px-4 py-2 rounded-xl font-semibold text-sm transition flex items-center gap-2 ${tab === t.id ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-purple-50'}`}>

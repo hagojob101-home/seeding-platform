@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import { supabase } from '../lib/supabase'
 import { useEffect } from 'react'
 
 export default function Home() {
@@ -122,7 +123,7 @@ export default function Home() {
               </div>
               <div className="w-px bg-white/10" />
               <div className="text-center">
-                <p className="text-3xl font-black text-purple-400">12시간</p>
+                <p className="text-3xl font-black text-purple-400">3시간</p>
                 <p className="text-gray-400 text-sm mt-1">이내 담당자 연락</p>
               </div>
               <div className="w-px bg-white/10" />
@@ -177,7 +178,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-8">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-black mb-8 tracking-tight">함께 성장하시겠습니까?</h2>
-            <p className="text-blue-400 text-xl font-bold">12시간 이내로 연락드립니다.</p>
+            <p className="text-blue-400 text-xl font-bold">3시간 이내로 연락드립니다.</p>
           </div>
           <form id="leadForm" className="space-y-8 bg-[#0d0d0d] border border-white/5 p-10 md:p-20 rounded-[48px]">
             <div className="grid md:grid-cols-2 gap-8">
