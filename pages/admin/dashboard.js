@@ -10,7 +10,6 @@ export default function AdminDashboard() {
   const [clients, setClients] = useState([])
   const [campaignRequests, setCampaignRequests] = useState([])
   const [consultations, setConsultations] = useState([])
-  const [consultations, setConsultations] = useState([])
   const [tab, setTab] = useState('campaigns')
   const [loading, setLoading] = useState(true)
   const [selectedParticipation, setSelectedParticipation] = useState(null)
