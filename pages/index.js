@@ -102,7 +102,7 @@ export default function Home() {
           {/* 타겟 공감 헤드라인 */}
           <div className="text-center mb-20">
             <p className="text-blue-400 font-bold text-lg mb-4 tracking-widest uppercase">For Small Business</p>
-            <h2 className="text-4xl md:text-6xl font-black mb-8 leading-[1.6]">
+            <h2 className="text-4xl md:text-6xl font-black mb-8 leading-[2.0]">
               메타 광고, 들어는 봤는데<br/>
               <span className="text-gradient">전혀 감이 안 오시나요?</span>
             </h2>
