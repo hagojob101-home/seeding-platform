@@ -685,6 +685,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                       <tr>
                         <th className="px-4 py-3 text-left">이름</th>
                         <th className="px-4 py-3 text-left">연락처</th>
+                        <th className="px-4 py-3 text-left">주소</th>
                         <th className="px-4 py-3 text-left">인스타그램</th>
                         <th className="px-4 py-3 text-left">단가</th>
                         <th className="px-4 py-3 text-left">업로드 일정</th>
@@ -697,6 +698,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                         <tr key={inf.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                           <td className="px-4 py-3 font-semibold text-gray-800">{inf.name}</td>
                           <td className="px-4 py-3 text-gray-600">{inf.phone}</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs max-w-xs">{inf.address || '-'}</td>
                           <td className="px-4 py-3">
                             {inf.instagram_url ? <a href={inf.instagram_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">링크</a> : '-'}
                           </td>
@@ -707,7 +709,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                         </tr>
                       ))}
                       {agencyInfluencers.length === 0 && (
-                        <tr><td colSpan={7} className="text-center text-gray-400 py-10">데이터가 없습니다.</td></tr>
+                        <tr><td colSpan={8} className="text-center text-gray-400 py-10">데이터가 없습니다.</td></tr>
                       )}
                     </tbody>
                   </table>
