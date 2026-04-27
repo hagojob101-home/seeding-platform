@@ -133,26 +133,26 @@ export default function Home() {
 
           {/* 한번에 해결 */}
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/20 rounded-3xl p-10 mb-24 text-center">
-            <h3 className="text-2xl md:text-3xl font-black text-white mb-4">
-              광고 집행 + 인플루언서 관리<br className="hidden md:block"/>
-              <span className="text-blue-400"> 한 플랫폼에서 한 번에</span>
+            <h3 className="text-2xl md:text-3xl font-black text-white mb-4 break-keep">
+              광고 집행 + 인플루언서 관리<br/>
+              <span className="text-blue-400">한 플랫폼에서 한 번에</span>
             </h3>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
               따로따로 관리하느라 지치셨나요? 053에서는 메타 광고 성과와 인플루언서 시딩을 동시에 운영하고 한눈에 확인할 수 있습니다.
             </p>
             <div className="flex justify-center gap-8 mt-8">
               <div className="text-center">
-                <p className="text-3xl font-black text-blue-400 whitespace-nowrap">ROAS 800%+</p>
+                <p className="text-xl md:text-3xl font-black text-blue-400 whitespace-nowrap">ROAS 800%+</p>
                 <p className="text-gray-400 text-sm mt-1">메타 광고 실제 사례</p>
               </div>
               <div className="w-px bg-white/10" />
               <div className="text-center">
-                <p className="text-3xl font-black text-purple-400 whitespace-nowrap">3시간</p>
+                <p className="text-xl md:text-3xl font-black text-purple-400 whitespace-nowrap">3시간</p>
                 <p className="text-gray-400 text-sm mt-1">이내 담당자 연락</p>
               </div>
               <div className="w-px bg-white/10" />
               <div className="text-center">
-                <p className="text-3xl font-black text-green-400 whitespace-nowrap">100%</p>
+                <p className="text-xl md:text-3xl font-black text-green-400 whitespace-nowrap">100%</p>
                 <p className="text-gray-400 text-sm mt-1">투명한 진행 현황</p>
               </div>
             </div>
