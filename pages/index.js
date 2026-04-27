@@ -230,7 +230,9 @@ export default function Home() {
                 </div>
               </div>
             </div>
+        </div>
 
+      </section>
       {/* 부즈앤버즈 성장 그래프 섹션 */}
       <section className="py-36 bg-gray-950 relative overflow-hidden">
         <div className="w-full">
@@ -306,7 +308,6 @@ export default function Home() {
               <p className="text-gray-500 text-xs">2025년 1~4월 vs 2026년</p>
             </div>
           </div>
-        </div>
 
           {/* 서비스 흐름 */}
           <div className="text-center mb-12">
@@ -330,7 +331,7 @@ export default function Home() {
                   <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
                 </div>
                 {i < 5 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-blue-500/50 text-lg z-10">→</div>
+                  <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-blue-500/50 text-lg z-10">{'→'}</div>
                 )}
               </div>
             ))}
