@@ -717,7 +717,6 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
         )}
 
         {/* 정산 관리 탭 */}
-산 관리 탭 */}
         {tab === 'payments' && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">💰 정산 관리</h2>
