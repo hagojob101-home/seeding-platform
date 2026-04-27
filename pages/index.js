@@ -113,18 +113,51 @@ export default function Home() {
 
           {/* 블럭 2 - 아이콘 3개 */}
           <div className="max-w-3xl mx-auto mb-6">
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-3 gap-4 mb-0">
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
                 <p className="text-4xl mb-3">📱</p>
                 <p className="text-white font-bold text-sm">쇼츠 / 릴스</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
                 <p className="text-4xl mb-3">📸</p>
-                <p className="text-white font-bold text-sm">포스팅</p>
+                <p className="text-white font-bold text-sm">포스팅 확인</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
                 <p className="text-4xl mb-3">💰</p>
                 <p className="text-white font-bold text-sm">매출 관리</p>
+              </div>
+            </div>
+
+            {/* 세로 ... 그라데이션 */}
+            <div className="flex justify-center items-center py-2">
+              <div className="flex flex-col items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400/70"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400/40"></div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mb-0">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
+                <p className="text-4xl mb-3">🖥️</p>
+                <p className="text-white font-bold text-sm">상세페이지</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
+                <p className="text-4xl mb-3">🎨</p>
+                <p className="text-white font-bold text-sm">이미지 광고</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
+                <p className="text-4xl mb-3">🤝</p>
+                <p className="text-white font-bold text-sm">인플 섭외</p>
+              </div>
+            </div>
+
+            {/* 세로 ... 그라데이션 - 끝도 없이 */}
+            <div className="flex justify-center items-center py-2">
+              <div className="flex flex-col items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-400/60"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-400/35"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-400/15"></div>
               </div>
             </div>
             <div className="text-center bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/20 rounded-2xl p-6">
