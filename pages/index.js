@@ -83,7 +83,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10 pointer-events-none"></div>
         <div className="relative z-20 max-w-7xl mx-auto px-8 w-full">
           <div className="max-w-4xl">
-            <h1 className="text-5xl md:text-7xl lg:text-[80px] font-black leading-[1.2] mb-10 tracking-tight">
+            <h1 className="text-5xl md:text-7xl lg:text-[80px] font-black leading-[1.6] mb-10 tracking-tight">
               성장이 멈춘<br/>브랜드를 위한<br/><span className="text-blue-500">확실한 해답</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-400 mb-14 leading-[1.8] max-w-2xl font-medium">
