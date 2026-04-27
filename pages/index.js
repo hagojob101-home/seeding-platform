@@ -200,6 +200,124 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 부즈앤버즈 성장 그래프 섹션 */}
+      <section className="py-20 bg-gray-950 relative overflow-hidden">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <span className="text-xs font-bold text-blue-400 tracking-widest uppercase mb-3 block">Real Case Study</span>
+            <h2 className="text-3xl md:text-4xl font-black text-white mb-3">부즈앤버즈 실제 성과</h2>
+            <p className="text-gray-400 text-sm">서비스 시작 1/19 ~ 현재 · 스마트스토어 월 매출 기준</p>
+          </div>
+
+          {/* 라인 그래프 SVG */}
+          <div className="bg-white/5 rounded-2xl p-6 mb-6">
+            <svg viewBox="0 0 600 300" className="w-full" xmlns="http://www.w3.org/2000/svg">
+              {/* 그리드 라인 */}
+              <line x1="60" y1="20" x2="60" y2="240" stroke="#333" strokeWidth="1"/>
+              <line x1="60" y1="240" x2="580" y2="240" stroke="#333" strokeWidth="1"/>
+              <line x1="60" y1="180" x2="580" y2="180" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
+              <line x1="60" y1="120" x2="580" y2="120" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
+              <line x1="60" y1="60" x2="580" y2="60" stroke="#222" strokeWidth="0.5" strokeDasharray="4"/>
+
+              {/* Y축 라벨 */}
+              <text x="50" y="244" fill="#666" fontSize="10" textAnchor="end">0</text>
+              <text x="50" y="184" fill="#666" fontSize="10" textAnchor="end">300만</text>
+              <text x="50" y="124" fill="#666" fontSize="10" textAnchor="end">600만</text>
+              <text x="50" y="64" fill="#666" fontSize="10" textAnchor="end">900만</text>
+
+              {/* 그라데이션 정의 */}
+              <defs>
+                <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3"/>
+                  <stop offset="100%" stopColor="#6366f1" stopOpacity="0"/>
+                </linearGradient>
+              </defs>
+
+              {/* 채움 영역 */}
+              <polygon
+                points="100,192 220,148 340,96 460,14 100,240"
+                fill="url(#lineGrad)"
+              />
+
+              {/* 메인 라인 */}
+              <polyline
+                points="100,192 220,148 340,96 460,14"
+                fill="none"
+                stroke="#6366f1"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+
+              {/* 데이터 포인트 */}
+              <circle cx="100" cy="192" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
+              <circle cx="220" cy="148" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
+              <circle cx="340" cy="96" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
+              <circle cx="460" cy="14" r="6" fill="#60a5fa" stroke="#fff" strokeWidth="2"/>
+
+              {/* 데이터 라벨 - 매출 */}
+              <text x="100" y="178" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">250만</text>
+              <text x="220" y="134" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">497만</text>
+              <text x="340" y="82" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">720만</text>
+              <text x="460" y="8" fill="#60a5fa" fontSize="12" textAnchor="middle" fontWeight="bold">1,074만</text>
+
+              {/* X축 라벨 - 월 */}
+              <text x="100" y="258" fill="#666" fontSize="11" textAnchor="middle">1월</text>
+              <text x="220" y="258" fill="#666" fontSize="11" textAnchor="middle">2월</text>
+              <text x="340" y="258" fill="#666" fontSize="11" textAnchor="middle">3월</text>
+              <text x="460" y="258" fill="#60a5fa" fontSize="11" textAnchor="middle" fontWeight="bold">4월 ★</text>
+            </svg>
+          </div>
+
+          {/* 성과 수치 2개 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/5 rounded-xl p-4 text-center">
+              <p className="text-3xl font-black text-blue-400">4.3배</p>
+              <p className="text-gray-400 text-xs mt-1">1월 → 4월 매출 성장</p>
+              <p className="text-gray-500 text-xs">250만 → 1,074만원</p>
+            </div>
+            <div className="bg-white/5 rounded-xl p-4 text-center">
+              <p className="text-3xl font-black text-purple-400">+380%</p>
+              <p className="text-gray-400 text-xs mt-1">전년 동기 대비</p>
+              <p className="text-gray-500 text-xs">2025년 1~4월 vs 2026년</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 053 장점 섹션 */}
+      <section className="py-20 bg-black relative">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <span className="text-xs font-bold text-purple-400 tracking-widest uppercase mb-3 block">Why 053</span>
+            <h2 className="text-3xl md:text-4xl font-black text-white mb-3">다른 대행사와 다른 점</h2>
+            <p className="text-gray-400 text-sm">소상공인·첫 마케팅 대표님을 위한 실속 전략</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-purple-500/50 transition">
+              <p className="text-2xl mb-3">🎬</p>
+              <p className="font-bold text-white mb-2">경력 9년차 PD 직접 QC</p>
+              <p className="text-gray-400 text-sm">모든 콘텐츠는 경력 9년차 PD가 직접 품질 검수합니다. 브랜드 이미지를 지키는 콘텐츠만 통과됩니다.</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-purple-500/50 transition">
+              <p className="text-2xl mb-3">💡</p>
+              <p className="font-bold text-white mb-2">나노·마이크로 인플루언서 전략</p>
+              <p className="text-gray-400 text-sm">메가 인플루언서 1건(100만~5천만원) 대신, 실구매자처럼 보이는 나노·마이크로 인플루언서로 생생한 후기를 값싸게 확보합니다.</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-purple-500/50 transition">
+              <p className="text-2xl mb-3">🔄</p>
+              <p className="font-bold text-white mb-2">매번 새로운 인플루언서 공급</p>
+              <p className="text-gray-400 text-sm">고정 풀이 아닌 매 캠페인마다 새로운 인플루언서를 직접 발굴·섭외합니다. 항상 신선한 콘텐츠와 새로운 오디언스에게 도달합니다.</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-purple-500/50 transition">
+              <p className="text-2xl mb-3">⚡</p>
+              <p className="font-bold text-white mb-2">전략에만 집중하세요</p>
+              <p className="text-gray-400 text-sm">인플루언서 리스트업·섭외·확인은 직원 1인분의 업무입니다. 그 모든 과정을 053이 대신하고, 대표님은 사업 전략에만 집중할 수 있습니다.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="apply" className="py-48 bg-black relative">
         <div className="max-w-4xl mx-auto px-8">
           <div className="text-center mb-16">
