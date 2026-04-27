@@ -191,25 +191,53 @@ export default function Home() {
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
               따로따로 관리하느라 지치셨나요? 053에서는 메타 광고 성과와 인플루언서 시딩을 동시에 운영하고 한눈에 확인할 수 있습니다.
             </p>
-            <div className="grid grid-cols-3 gap-2 mt-8 w-full max-w-sm mx-auto">
-              <div className="flex flex-col items-center justify-start bg-white/5 rounded-xl p-3">
-                <p className="text-lg md:text-3xl font-black text-blue-400 leading-tight">ROAS</p>
-                <p className="text-lg md:text-3xl font-black text-blue-400 leading-tight">679%</p>
-                <p className="text-gray-400 text-xs mt-1 text-center">메타 광고 실제 사례</p>
-              </div>
-              <div className="flex flex-col items-center justify-start bg-white/5 rounded-xl p-3">
-                <p className="text-lg md:text-3xl font-black text-purple-400 leading-tight">3시간</p>
-                <p className="text-lg md:text-3xl font-black text-purple-400 leading-tight invisible">-</p>
-                <p className="text-gray-400 text-xs mt-1 text-center">이내 담당자 연락</p>
-              </div>
-              <div className="flex flex-col items-center justify-start bg-white/5 rounded-xl p-3">
-                <p className="text-lg md:text-3xl font-black text-green-400 leading-tight">100%</p>
-                <p className="text-lg md:text-3xl font-black text-green-400 leading-tight invisible">-</p>
-                <p className="text-gray-400 text-xs mt-1 text-center">성과 리포트 제공</p>
-                <p className="text-gray-400 text-sm mt-1">투명한 진행 현황</p>
+            <div className="mt-8 w-full max-w-2xl mx-auto">
+              {/* 관리자 대시보드 목업 */}
+              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+                {/* 헤더 */}
+                <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                  <span className="ml-3 text-xs text-gray-400 font-mono">053ad.kr/admin/dashboard</span>
+                </div>
+                {/* 대시보드 내용 */}
+                <div className="p-4">
+                  <p className="text-xs font-bold text-gray-500 mb-3">📋 캠페인별 진행 현황</p>
+                  {/* 인플루언서 행들 */}
+                  {[
+                    { name: '김민지', campaign: '봄 시딩 캠페인', status: '콘텐츠확인', step: 3 },
+                    { name: '이수현', campaign: '신제품 런칭', status: '업로드확인', step: 4 },
+                    { name: '박지우', campaign: '봄 시딩 캠페인', status: '제품발송', step: 2 },
+                    { name: '최유나', campaign: '브랜드 인지도', status: '정산완료', step: 5 },
+                  ].map((inf, i) => (
+                    <div key={i} className="border border-gray-100 rounded-xl p-3 mb-2 hover:border-purple-200 transition">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-xs font-bold text-purple-600">{inf.name[0]}</div>
+                          <span className="text-xs font-bold text-gray-700">{inf.name}</span>
+                          <span className="text-xs text-gray-400">{inf.campaign}</span>
+                        </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                          inf.status === '정산완료' ? 'bg-green-100 text-green-700' :
+                          inf.status === '업로드확인' ? 'bg-cyan-100 text-cyan-700' :
+                          inf.status === '콘텐츠확인' ? 'bg-orange-100 text-orange-700' :
+                          'bg-purple-100 text-purple-700'
+                        }`}>{inf.status}</span>
+                      </div>
+                      {/* 진행바 */}
+                      <div className="flex items-center gap-0.5">
+                        {['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료'].map((step, idx) => (
+                          <div key={step} className="flex items-center flex-1">
+                            <div className={`w-full h-1.5 rounded-full ${idx < inf.step ? 'bg-purple-500' : 'bg-gray-200'}`}></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
 
 {/* 부즈앤버즈 성장 그래프 섹션 */}
       <section className="py-36 bg-gray-950 relative overflow-hidden">
