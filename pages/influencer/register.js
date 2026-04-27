@@ -29,6 +29,9 @@ export default function InfluencerRegister() {
     if (!agreed) {
       setError('개인정보처리방침에 동의해주세요.'); return
     }
+    if (!form.instagram && !form.youtube) {
+      setError('SNS 주소를 1개 이상 입력해주세요.'); return
+    }
 
     setLoading(true)
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -97,13 +100,16 @@ export default function InfluencerRegister() {
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-600 mb-1 block">📱 SNS 주소</label>
+            <label className="text-sm font-semibold text-gray-600 mb-1 block">📱 SNS 주소 <span className="text-red-400 font-normal">(1개 이상 입력해주세요)</span></label>
             <input className="border rounded-xl px-4 py-3 w-full focus:outline-none focus:border-purple-400 mb-2"
               placeholder="인스타그램 주소 (예: https://instagram.com/아이디)"
               value={form.instagram} onChange={e => setForm({...form, instagram: e.target.value})} />
             <input className="border rounded-xl px-4 py-3 w-full focus:outline-none focus:border-purple-400"
               placeholder="유튜브 주소 (예: https://youtube.com/채널)"
               value={form.youtube} onChange={e => setForm({...form, youtube: e.target.value})} />
+            {!form.instagram && !form.youtube && (
+              <p className="text-red-400 text-xs mt-1">SNS 주소를 1개 이상 입력해주세요.</p>
+            )}
           </div>
 
           <div className="bg-gray-50 rounded-xl p-4">
