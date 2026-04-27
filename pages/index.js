@@ -13,21 +13,24 @@ export default function Home() {
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault()
-        const brandName = document.getElementById('brandName')?.value || ''
-        const industry = document.getElementById('industry')?.value || ''
-        const storeUrl = document.getElementById('storeUrl')?.value || ''
-        const activeChips = document.querySelectorAll('.channel-chip.active')
-        const channels = Array.from(activeChips).map(c => c.dataset.value)
+        const managerName = document.getElementById('managerName')?.value || ''
+        const jobTitle = document.getElementById('jobTitle')?.value || ''
+        const phoneNumber = document.getElementById('phoneNumber')?.value || ''
+        const snsUrl = document.getElementById('snsUrl')?.value || ''
+        const websiteUrl = document.getElementById('websiteUrl')?.value || ''
+        const inquiryMessage = document.getElementById('inquiryMessage')?.value || ''
 
         try {
           const res = await fetch('/api/consultation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              brand_name: brandName,
-              industry: industry,
-              store_url: storeUrl,
-              channels: channels,
+              manager_name: managerName,
+              job_title: jobTitle,
+              phone_number: phoneNumber,
+              sns_url: snsUrl,
+              website_url: websiteUrl,
+              inquiry_message: inquiryMessage,
             })
           })
           if (!res.ok) throw new Error('서버 오류')
@@ -198,18 +201,18 @@ export default function Home() {
             <h2 className="text-5xl font-black mb-8 tracking-tight">함께 성장하시겠습니까?</h2>
             <p className="text-blue-400 text-xl font-bold">3시간 이내로 연락드립니다.</p>
           </div>
-          <form id="leadForm" className="space-y-8 bg-[#0d0d0d] border border-white/5 p-10 md:p-20 rounded-[48px]">
-            <div className="grid md:grid-cols-2 gap-8">
-              <input type="text" id="brandName" required placeholder="브랜드명" className="input-dark w-full rounded-2xl p-5 text-white" />
-              <input type="text" id="industry" required placeholder="산업 분야" className="input-dark w-full rounded-2xl p-5 text-white" />
+          <form id="leadForm" className="space-y-6 bg-[#0d0d0d] border border-white/5 p-10 md:p-16 rounded-[48px]">
+            <div className="grid md:grid-cols-2 gap-6">
+              <input type="text" id="managerName" required placeholder="담당자 이름" className="input-dark w-full rounded-2xl p-5 text-white" />
+              <input type="text" id="jobTitle" required placeholder="직함 / 직위 (예: 마케팅 팀장)" className="input-dark w-full rounded-2xl p-5 text-white" />
             </div>
-            <input type="url" id="storeUrl" required placeholder="자사몰 URL (https://...)" className="input-dark w-full rounded-2xl p-5 text-white" />
-            <div className="flex flex-wrap gap-3">
-              <div className="channel-chip px-6 py-3 rounded-xl text-sm font-bold" data-value="인스타그램">인스타그램</div>
-              <div className="channel-chip px-6 py-3 rounded-xl text-sm font-bold" data-value="페이스북">페이스북</div>
-              <div className="channel-chip px-6 py-3 rounded-xl text-sm font-bold" data-value="유튜브">유튜브</div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <input type="tel" id="phoneNumber" required placeholder="전화번호 (예: 010-1234-5678)" className="input-dark w-full rounded-2xl p-5 text-white" />
+              <input type="url" id="snsUrl" placeholder="SNS URL (예: instagram.com/...)" className="input-dark w-full rounded-2xl p-5 text-white" />
             </div>
-            <button type="submit" id="submitBtn" className="w-full bg-blue-600 text-white py-8 rounded-[32px] font-black text-2xl hover:bg-blue-700 transition-all">신청하기</button>
+            <input type="url" id="websiteUrl" placeholder="홈페이지 URL (예: https://...)" className="input-dark w-full rounded-2xl p-5 text-white" />
+            <textarea id="inquiryMessage" required placeholder="어떤 점 때문에 문의 주셨나요? 자유롭게 기재해 주세요 😊" rows="5" className="input-dark w-full rounded-2xl p-5 text-white resize-none" />
+            <button type="submit" id="submitBtn" className="w-full bg-blue-600 text-white py-8 rounded-[32px] font-black text-2xl hover:bg-blue-700 transition-all">신청하기 →</button>
           </form>
           <div id="successMsg" className="hidden text-center p-20 bg-blue-600/10 rounded-[48px] border border-blue-500/20">
             <h3 className="text-3xl font-black mb-4 text-blue-500">신청 완료!</h3>
