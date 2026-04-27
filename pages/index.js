@@ -5,20 +5,38 @@ import { useEffect } from 'react'
 export default function Home() {
   useEffect(() => {
     const chips = document.querySelectorAll('.channel-chip')
-    const selected = new Set()
     chips.forEach(c => c.addEventListener('click', () => {
-      const v = c.dataset.value
-      if (selected.has(v)) { selected.delete(v); c.classList.remove('active') }
-      else { selected.add(v); c.classList.add('active') }
+      c.classList.toggle('active')
     }))
 
     const form = document.getElementById('leadForm')
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault()
-        form.classList.add('hidden')
-        document.getElementById('successMsg').classList.remove('hidden')
-        alert('정상적으로 접수되었습니다.')
+        const brandName = document.getElementById('brandName')?.value || ''
+        const industry = document.getElementById('industry')?.value || ''
+        const storeUrl = document.getElementById('storeUrl')?.value || ''
+        const activeChips = document.querySelectorAll('.channel-chip.active')
+        const channels = Array.from(activeChips).map(c => c.dataset.value)
+
+        try {
+          const res = await fetch('/api/consultation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              brand_name: brandName,
+              industry: industry,
+              store_url: storeUrl,
+              channels: channels,
+            })
+          })
+          if (!res.ok) throw new Error('서버 오류')
+          form.classList.add('hidden')
+          document.getElementById('successMsg').classList.remove('hidden')
+          alert('정상적으로 접수되었습니다. 3시간 이내로 연락드립니다!')
+        } catch (err) {
+          alert('오류가 발생했습니다. 다시 시도해주세요.')
+        }
       })
     }
   }, [])
