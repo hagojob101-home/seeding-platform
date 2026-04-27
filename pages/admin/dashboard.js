@@ -197,6 +197,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
             { id: 'participations', label: '👥 인플루언서 현황' },
             { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '검토중').length },
             { id: 'clients', label: '🏢 고객사 목록' },
+            { id: 'agencydb', label: '📊 고객사 DB' },
             { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.payment_request_status === '신청' && p.payment_status !== '지급완료').length },
             { id: 'consultations', label: '📞 컨설팅 신청', count: consultations.length },
           ].map(t => (
@@ -655,7 +656,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
         )}
 
         {/* 고객사 목록 탭 */}
-        {tab === 'clients' && (
+        {tab === 'agencydb' && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">🏢 고객사 DB</h2>
             {!selectedAgency ? (
