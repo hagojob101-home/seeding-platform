@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState('campaigns')
   const [loading, setLoading] = useState(true)
   const [selectedParticipation, setSelectedParticipation] = useState(null)
+  const [selectedInfluencer, setSelectedInfluencer] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [newCampaign, setNewCampaign] = useState({ name: '', product_name: '', description: '', form_type: 'basic' })
 
@@ -30,7 +31,7 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     const [c, p, cl, cr, co] = await Promise.all([
       supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
-      supabase.from('participations').select('*, campaigns(name, product_name)').order('created_at', { ascending: false }),
+      supabase.from('participations').select('*, campaigns(name, product_name), users(name, phone, address, instagram, youtube, bank_name, account_number, account_holder, id_card_url, bank_book_url)').order('created_at', { ascending: false }),
       supabase.from('clients').select('*').order('created_at', { ascending: false }),
       supabase.from('campaign_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('consultations').select('*').order('created_at', { ascending: false }),
@@ -228,38 +229,146 @@ export default function AdminDashboard() {
         {/* 인플루언서 현황 탭 */}
         {tab === 'participations' && (
           <div className="flex gap-6">
-            {/* 왼쪽: 인플루언서 리스트 */}
+            {/* 왼쪽: 인플루언서 이름으로 그룹핑 */}
             <div className="w-80 flex-shrink-0">
               <h2 className="text-lg font-bold text-gray-800 mb-4">인플루언서 현황</h2>
               <div className="flex flex-col gap-3">
-                {participations.map(p => (
-                  <div key={p.id}
-                    onClick={() => setSelectedParticipation(p)}
-                    className={`bg-white rounded-2xl shadow p-4 cursor-pointer hover:shadow-md transition ${selectedParticipation?.id === p.id ? 'ring-2 ring-purple-500' : ''}`}>
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <p className="font-bold text-gray-800">{p.apply_data?.name || '-'}</p>
-                        <p className="text-xs text-gray-500">{p.campaigns?.name || '-'}</p>
+                {(() => {
+                  // 이름으로 그룹핑
+                  const grouped = {}
+                  participations.forEach(p => {
+                    const name = p.apply_data?.name || p.name || '-'
+                    if (!grouped[name]) grouped[name] = []
+                    grouped[name].push(p)
+                  })
+                  return Object.entries(grouped).map(([name, items]) => (
+                    <div key={name}
+                      onClick={() => setSelectedInfluencer({ name, items })}
+                      className={`bg-white rounded-2xl shadow p-4 cursor-pointer hover:shadow-md transition ${selectedInfluencer?.name === name ? 'ring-2 ring-purple-500' : ''}`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="font-bold text-gray-800">{name}</p>
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-semibold">{items.length}개 캠페인</span>
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
+                      <div className="flex flex-col gap-1">
+                        {items.map(p => (
+                          <div key={p.id} className="flex justify-between items-center">
+                            <p className="text-xs text-gray-500 truncate max-w-[150px]">{p.campaigns?.name || '-'}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    {/* 진행바 */}
-                    <div className="flex items-center gap-1 mt-2">
-                      {STEPS.map((step, idx) => (
-                        <div key={step} className="flex items-center gap-1">
-                          <div className={`w-2 h-2 rounded-full ${idx <= getStepIndex(p.status) ? 'bg-purple-500' : 'bg-gray-200'}`} />
-                          {idx < STEPS.length - 1 && <div className={`w-4 h-0.5 ${idx < getStepIndex(p.status) ? 'bg-purple-500' : 'bg-gray-200'}`} />}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                })()}
                 {participations.length === 0 && <p className="text-center text-gray-400 py-10">신청 내역이 없습니다.</p>}
               </div>
             </div>
 
             {/* 오른쪽: 상세 정보 */}
             <div className="flex-1">
+              {selectedInfluencer ? (
+                <div className="bg-white rounded-2xl shadow p-6">
+                  {/* 인플루언서 이름 */}
+                  <h3 className="text-xl font-bold text-gray-800 mb-6">👤 {selectedInfluencer.name}</h3>
+
+                  {/* 캠페인별 진행바 - 상단 */}
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold text-gray-600 mb-4">📋 캠페인별 진행 현황</p>
+                    <div className="flex flex-col gap-4">
+                      {selectedInfluencer.items.map(p => (
+                        <div key={p.id} className={`border rounded-2xl p-4 cursor-pointer transition ${selectedParticipation?.id === p.id ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'}`}
+                          onClick={() => setSelectedParticipation(p)}>
+                          <div className="flex justify-between items-center mb-3">
+                            <p className="font-semibold text-gray-800">{p.campaigns?.name || '-'}</p>
+                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
+                          </div>
+                          {/* 진행바 */}
+                          <div className="flex items-center">
+                            {STEPS.map((step, idx) => (
+                              <div key={step} className="flex items-center flex-1">
+                                <div className="flex flex-col items-center flex-1">
+                                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
+                                    idx <= getStepIndex(p.status)
+                                      ? 'bg-purple-600 border-purple-600 text-white'
+                                      : 'bg-white border-gray-300 text-gray-400'
+                                  }`}>
+                                    {idx < getStepIndex(p.status) ? '✓' : idx + 1}
+                                  </div>
+                                  <p className={`text-xs mt-1 font-medium text-center ${idx <= getStepIndex(p.status) ? 'text-purple-600' : 'text-gray-400'}`}>{step}</p>
+                                </div>
+                                {idx < STEPS.length - 1 && (
+                                  <div className={`h-0.5 w-full mb-4 ${idx < getStepIndex(p.status) ? 'bg-purple-600' : 'bg-gray-200'}`} />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 선택된 캠페인 상태 변경 */}
+                  {selectedParticipation && selectedInfluencer.items.find(i => i.id === selectedParticipation.id) && (
+                    <div className="mb-6 bg-gray-50 rounded-2xl p-4">
+                      <p className="text-sm font-semibold text-gray-600 mb-3">🔄 [{selectedParticipation.campaigns?.name}] 상태 변경</p>
+                      {selectedParticipation.status === '신청' && (
+                        <div className="flex gap-3">
+                          <button onClick={() => handleStatusUpdate(selectedParticipation.id, '승인')} className="flex-1 bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">✅ 승인</button>
+                          <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')} className="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold hover:bg-red-600 transition">❌ 거절</button>
+                        </div>
+                      )}
+                      {selectedParticipation.status === '승인' && (
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '제품발송')} className="w-full bg-blue-500 text-white py-2 rounded-xl font-semibold hover:bg-blue-600 transition">📦 제품 발송 완료</button>
+                      )}
+                      {selectedParticipation.status === '제품발송' && (
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '콘텐츠확인')} className="w-full bg-orange-500 text-white py-2 rounded-xl font-semibold hover:bg-orange-600 transition">🎬 콘텐츠 확인 완료</button>
+                      )}
+                      {selectedParticipation.status === '콘텐츠확인' && (
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '업로드확인')} className="w-full bg-purple-500 text-white py-2 rounded-xl font-semibold hover:bg-purple-600 transition">📱 업로드 확인 완료</button>
+                      )}
+                      {selectedParticipation.status === '업로드확인' && (
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '정산완료')} className="w-full bg-green-600 text-white py-2 rounded-xl font-semibold hover:bg-green-700 transition">💰 정산 완료</button>
+                      )}
+                      {(selectedParticipation.status === '정산완료' || selectedParticipation.status === '완료') && (
+                        <div className="text-center text-green-600 font-semibold py-2">✅ 정산 완료된 건입니다.</div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 개인정보 - 하단 */}
+                  <div className="border-t pt-4 mt-2">
+                    <p className="text-sm font-semibold text-gray-600 mb-3">👤 개인 정보</p>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div><p className="text-xs text-gray-400">이름</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.name || selectedInfluencer.name || '-'}</p></div>
+                      <div><p className="text-xs text-gray-400">연락처</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.phone || '-'}</p></div>
+                      <div><p className="text-xs text-gray-400">주소</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.address || '-'}</p></div>
+                      <div><p className="text-xs text-gray-400">인스타그램</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.instagram || '-'}</p></div>
+                      <div><p className="text-xs text-gray-400">팔로워 수</p><p className="font-semibold text-purple-600">{selectedInfluencer.items[0]?.followers?.toLocaleString() || '-'}명</p></div>
+                      <div><p className="text-xs text-gray-400">은행/계좌</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.bank_name || '-'} {selectedInfluencer.items[0]?.users?.account_number || ''}</p></div>
+                      <div><p className="text-xs text-gray-400">유튜브</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.youtube || '-'}</p></div>
+                      <div><p className="text-xs text-gray-400">예금주</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.account_holder || '-'}</p></div>
+                    </div>
+                    {/* 신분증/통장 */}
+                    <div className="mt-3 flex gap-3">
+                      {selectedInfluencer.items[0]?.users?.id_card_url && (
+                        <a href={selectedInfluencer.items[0].users.id_card_url} target="_blank" rel="noreferrer"
+                          className="text-xs text-blue-600 underline hover:text-blue-800">🪪 신분증 보기</a>
+                      )}
+                      {selectedInfluencer.items[0]?.users?.bank_book_url && (
+                        <a href={selectedInfluencer.items[0].users.bank_book_url} target="_blank" rel="noreferrer"
+                          className="text-xs text-blue-600 underline hover:text-blue-800">🏦 통장사본 보기</a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
+                  <p>왼쪽에서 인플루언서를 선택해주세요.</p>
+                </div>
+              )}
+            </div>
+            {/* 기존 selectedParticipation 상세 - 숨김 처리 */}
+            <div className="hidden">
               {selectedParticipation ? (
                 <div className="bg-white rounded-2xl shadow p-6">
                   <div className="flex justify-between items-start mb-6">
