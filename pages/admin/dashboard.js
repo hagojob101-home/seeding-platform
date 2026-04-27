@@ -703,7 +703,13 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                             {inf.instagram_url ? <a href={inf.instagram_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">링크</a> : '-'}
                           </td>
                           <td className="px-4 py-3 text-gray-800 font-semibold">{inf.unit_price ? `${inf.unit_price}만원` : '-'}</td>
-                          <td className="px-4 py-3 text-gray-600">{inf.upload_schedule || '-'}</td>
+                          <td className="px-4 py-3 text-gray-600">{
+                            inf.upload_schedule
+                              ? inf.upload_schedule.includes('00:00:00')
+                                ? new Date(inf.upload_schedule).toLocaleDateString('ko-KR', {month: 'long', day: 'numeric'})
+                                : inf.upload_schedule
+                              : '-'
+                          }</td>
                           <td className="px-4 py-3">{inf.contract === 'O' ? '✅' : '-'}</td>
                           <td className="px-4 py-3 text-gray-600 text-xs">{inf.bank_info || '-'}</td>
                         </tr>
