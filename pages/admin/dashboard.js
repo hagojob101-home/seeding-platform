@@ -656,6 +656,36 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
         )}
 
         {/* 고객사 목록 탭 */}
+        {tab === 'clients' && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">🏢 고객사 목록</h2>
+            <div className="grid gap-4">
+              {clients.map(c => (
+                <div key={c.id} className="bg-white rounded-2xl shadow p-5">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-gray-800 text-lg">{c.company_name}</p>
+                      <p className="text-sm text-gray-500">{c.email}</p>
+                    </div>
+                    <span className="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-semibold">고객사</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+                    <div><p className="text-gray-400">월 예산</p><p className="font-semibold">{c.monthly_budget ? c.monthly_budget.toLocaleString() + '원' : '-'}</p></div>
+                    <div><p className="text-gray-400">제품명</p><p className="font-semibold">{c.product_name || '-'}</p></div>
+                    <div><p className="text-gray-400">홈페이지</p>
+                      {c.homepage ? <a href={c.homepage} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline font-semibold">{c.homepage}</a> : <p>-</p>}
+                    </div>
+                    <div><p className="text-gray-400">사업자등록증</p>
+                      {c.business_reg_url ? <span className="text-green-600 font-semibold">✅ 업로드됨</span> : <span className="text-gray-400">미업로드</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {clients.length === 0 && <p className="text-center text-gray-400 py-10">등록된 고객사가 없습니다.</p>}
+            </div>
+          </div>
+        )}
+
         {tab === 'agencydb' && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">🏢 고객사 DB</h2>
