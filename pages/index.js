@@ -316,7 +316,7 @@ export default function Home() {
       <section className="py-36 bg-[#080808] relative">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           {/* 서비스 흐름 */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 mt-24">
             <h3 className="text-3xl font-black text-white mb-4">어떻게 진행되냐구요?</h3>
             <p className="text-gray-400">복잡한 거 없어요. 신청하면 알아서 다 해드립니다.</p>
           </div>
@@ -391,7 +391,7 @@ export default function Home() {
       <section id="apply" className="py-48 bg-black relative">
         <div className="max-w-4xl mx-auto px-8">
           <div className="text-center mb-16">
-            <h2 className="text-5xl font-black mb-8 tracking-tight">함께 성장하시겠습니까?</h2>
+            <h2 className="text-5xl font-black mb-8 mt-24 tracking-tight">함께 성장하시겠습니까?</h2>
             <p className="text-blue-400 text-xl font-bold">3시간 이내로 연락드립니다.</p>
           </div>
           <form id="leadForm" className="space-y-6 bg-[#0d0d0d] border border-white/5 p-10 md:p-16 rounded-[48px]">
