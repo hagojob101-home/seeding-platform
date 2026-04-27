@@ -309,6 +309,12 @@ export default function Home() {
             </div>
           </div>
 
+        </div>
+      </section>
+
+      {/* 서비스 흐름 섹션 */}
+      <section className="py-36 bg-[#080808] relative">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
           {/* 서비스 흐름 */}
           <div className="text-center mb-12">
             <h3 className="text-3xl font-black text-white mb-4">어떻게 진행되냐구요?</h3>
