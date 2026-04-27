@@ -167,13 +167,13 @@ export default function Home() {
           </div>
 
           {/* 블럭 3 - 타겟 + CTA */}
-          <div className="text-center mb-16 mt-24">
+          <div className="text-center mb-48 mt-48">
             <div className="flex flex-wrap justify-center gap-3 mb-10">
               {['🏪 소상공인', '👤 1인 기업', '📦 상품이 하나뿐인 브랜드', '🚀 마케팅을 처음 시작하는 대표님'].map((item, i) => (
                 <span key={i} className="bg-white/10 border border-white/20 rounded-full px-5 py-2 text-white text-base font-bold">{item}</span>
               ))}
             </div>
-            <p className="text-5xl md:text-7xl font-black text-white mt-8 break-keep leading-tight">여러분을 위해<br/>만들었습니다.</p>
+            <p className="text-4xl md:text-5xl font-black text-white mt-8 break-keep leading-tight">여러분을 위해<br/>만들었습니다.</p>
             <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl px-6 py-4">
               <span className="text-2xl">⚡</span>
               <span className="text-white font-bold text-lg">메타 광고 집행부터 인플루언서 관리까지, 한 번에.</span>
