@@ -165,6 +165,7 @@ export default function AdminDashboard() {
         {/* 탭 메뉴 */}
         <div className="flex gap-2 mb-6 flex-wrap">
           {[
+            [
             { id: 'campaigns', label: '📋 캠페인 관리' },
             { id: 'participations', label: '👥 인플루언서 현황' },
             { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '검토중').length },
