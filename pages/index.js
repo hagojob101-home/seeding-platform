@@ -238,8 +238,11 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-{/* 부즈앤버즈 성장 그래프 섹션 */}
+      {/* 부즈앤버즈 성장 그래프 섹션 */}
       <section className="py-36 bg-gray-950 relative overflow-hidden">
         <div className="w-full">
           <div className="text-center mb-12">
