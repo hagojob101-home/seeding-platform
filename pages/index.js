@@ -174,7 +174,6 @@ export default function Home() {
               ))}
             </div>
             <p className="text-5xl md:text-7xl font-black text-white mt-8 break-keep leading-tight">여러분을 위해<br/>만들었습니다.</p>
-            <p className="text-gray-300 text-xl md:text-2xl font-bold mb-8">여러분을 위해 만들었습니다.</p>
             <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl px-6 py-4">
               <span className="text-2xl">⚡</span>
               <span className="text-white font-bold text-lg">메타 광고 집행부터 인플루언서 관리까지, 한 번에.</span>
