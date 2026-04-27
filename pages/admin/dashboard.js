@@ -169,8 +169,8 @@ export default function AdminDashboard() {
             { id: 'participations', label: '👥 인플루언서 현황' },
             { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '검토중').length },
             { id: 'clients', label: '🏢 고객사 목록' },
-          { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.payment_request_status === '신청' && p.payment_status !== '지급완료').length },
-          { id: 'consultations', label: '📞 컨설팅 신청', count: consultations.length },
+            { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.payment_request_status === '신청' && p.payment_status !== '지급완료').length },
+            { id: 'consultations', label: '📞 컨설팅 신청', count: consultations.length },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`px-4 py-2 rounded-xl font-semibold text-sm transition flex items-center gap-2 ${tab === t.id ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-purple-50'}`}>
