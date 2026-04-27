@@ -96,7 +96,7 @@ export default function Home() {
       </section>
 
       {/* 서비스 소개 섹션 */}
-      <section className="py-32 bg-[#080808] relative">
+      <section className="py-48 bg-[#080808] relative">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
 
           {/* 블럭 1 - 공감/문제 제기 */}
@@ -212,7 +212,7 @@ export default function Home() {
           </div>
 
 {/* 부즈앤버즈 성장 그래프 섹션 */}
-      <section className="py-20 bg-gray-950 relative overflow-hidden">
+      <section className="py-36 bg-gray-950 relative overflow-hidden">
         <div className="w-full">
           <div className="text-center mb-12">
             <span className="text-xs font-bold text-blue-400 tracking-widest uppercase mb-3 block">Real Case Study</span>
@@ -331,7 +331,7 @@ export default function Home() {
       </section>
 
       {/* 053 장점 섹션 */}
-      <section className="py-20 bg-black relative">
+      <section className="py-36 bg-black relative">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-12">
             <span className="text-xs font-bold text-purple-400 tracking-widest uppercase mb-3 block">Why 053</span>
