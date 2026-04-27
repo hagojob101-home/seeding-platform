@@ -238,9 +238,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
       {/* 부즈앤버즈 성장 그래프 섹션 */}
       <section className="py-36 bg-gray-950 relative overflow-hidden">
@@ -318,10 +315,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
 
-      
-      {/* 서비스 흐름 */}
+          {/* 서비스 흐름 */}
           <div className="text-center mb-12">
             <h3 className="text-3xl font-black text-white mb-4">어떻게 진행되냐구요?</h3>
             <p className="text-gray-400">복잡한 거 없어요. 신청하면 알아서 다 해드립니다.</p>
