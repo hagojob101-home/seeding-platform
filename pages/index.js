@@ -160,20 +160,20 @@ export default function Home() {
                 <div className="w-1.5 h-1.5 rounded-full bg-purple-400/15"></div>
               </div>
             </div>
-            <div className="text-center bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/20 rounded-2xl p-6">
-              <p className="text-gray-400 text-lg font-bold mb-6">이 모든 게 준비되어야 폭발적인 성과가 가능한데,</p>
-              <p className="text-4xl md:text-6xl font-black text-white mb-16 break-keep leading-tight">혼자서 하시려구요? 🫤</p>
+            <div className="mt-20 mb-8 text-center">
+              <p className="text-gray-500 text-base font-semibold mb-4">이 모든 게 준비되어야 폭발적인 성과가 가능한데,</p>
+              <p className="text-5xl md:text-7xl font-black text-white break-keep leading-tight">혼자서 하시려구요? 🫤</p>
             </div>
           </div>
 
           {/* 블럭 3 - 타겟 + CTA */}
-          <div className="text-center mb-16 mt-8">
-            <div className="flex flex-wrap justify-center gap-3 mb-8">
+          <div className="text-center mb-16 mt-24">
+            <div className="flex flex-wrap justify-center gap-3 mb-10">
               {['🏪 소상공인', '👤 1인 기업', '📦 상품이 하나뿐인 브랜드', '🚀 마케팅을 처음 시작하는 대표님'].map((item, i) => (
-                <span key={i} className="bg-white/5 border border-white/10 rounded-full px-4 py-2 text-white text-sm font-semibold">{item}</span>
+                <span key={i} className="bg-white/10 border border-white/20 rounded-full px-5 py-2 text-white text-base font-bold">{item}</span>
               ))}
             </div>
-            <p className="text-3xl md:text-5xl font-black text-white mt-6 break-keep">여러분을 위해 만들었습니다.</p>
+            <p className="text-5xl md:text-7xl font-black text-white mt-8 break-keep leading-tight">여러분을 위해<br/>만들었습니다.</p>
             <p className="text-gray-300 text-xl md:text-2xl font-bold mb-8">여러분을 위해 만들었습니다.</p>
             <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl px-6 py-4">
               <span className="text-2xl">⚡</span>
