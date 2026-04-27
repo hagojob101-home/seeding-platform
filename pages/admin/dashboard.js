@@ -758,8 +758,6 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
-      <Footer />
-    </div>
       {/* 이미지 모달 */}
       {imageModal && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
@@ -776,5 +774,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+      <Footer />
+    </div>
   )
 }
