@@ -600,6 +600,46 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* 컨설팅 신청 탭 */}
+        {tab === 'consultations' && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">📞 컨설팅 신청 목록</h2>
+            <div className="grid gap-4">
+              {consultations.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
+                  <p>컨설팅 신청 내역이 없습니다.</p>
+                </div>
+              ) : (
+                consultations.map(c => (
+                  <div key={c.id} className="bg-white rounded-2xl shadow p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <p className="font-bold text-gray-800 text-lg">{c.brand_name}</p>
+                        <p className="text-sm text-gray-500">{c.industry}</p>
+                      </div>
+                      <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">
+                        {new Date(c.created_at).toLocaleDateString('ko-KR')}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-400 mb-1">자사몰 URL</p>
+                        {c.store_url
+                          ? <a href={c.store_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline font-semibold">{c.store_url}</a>
+                          : <p className="text-gray-400">-</p>}
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-400 mb-1">광고 채널</p>
+                        <p className="font-semibold text-gray-800">{c.channels || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
       <Footer />
     </div>
