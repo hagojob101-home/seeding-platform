@@ -140,19 +140,21 @@ export default function Home() {
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
               따로따로 관리하느라 지치셨나요? 053에서는 메타 광고 성과와 인플루언서 시딩을 동시에 운영하고 한눈에 확인할 수 있습니다.
             </p>
-            <div className="flex justify-center gap-8 mt-8">
-              <div className="text-center">
-                <p className="text-xl md:text-3xl font-black text-blue-400 whitespace-nowrap">ROAS 800%+</p>
-                <p className="text-gray-400 text-sm mt-1">메타 광고 실제 사례</p>
+            <div className="grid grid-cols-3 gap-2 mt-8 w-full max-w-sm mx-auto">
+              <div className="flex flex-col items-center justify-start bg-white/5 rounded-xl p-3">
+                <p className="text-lg md:text-3xl font-black text-blue-400 leading-tight">ROAS</p>
+                <p className="text-lg md:text-3xl font-black text-blue-400 leading-tight">800%+</p>
+                <p className="text-gray-400 text-xs mt-1 text-center">메타 광고 실제 사례</p>
               </div>
-              <div className="w-px bg-white/10" />
-              <div className="text-center">
-                <p className="text-xl md:text-3xl font-black text-purple-400 whitespace-nowrap">3시간</p>
-                <p className="text-gray-400 text-sm mt-1">이내 담당자 연락</p>
+              <div className="flex flex-col items-center justify-start bg-white/5 rounded-xl p-3">
+                <p className="text-lg md:text-3xl font-black text-purple-400 leading-tight">3시간</p>
+                <p className="text-lg md:text-3xl font-black text-purple-400 leading-tight invisible">-</p>
+                <p className="text-gray-400 text-xs mt-1 text-center">이내 담당자 연락</p>
               </div>
-              <div className="w-px bg-white/10" />
-              <div className="text-center">
-                <p className="text-xl md:text-3xl font-black text-green-400 whitespace-nowrap">100%</p>
+              <div className="flex flex-col items-center justify-start bg-white/5 rounded-xl p-3">
+                <p className="text-lg md:text-3xl font-black text-green-400 leading-tight">100%</p>
+                <p className="text-lg md:text-3xl font-black text-green-400 leading-tight invisible">-</p>
+                <p className="text-gray-400 text-xs mt-1 text-center">성과 리포트 제공</p>
                 <p className="text-gray-400 text-sm mt-1">투명한 진행 현황</p>
               </div>
             </div>
