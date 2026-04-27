@@ -612,30 +612,41 @@ export default function AdminDashboard() {
               ) : (
                 consultations.map(c => (
                   <div key={c.id} className="bg-white rounded-2xl shadow p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <p className="font-bold text-gray-800 text-lg">{c.brand_name}</p>
-                        <p className="text-sm text-gray-500">{c.industry}</p>
-                      </div>
-                      <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">
-                        {new Date(c.created_at).toLocaleDateString('ko-KR')}
-                      </span>
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="text-xs text-gray-400">{new Date(c.created_at).toLocaleString('ko-KR')}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs text-gray-400 mb-1">자사몰 URL</p>
-                        {c.store_url
-                          ? <a href={c.store_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline font-semibold">{c.store_url}</a>
-                          : <p className="text-gray-400">-</p>}
+                    <div className="grid md:grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <p className="text-xs text-gray-400">담당자</p>
+                        <p className="font-bold text-gray-800">{c.manager_name || '-'}</p>
                       </div>
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs text-gray-400 mb-1">광고 채널</p>
-                        <p className="font-semibold text-gray-800">{c.channels || '-'}</p>
+                      <div>
+                        <p className="text-xs text-gray-400">직함/직위</p>
+                        <p className="text-gray-700">{c.job_title || '-'}</p>
                       </div>
+                      <div>
+                        <p className="text-xs text-gray-400">전화번호</p>
+                        <p className="text-gray-700">{c.phone_number || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">SNS URL</p>
+                        <p className="text-gray-700 text-sm break-all">{c.sns_url || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">홈페이지</p>
+                        <p className="text-gray-700 text-sm break-all">{c.website_url || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-400">문의 내용</p>
+                      <p className="text-gray-700 mt-1 bg-gray-50 rounded-xl p-3">{c.inquiry_message || '-'}</p>
                     </div>
                   </div>
                 ))
               )}
+            </div>
+          </div>
+        )}
             </div>
           </div>
         )}
