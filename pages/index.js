@@ -100,17 +100,20 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-8">
 
           {/* 타겟 공감 헤드라인 */}
-          <div className="text-center mb-20">
-            <p className="text-blue-400 font-bold text-lg mb-4 tracking-widest uppercase">For Small Business</p>
-            <h2 className="text-4xl md:text-6xl font-black mb-8" style={{lineHeight: "2.2"}}>
+          <div className="text-center mb-16">
+            <span className="inline-block bg-blue-600/20 text-blue-400 font-bold text-sm px-4 py-2 rounded-full mb-6 tracking-widest uppercase border border-blue-500/30">For Small Business</span>
+            <h2 className="text-4xl md:text-6xl font-black mb-6" style={{lineHeight: "1.4"}}>
               메타 광고, 들어는 봤는데<br/>
               <span className="text-gradient">전혀 감이 안 오시나요?</span>
             </h2>
-            <p className="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+            <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-8">
               소상공인, 1인 기업, 상품 하나뿐인 브랜드,<br/>
-              마케팅을 처음 시작하는 대표님을 위해 만들었습니다.<br/>
-              <span className="text-white font-semibold">메타 광고 집행부터 인플루언서 관리까지, 한 번에.</span>
+              마케팅을 처음 시작하는 대표님을 위해 만들었습니다.
             </p>
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl px-6 py-4">
+              <span className="text-2xl">⚡</span>
+              <span className="text-white font-bold text-lg">메타 광고 집행부터 인플루언서 관리까지, 한 번에.</span>
+            </div>
           </div>
 
           {/* 타겟 카드 */}
