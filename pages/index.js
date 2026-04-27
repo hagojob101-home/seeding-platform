@@ -167,7 +167,7 @@ export default function Home() {
           </div>
 
           {/* 블럭 3 - 타겟 + CTA */}
-          <div className="text-center mb-48 mt-48">
+          <div className="text-center mb-12 mt-12">
             <div className="flex flex-wrap justify-center gap-3 mb-10">
               {['🏪 소상공인', '👤 1인 기업', '📦 상품이 하나뿐인 브랜드', '🚀 마케팅을 처음 시작하는 대표님'].map((item, i) => (
                 <span key={i} className="bg-white/10 border border-white/20 rounded-full px-5 py-2 text-white text-base font-bold">{item}</span>
@@ -182,16 +182,8 @@ export default function Home() {
 
           
 
-          {/* 한번에 해결 */}
-          <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/20 rounded-3xl p-10 mb-24 text-center">
-            <h3 className="text-2xl md:text-3xl font-black text-white mb-4 break-keep">
-              광고 집행 + 인플루언서 관리<br/>
-              <span className="text-blue-400">한 플랫폼에서 한 번에</span>
-            </h3>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              따로따로 관리하느라 지치셨나요? 053에서는 메타 광고 성과와 인플루언서 시딩을 동시에 운영하고 한눈에 확인할 수 있습니다.
-            </p>
-            <div className="mt-8 w-full max-w-2xl mx-auto">
+          {/* 관리자 목업 */}
+          <div className="mt-12 w-full max-w-2xl mx-auto">
               {/* 관리자 대시보드 목업 */}
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
                 {/* 헤더 */}
