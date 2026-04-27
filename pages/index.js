@@ -81,23 +81,23 @@ export default function Home() {
           <spline-viewer url="https://prod.spline.design/YvZ1-d16xfXxsqph/scene.splinecode"></spline-viewer>
         `}} />
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10 pointer-events-none"></div>
-        <div className="relative z-20 max-w-7xl mx-auto px-8 w-full">
+        <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-8 w-full">
           <div className="max-w-4xl">
-            <h1 className="text-5xl md:text-7xl lg:text-[80px] font-black leading-[1.6] mb-10 tracking-tight">
+            <h1 className="text-4xl md:text-7xl lg:text-[80px] font-black leading-[1.5] mb-8 tracking-tight">
               성장이 멈춘<br/>브랜드를 위한<br/><span className="text-blue-500">확실한 해답</span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-400 mb-14 leading-[1.8] max-w-2xl font-medium">
+            <p className="text-base md:text-2xl text-gray-400 mb-10 leading-[1.8] max-w-2xl font-medium">
               단순 집행은 누구나 합니다. 053은 지표로 증명합니다.<br/>
               ROAS 800% 이상의 실제 사례가 보여주는 압도적 차이.
             </p>
-            <a href="#apply" className="bg-white text-black px-12 py-6 rounded-2xl font-black text-xl hover:scale-105 transition-all inline-block">무료 성과 진단</a>
+            <a href="#apply" className="bg-white text-black px-8 md:px-12 py-4 md:py-6 rounded-2xl font-black text-lg md:text-xl hover:scale-105 transition-all inline-block">무료 성과 진단</a>
           </div>
         </div>
       </section>
 
       {/* 서비스 소개 섹션 */}
       <section className="py-32 bg-[#080808] relative">
-        <div className="max-w-7xl mx-auto px-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
 
           {/* 타겟 공감 헤드라인 */}
           <div className="text-center mb-16">
@@ -147,7 +147,7 @@ export default function Home() {
               </div>
               <div className="w-px bg-white/10" />
               <div className="text-center">
-                <p className="text-3xl font-black text-purple-400">3시간</p>
+                <p className="text-3xl font-black text-purple-400 whitespace-nowrap">3시간</p>
                 <p className="text-gray-400 text-sm mt-1">이내 담당자 연락</p>
               </div>
               <div className="w-px bg-white/10" />
