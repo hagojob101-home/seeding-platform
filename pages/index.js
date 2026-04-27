@@ -88,7 +88,7 @@ export default function Home() {
             </h1>
             <p className="text-base md:text-2xl text-gray-400 mb-10 leading-[1.8] max-w-2xl font-medium">
               단순 집행은 누구나 합니다. 053은 지표로 증명합니다.<br/>
-              ROAS 800% 이상의 실제 사례가 보여주는 압도적 차이.
+              ROAS 679%의 실제 사례가 보여주는 압도적 차이.
             </p>
             <a href="#apply" className="bg-white text-black px-8 md:px-12 py-4 md:py-6 rounded-2xl font-black text-lg md:text-xl hover:scale-105 transition-all inline-block">무료 성과 진단</a>
           </div>
@@ -103,6 +103,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <span className="inline-block bg-blue-600/20 text-blue-400 font-bold text-sm px-4 py-2 rounded-full mb-6 tracking-widest uppercase border border-blue-500/30">For Small Business</span>
             <h2 className="text-3xl md:text-6xl font-black mb-6 break-keep" style={{lineHeight: "1.4"}}>
+              <span className="inline-block text-5xl md:text-6xl mb-2" style={{filter: "drop-shadow(0 8px 16px rgba(99,102,241,0.5)) drop-shadow(0 2px 4px rgba(0,0,0,0.8))", transform: "perspective(400px) rotateY(-15deg) rotateX(5deg)", display: "inline-block"}}>🤷🏻‍♀️</span><br/>
               메타 광고, 들어는 봤는데<br/>
               <span className="text-gradient">전혀 감이 안 오시나요?</span>
             </h2>
