@@ -765,22 +765,50 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
           </div>
         )}
       </div>
-      {/* 이미지 모달 */}
-      {imageModal && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
-          onClick={() => setImageModal(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4"
-            onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-3">
-              <p className="font-bold text-gray-800">{imageModal.title}</p>
-              <button onClick={() => setImageModal(null)}
-                className="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none">×</button>
+      {/* 파일 뷰어 모달 */}
+      {imageModal && (() => {
+        const url = imageModal.url || ''
+        const ext = url.split('.').pop().toLowerCase().split('?')[0]
+        const isImage = ['jpg','jpeg','png','gif','webp'].includes(ext)
+        const isPdf = ext === 'pdf'
+        return (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+            onClick={() => setImageModal(null)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-4"
+              onClick={e => e.stopPropagation()}>
+              <div className="flex justify-between items-center mb-3">
+                <p className="font-bold text-gray-800">{imageModal.title}</p>
+                <div className="flex items-center gap-3">
+                  <a href={url} target="_blank" rel="noreferrer"
+                    className="text-xs text-blue-600 underline hover:text-blue-800">새 탭에서 열기</a>
+                  <a href={url} download
+                    className="text-xs text-green-600 underline hover:text-green-800">다운로드</a>
+                  <button onClick={() => setImageModal(null)}
+                    className="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none">×</button>
+                </div>
+              </div>
+              {isImage && (
+                <img src={url} alt={imageModal.title}
+                  className="w-full rounded-xl object-contain max-h-[70vh]" />
+              )}
+              {isPdf && (
+                <iframe src={url} className="w-full rounded-xl" style={{height: '70vh'}} />
+              )}
+              {!isImage && !isPdf && (
+                <div className="text-center py-16 text-gray-500">
+                  <p className="text-4xl mb-4">📄</p>
+                  <p className="font-semibold mb-2">{imageModal.title}</p>
+                  <p className="text-sm text-gray-400 mb-6">브라우저에서 미리보기가 지원되지 않는 파일입니다.</p>
+                  <a href={url} download
+                    className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+                    📥 파일 다운로드
+                  </a>
+                </div>
+              )}
             </div>
-            <img src={imageModal.url} alt={imageModal.title}
-              className="w-full rounded-xl object-contain max-h-[70vh]" />
           </div>
-        </div>
-      )}
+        )
+      })()}
       <Footer />
     </div>
   )
