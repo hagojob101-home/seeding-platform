@@ -147,11 +147,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 더미 닫는 태그 맞춤용 */}
-          <div className="hidden font-semibold text-sm">{item.text}</p>
-              </div>
-            ))}
-          </div>
+          
 
           {/* 한번에 해결 */}
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/20 rounded-3xl p-10 mb-24 text-center">
