@@ -142,7 +142,7 @@ export default function AdminDashboard() {
 const getStorageUrl = (path) => {
   if (!path) return null
   if (path.startsWith('http')) return path
-  return `${SUPABASE_URL}/storage/v1/object/public/${path}`
+  return `https://cbamysedzpvjovpkrlzx.supabase.co/storage/v1/object/public/influencer-files/${path}`
 }
 
 const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료']
