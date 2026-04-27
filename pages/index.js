@@ -99,35 +99,56 @@ export default function Home() {
       <section className="py-32 bg-[#080808] relative">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
 
-          {/* 타겟 공감 헤드라인 */}
+          {/* 블럭 1 - 공감/문제 제기 */}
           <div className="text-center mb-16">
-            <span className="inline-block bg-blue-600/20 text-blue-400 font-bold text-sm px-4 py-2 rounded-full mb-6 tracking-widest uppercase border border-blue-500/30">For Small Business</span>
             <h2 className="text-3xl md:text-6xl font-black mb-6 break-keep" style={{lineHeight: "1.4"}}>
-              <span className="inline-block text-5xl md:text-6xl mb-2" style={{filter: "drop-shadow(0 8px 16px rgba(99,102,241,0.5)) drop-shadow(0 2px 4px rgba(0,0,0,0.8))", transform: "perspective(400px) rotateY(-15deg) rotateX(5deg)", display: "inline-block"}}>🤷🏻‍♀️</span><br/>
               메타 광고, 들어는 봤는데<br/>
               <span className="text-gradient">전혀 감이 안 오시나요?</span>
             </h2>
-            <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-8">
-              소상공인, 1인 기업, 상품 하나뿐인 브랜드,<br/>
-              마케팅을 처음 시작하는 대표님을 위해 만들었습니다.
+            <p className="text-gray-300 text-lg md:text-xl max-w-xl mx-auto leading-relaxed mb-12">
+              메타 광고 아직도 알아보기만 하세요?<br/>
+              광고 시작하자마자 <span className="text-blue-400 font-bold">매일 비용이 발생해요.</span>
             </p>
+          </div>
+
+          {/* 블럭 2 - 아이콘 3개 */}
+          <div className="max-w-3xl mx-auto mb-6">
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
+                <p className="text-4xl mb-3">🖥️</p>
+                <p className="text-white font-bold text-sm">상세페이지</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
+                <p className="text-4xl mb-3">🎨</p>
+                <p className="text-white font-bold text-sm">이미지 광고</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
+                <p className="text-4xl mb-3">🤝</p>
+                <p className="text-white font-bold text-sm">인플 섭외</p>
+              </div>
+            </div>
+            <div className="text-center bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/20 rounded-2xl p-6">
+              <p className="text-white text-lg font-bold mb-1">이 모두 준비되어야 폭발적인 성과가 가능한데,</p>
+              <p className="text-gray-400 text-lg">혼자서 하시려구요?</p>
+            </div>
+          </div>
+
+          {/* 블럭 3 - 타겟 + CTA */}
+          <div className="text-center mb-16 mt-16">
+            <div className="flex flex-wrap justify-center gap-3 mb-8">
+              {['🏪 소상공인', '👤 1인 기업', '📦 상품이 하나뿐인 브랜드', '🚀 마케팅을 처음 시작하는 대표님'].map((item, i) => (
+                <span key={i} className="bg-white/5 border border-white/10 rounded-full px-4 py-2 text-white text-sm font-semibold">{item}</span>
+              ))}
+            </div>
+            <p className="text-gray-300 text-xl md:text-2xl font-bold mb-8">여러분을 위해 만들었습니다.</p>
             <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl px-6 py-4">
               <span className="text-2xl">⚡</span>
               <span className="text-white font-bold text-lg">메타 광고 집행부터 인플루언서 관리까지, 한 번에.</span>
             </div>
           </div>
 
-          {/* 타겟 카드 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
-            {[
-              { icon: '🏪', text: '소상공인' },
-              { icon: '👤', text: '1인 기업' },
-              { icon: '📦', text: '상품 1개뿐인 브랜드' },
-              { icon: '🚀', text: '마케팅 처음 시작하는 대표님' },
-            ].map((item, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition">
-                <p className="text-4xl mb-3">{item.icon}</p>
-                <p className="text-white font-semibold text-sm">{item.text}</p>
+          {/* 더미 닫는 태그 맞춤용 */}
+          <div className="hidden font-semibold text-sm">{item.text}</p>
               </div>
             ))}
           </div>
