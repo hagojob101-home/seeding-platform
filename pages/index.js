@@ -160,47 +160,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 서비스 흐름 */}
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-black text-white mb-4">이렇게 진행됩니다</h3>
-            <p className="text-gray-400">복잡한 거 없어요. 신청하면 알아서 다 해드립니다.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { step: '01', icon: '📋', title: '캠페인 요청', desc: '제품 정보와 예산을 입력해주세요' },
-              { step: '02', icon: '🤝', title: '인플루언서 매칭', desc: '브랜드에 맞는 인플루언서를 선정합니다' },
-              { step: '03', icon: '📦', title: '제품 발송', desc: '선정된 인플루언서에게 제품을 발송합니다' },
-              { step: '04', icon: '🎬', title: '콘텐츠 확인', desc: '제작된 콘텐츠를 검수합니다' },
-              { step: '05', icon: '📱', title: '메타 광고 집행', desc: '검증된 콘텐츠로 광고를 집행합니다' },
-              { step: '06', icon: '📊', title: '성과 리포트', desc: '광고 성과와 시딩 결과를 한눈에 확인' },
-            ].map((item, i) => (
-              <div key={i} className="relative">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center hover:bg-white/10 hover:border-blue-500/30 transition h-full">
-                  <p className="text-blue-400 text-xs font-black mb-2 tracking-widest">STEP {item.step}</p>
-                  <p className="text-3xl mb-3">{item.icon}</p>
-                  <p className="text-white font-bold text-sm mb-2">{item.title}</p>
-                  <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
-                </div>
-                {i < 5 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-blue-500/50 text-lg z-10">→</div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="text-center mt-16 flex flex-col md:flex-row justify-center items-center gap-4">
-            <a href="#apply" className="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-700 transition w-full md:w-auto text-center">
-              무료 상담 신청하기
-            </a>
-            <a href="/login" className="bg-white/10 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-white/20 transition border border-white/20 w-full md:w-auto text-center">
-              시딩 플랫폼 시작하기
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* 부즈앤버즈 성장 그래프 섹션 */}
+{/* 부즈앤버즈 성장 그래프 섹션 */}
       <section className="py-20 bg-gray-950 relative overflow-hidden">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-12">
@@ -281,6 +241,47 @@ export default function Home() {
               <p className="text-gray-400 text-xs mt-1">전년 동기 대비</p>
               <p className="text-gray-500 text-xs">2025년 1~4월 vs 2026년</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      
+      {/* 서비스 흐름 */}
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-black text-white mb-4">어떻게 진행되냐구요?</h3>
+            <p className="text-gray-400">복잡한 거 없어요. 신청하면 알아서 다 해드립니다.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { step: '01', icon: '📋', title: '캠페인 요청', desc: '제품 정보와 예산을 입력해주세요' },
+              { step: '02', icon: '🤝', title: '인플루언서 매칭', desc: '브랜드에 맞는 인플루언서를 선정합니다' },
+              { step: '03', icon: '📦', title: '제품 발송', desc: '선정된 인플루언서에게 제품을 발송합니다' },
+              { step: '04', icon: '🎬', title: '콘텐츠 확인', desc: '제작된 콘텐츠를 검수합니다' },
+              { step: '05', icon: '📱', title: '메타 광고 집행', desc: '검증된 콘텐츠로 광고를 집행합니다' },
+              { step: '06', icon: '📊', title: '성과 리포트', desc: '광고 성과와 시딩 결과를 한눈에 확인' },
+            ].map((item, i) => (
+              <div key={i} className="relative">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center hover:bg-white/10 hover:border-blue-500/30 transition h-full">
+                  <p className="text-blue-400 text-xs font-black mb-2 tracking-widest">STEP {item.step}</p>
+                  <p className="text-3xl mb-3">{item.icon}</p>
+                  <p className="text-white font-bold text-sm mb-2">{item.title}</p>
+                  <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+                </div>
+                {i < 5 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-blue-500/50 text-lg z-10">→</div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-16 flex flex-col md:flex-row justify-center items-center gap-4">
+            <a href="#apply" className="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-700 transition w-full md:w-auto text-center">
+              무료 상담 신청하기
+            </a>
+            <a href="/login" className="bg-white/10 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-white/20 transition border border-white/20 w-full md:w-auto text-center">
+              시딩 플랫폼 시작하기
+            </a>
           </div>
         </div>
       </section>
