@@ -162,7 +162,7 @@ export default function Home() {
             </div>
             <div className="text-center bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/20 rounded-2xl p-6">
               <p className="text-white text-lg font-bold mb-3">이 모든 게 준비되어야 폭발적인 성과가 가능한데,</p>
-              <p className="text-2xl md:text-3xl font-black text-white">혼자서 하시려구요? 🫤</p>
+              <p className="text-2xl md:text-3xl font-black text-white">혼자서 하시려구요? 🤯</p>
             </div>
           </div>
 
