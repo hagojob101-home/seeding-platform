@@ -21,6 +21,13 @@ export default function AdminDashboard() {
   }, [tabQuery])
 
   useEffect(() => {
+    if (router.query.agency && agencies.length > 0) {
+      const found = agencies.find(a => a.id === router.query.agency)
+      if (found) setSelectedAgency(found)
+    }
+  }, [router.query.agency, agencies])
+
+  useEffect(() => {
     if (selectedAgency) {
       supabase.from('agency_influencers')
         .select('*')
@@ -692,7 +699,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
             {!selectedAgency ? (
               <div className="grid gap-4">
                 {agencies.map(a => (
-                  <div key={a.id} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-md hover:border-purple-300 border-2 border-transparent transition" onClick={() => setSelectedAgency(a)}>
+                  <div key={a.id} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-md hover:border-purple-300 border-2 border-transparent transition" onClick={() => { setSelectedAgency(a); router.push({ pathname: '/admin/dashboard', query: { tab: 'agencydb', agency: a.id } }, undefined, { shallow: true }) }}>
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="font-bold text-gray-800 text-lg">{a.company_name}</p>
@@ -706,7 +713,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
               </div>
             ) : (
               <div>
-                <button onClick={() => setSelectedAgency(null)} className="mb-4 text-purple-600 hover:underline text-sm font-semibold">← 고객사 목록으로</button>
+                <button onClick={() => { setSelectedAgency(null); router.push({ pathname: '/admin/dashboard', query: { tab: 'agencydb' } }, undefined, { shallow: true }) }} className="mb-4 text-purple-600 hover:underline text-sm font-semibold">← 고객사 목록으로</button>
                 <h3 className="text-xl font-black text-gray-800 mb-2">{selectedAgency.company_name}</h3>
                 <p className="text-sm text-gray-500 mb-6">{selectedAgency.industry} · 시작일: {selectedAgency.start_date}</p>
                 <div className="bg-white rounded-2xl shadow overflow-x-auto">
