@@ -73,6 +73,106 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 서비스 소개 섹션 */}
+      <section className="py-32 bg-[#080808] relative">
+        <div className="max-w-7xl mx-auto px-8">
+
+          {/* 타겟 공감 헤드라인 */}
+          <div className="text-center mb-20">
+            <p className="text-blue-400 font-bold text-lg mb-4 tracking-widest uppercase">For Small Business</p>
+            <h2 className="text-4xl md:text-6xl font-black mb-8 leading-tight">
+              메타 광고, 들어는 봤는데<br/>
+              <span className="text-gradient">전혀 감이 안 오시나요?</span>
+            </h2>
+            <p className="text-gray-400 text-xl max-w-3xl mx-auto leading-relaxed">
+              소상공인, 1인 기업, 상품 하나뿐인 브랜드,<br/>
+              마케팅을 처음 시작하는 대표님을 위해 만들었습니다.<br/>
+              <span className="text-white font-semibold">메타 광고 집행부터 인플루언서 관리까지, 한 번에.</span>
+            </p>
+          </div>
+
+          {/* 타겟 카드 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
+            {[
+              { icon: '🏪', text: '소상공인' },
+              { icon: '👤', text: '1인 기업' },
+              { icon: '📦', text: '상품 1개뿐인 브랜드' },
+              { icon: '🚀', text: '마케팅 처음 시작하는 대표님' },
+            ].map((item, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition">
+                <p className="text-4xl mb-3">{item.icon}</p>
+                <p className="text-white font-semibold text-sm">{item.text}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* 한번에 해결 */}
+          <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/20 rounded-3xl p-10 mb-24 text-center">
+            <h3 className="text-3xl font-black text-white mb-4">
+              광고 집행 + 인플루언서 관리<br/>
+              <span className="text-blue-400">한 플랫폼에서 한 번에</span>
+            </h3>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              따로따로 관리하느라 지치셨나요? 053에서는 메타 광고 성과와 인플루언서 시딩을 동시에 운영하고 한눈에 확인할 수 있습니다.
+            </p>
+            <div className="flex justify-center gap-8 mt-8">
+              <div className="text-center">
+                <p className="text-3xl font-black text-blue-400">ROAS 800%+</p>
+                <p className="text-gray-400 text-sm mt-1">메타 광고 실제 사례</p>
+              </div>
+              <div className="w-px bg-white/10" />
+              <div className="text-center">
+                <p className="text-3xl font-black text-purple-400">12시간</p>
+                <p className="text-gray-400 text-sm mt-1">이내 담당자 연락</p>
+              </div>
+              <div className="w-px bg-white/10" />
+              <div className="text-center">
+                <p className="text-3xl font-black text-green-400">100%</p>
+                <p className="text-gray-400 text-sm mt-1">투명한 진행 현황</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 서비스 흐름 */}
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-black text-white mb-4">이렇게 진행됩니다</h3>
+            <p className="text-gray-400">복잡한 거 없어요. 신청하면 알아서 다 해드립니다.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { step: '01', icon: '📋', title: '캠페인 요청', desc: '제품 정보와 예산을 입력해주세요' },
+              { step: '02', icon: '🤝', title: '인플루언서 매칭', desc: '브랜드에 맞는 인플루언서를 선정합니다' },
+              { step: '03', icon: '📦', title: '제품 발송', desc: '선정된 인플루언서에게 제품을 발송합니다' },
+              { step: '04', icon: '🎬', title: '콘텐츠 확인', desc: '제작된 콘텐츠를 검수합니다' },
+              { step: '05', icon: '📱', title: '메타 광고 집행', desc: '검증된 콘텐츠로 광고를 집행합니다' },
+              { step: '06', icon: '📊', title: '성과 리포트', desc: '광고 성과와 시딩 결과를 한눈에 확인' },
+            ].map((item, i) => (
+              <div key={i} className="relative">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center hover:bg-white/10 hover:border-blue-500/30 transition h-full">
+                  <p className="text-blue-400 text-xs font-black mb-2 tracking-widest">STEP {item.step}</p>
+                  <p className="text-3xl mb-3">{item.icon}</p>
+                  <p className="text-white font-bold text-sm mb-2">{item.title}</p>
+                  <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+                </div>
+                {i < 5 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-blue-500/50 text-lg z-10">→</div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-16">
+            <a href="#apply" className="bg-blue-600 text-white px-12 py-5 rounded-2xl font-black text-lg hover:bg-blue-700 transition inline-block mr-4">
+              무료 상담 신청하기
+            </a>
+            <a href="/login" className="bg-white/10 text-white px-12 py-5 rounded-2xl font-black text-lg hover:bg-white/20 transition inline-block border border-white/20">
+              시딩 플랫폼 시작하기
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section id="apply" className="py-48 bg-black relative">
         <div className="max-w-4xl mx-auto px-8">
           <div className="text-center mb-16">
