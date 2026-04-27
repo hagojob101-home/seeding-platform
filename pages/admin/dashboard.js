@@ -14,6 +14,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [selectedParticipation, setSelectedParticipation] = useState(null)
   const [selectedInfluencer, setSelectedInfluencer] = useState(null)
+  const [imageModal, setImageModal] = useState(null) // { url, title }
   const [showForm, setShowForm] = useState(false)
   const [newCampaign, setNewCampaign] = useState({ name: '', product_name: '', description: '', form_type: 'basic' })
 
@@ -351,12 +352,12 @@ export default function AdminDashboard() {
                     {/* 신분증/통장 */}
                     <div className="mt-3 flex gap-3">
                       {selectedInfluencer.items[0]?.users?.id_card_url && (
-                        <a href={selectedInfluencer.items[0].users.id_card_url} target="_blank" rel="noreferrer"
-                          className="text-xs text-blue-600 underline hover:text-blue-800">🪪 신분증 보기</a>
+                        <button onClick={() => setImageModal({ url: selectedInfluencer.items[0].users.id_card_url, title: '🪪 신분증' })}
+                          className="text-xs text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">🪪 신분증 보기</button>
                       )}
                       {selectedInfluencer.items[0]?.users?.bank_book_url && (
-                        <a href={selectedInfluencer.items[0].users.bank_book_url} target="_blank" rel="noreferrer"
-                          className="text-xs text-blue-600 underline hover:text-blue-800">🏦 통장사본 보기</a>
+                        <button onClick={() => setImageModal({ url: selectedInfluencer.items[0].users.bank_book_url, title: '🏦 통장사본' })}
+                          className="text-xs text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">🏦 통장사본 보기</button>
                       )}
                     </div>
                   </div>
@@ -759,5 +760,21 @@ export default function AdminDashboard() {
       </div>
       <Footer />
     </div>
+      {/* 이미지 모달 */}
+      {imageModal && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+          onClick={() => setImageModal(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-3">
+              <p className="font-bold text-gray-800">{imageModal.title}</p>
+              <button onClick={() => setImageModal(null)}
+                className="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none">×</button>
+            </div>
+            <img src={imageModal.url} alt={imageModal.title}
+              className="w-full rounded-xl object-contain max-h-[70vh]" />
+          </div>
+        </div>
+      )}
   )
 }
