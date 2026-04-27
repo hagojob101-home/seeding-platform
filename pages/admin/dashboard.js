@@ -10,7 +10,12 @@ export default function AdminDashboard() {
   const [clients, setClients] = useState([])
   const [campaignRequests, setCampaignRequests] = useState([])
   const [consultations, setConsultations] = useState([])
+  const { tab: tabQuery } = router.query
   const [tab, setTab] = useState('campaigns')
+  
+  useEffect(() => {
+    if (tabQuery) setTab(tabQuery)
+  }, [tabQuery])
   const [loading, setLoading] = useState(true)
   const [selectedParticipation, setSelectedParticipation] = useState(null)
   const [selectedInfluencer, setSelectedInfluencer] = useState(null)
@@ -180,7 +185,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
             { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.payment_request_status === '신청' && p.payment_status !== '지급완료').length },
             { id: 'consultations', label: '📞 컨설팅 신청', count: consultations.length },
           ].map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)}
+            <button key={t.id} onClick={() => { setTab(t.id); router.push({ pathname: '/admin/dashboard', query: { tab: t.id } }, undefined, { shallow: true }) }}
               className={`px-4 py-2 rounded-xl font-semibold text-sm transition flex items-center gap-2 ${tab === t.id ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-purple-50'}`}>
               {t.label}
               {t.count > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{t.count}</span>}
