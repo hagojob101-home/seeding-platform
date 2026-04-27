@@ -769,7 +769,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
       {imageModal && (() => {
         const url = imageModal.url || ''
         const ext = url.split('.').pop().toLowerCase().split('?')[0]
-        const isImage = ['jpg','jpeg','png','gif','webp'].includes(ext)
+        const isImage = ['jpg','jpeg','png','gif','webp','heic','heif'].includes(ext)
         const isPdf = ext === 'pdf'
         return (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
