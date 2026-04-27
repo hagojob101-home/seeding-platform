@@ -1,0 +1,23 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/admin/dashboard": "pages/admin/dashboard.js",
+  "/api/consultation": "pages/api/consultation.js",
+  "/campaigns": "pages/campaigns.js",
+  "/api/generate-contract": "pages/api/generate-contract.js",
+  "/client/[id]": "pages/client/[id].js",
+  "/client/dashboard": "pages/client/dashboard.js",
+  "/client/login": "pages/client/login.js",
+  "/client/mypage": "pages/client/mypage.js",
+  "/client/register": "pages/client/register.js",
+  "/": "pages/index.js",
+  "/influencer/apply": "pages/influencer/apply.js",
+  "/influencer/dashboard": "pages/influencer/dashboard.js",
+  "/influencer/login": "pages/influencer/login.js",
+  "/influencer/mypage": "pages/influencer/mypage.js",
+  "/influencer/register": "pages/influencer/register.js",
+  "/influencer/submit": "pages/influencer/submit.js",
+  "/login": "pages/login.js",
+  "/privacy": "pages/privacy.js",
+  "/_document": "pages/_document.js"
+}
