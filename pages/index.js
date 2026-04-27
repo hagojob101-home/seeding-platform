@@ -70,7 +70,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-3">
             <a href="/login" className="text-gray-300 hover:text-white px-6 py-3 rounded-full text-sm font-bold transition-all border border-white/10 hover:border-white/30">시딩 플랫폼</a>
-            <a href="#apply" className="bg-blue-600 text-white px-8 py-3 rounded-full text-sm font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">컨설팅 신청</a>
+            <a href="#apply" className="bg-blue-600 text-white px-4 md:px-8 py-2 md:py-3 rounded-full text-xs md:text-sm font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap">컨설팅 신청</a>
           </div>
         </div>
       </nav>
