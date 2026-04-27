@@ -18,6 +18,14 @@ export default function InfluencerLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="fixed top-4 left-4 flex gap-2">
+        <button onClick={() => router.push('/')} className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-700 transition">
+          053 Meta
+        </button>
+        <button onClick={() => router.push('/login')} className="bg-white text-purple-600 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-50 transition border border-purple-200">
+          시딩 플랫폼
+        </button>
+      </div>
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6 text-purple-700">인플루언서 로그인</h2>
         {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}

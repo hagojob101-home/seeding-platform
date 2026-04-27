@@ -38,6 +38,15 @@ export default function ClientLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+      {/* 상단 네비게이션 버튼 */}
+      <div className="fixed top-4 left-4 flex gap-2">
+        <button onClick={() => router.push('/')} className="bg-white/10 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/20 transition border border-white/20">
+          053 Meta
+        </button>
+        <button onClick={() => router.push('/login')} className="bg-white/10 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/20 transition border border-white/20">
+          시딩 플랫폼
+        </button>
+      </div>
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">고객사 / 관리자 로그인</h2>
