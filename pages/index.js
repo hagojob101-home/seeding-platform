@@ -102,7 +102,7 @@ export default function Home() {
           {/* 타겟 공감 헤드라인 */}
           <div className="text-center mb-16">
             <span className="inline-block bg-blue-600/20 text-blue-400 font-bold text-sm px-4 py-2 rounded-full mb-6 tracking-widest uppercase border border-blue-500/30">For Small Business</span>
-            <h2 className="text-4xl md:text-6xl font-black mb-6" style={{lineHeight: "1.4"}}>
+            <h2 className="text-3xl md:text-6xl font-black mb-6 break-keep" style={{lineHeight: "1.4"}}>
               메타 광고, 들어는 봤는데<br/>
               <span className="text-gradient">전혀 감이 안 오시나요?</span>
             </h2>
