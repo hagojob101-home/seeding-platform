@@ -143,7 +143,7 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-2 mt-8 w-full max-w-sm mx-auto">
               <div className="flex flex-col items-center justify-start bg-white/5 rounded-xl p-3">
                 <p className="text-lg md:text-3xl font-black text-blue-400 leading-tight">ROAS</p>
-                <p className="text-lg md:text-3xl font-black text-blue-400 leading-tight">800%+</p>
+                <p className="text-lg md:text-3xl font-black text-blue-400 leading-tight">679%</p>
                 <p className="text-gray-400 text-xs mt-1 text-center">메타 광고 실제 사례</p>
               </div>
               <div className="flex flex-col items-center justify-start bg-white/5 rounded-xl p-3">
@@ -166,7 +166,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <span className="text-xs font-bold text-blue-400 tracking-widest uppercase mb-3 block">Real Case Study</span>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-3">부즈앤버즈 실제 성과</h2>
-            <p className="text-gray-400 text-sm">서비스 시작 1/19 ~ 현재 · 스마트스토어 월 매출 기준</p>
+            <p className="text-gray-400 text-sm">서비스 시작 1/19 ~ 현재 </p>
           </div>
 
           {/* 라인 그래프 SVG */}
