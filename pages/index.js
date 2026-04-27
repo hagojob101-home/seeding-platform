@@ -180,7 +180,7 @@ export default function Home() {
 
 {/* 부즈앤버즈 성장 그래프 섹션 */}
       <section className="py-20 bg-gray-950 relative overflow-hidden">
-        <div className="max-w-3xl mx-auto px-0 md:px-0">
+        <div className="w-full">
           <div className="text-center mb-12">
             <span className="text-xs font-bold text-blue-400 tracking-widest uppercase mb-3 block">Real Case Study</span>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-3">부즈앤버즈 실제 성과</h2>
@@ -188,7 +188,7 @@ export default function Home() {
           </div>
 
           {/* 라인 그래프 SVG */}
-          <div className="mb-6">
+          <div className="w-full mb-6 px-0">
             <svg viewBox="0 0 600 300" className="w-full" xmlns="http://www.w3.org/2000/svg">
               {/* 그라데이션 정의 */}
               <defs>
@@ -206,13 +206,13 @@ export default function Home() {
 
               {/* 채움 영역 - 4월을 y=30으로 과장 */}
               <polygon
-                points="100,210 230,180 360,140 490,30 490,250 100,250"
+                points="100,210 230,180 360,140 490,38 490,250 100,250"
                 fill="url(#lineGrad)"
               />
 
               {/* 메인 라인 */}
               <polyline
-                points="100,210 230,180 360,140 490,30"
+                points="100,210 230,180 360,140 490,38"
                 fill="none"
                 stroke="#6366f1"
                 strokeWidth="3.5"
@@ -224,13 +224,13 @@ export default function Home() {
               <circle cx="100" cy="210" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
               <circle cx="230" cy="180" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
               <circle cx="360" cy="140" r="6" fill="#6366f1" stroke="#fff" strokeWidth="2"/>
-              <circle cx="490" cy="30" r="7" fill="#60a5fa" stroke="#fff" strokeWidth="2.5"/>
+              <circle cx="490" cy="38" r="7" fill="#60a5fa" stroke="#fff" strokeWidth="2.5"/>
 
               {/* 데이터 라벨 - 매출 (짤리지 않게 위치 조정) */}
               <text x="100" y="198" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">250만</text>
               <text x="230" y="168" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">497만</text>
               <text x="360" y="128" fill="#a5b4fc" fontSize="11" textAnchor="middle" fontWeight="bold">720만</text>
-              <text x="490" y="22" fill="#ffffff" fontSize="18" textAnchor="middle" fontWeight="bold">1,074만</text>
+              <text x="490" y="14" fill="#ffffff" fontSize="18" textAnchor="middle" fontWeight="bold">1,074만</text>
 
               {/* X축 라벨 - 월 */}
               <text x="100" y="268" fill="#666" fontSize="11" textAnchor="middle">1월</text>
