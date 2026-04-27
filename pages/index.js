@@ -114,22 +114,22 @@ export default function Home() {
           {/* 블럭 2 - 아이콘 3개 */}
           <div className="max-w-3xl mx-auto mb-6">
             <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-                <p className="text-4xl mb-3">🖥️</p>
-                <p className="text-white font-bold text-sm">상세페이지</p>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
+                <p className="text-4xl mb-3">📱</p>
+                <p className="text-white font-bold text-sm">쇼츠 / 릴스</p>
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-                <p className="text-4xl mb-3">🎨</p>
-                <p className="text-white font-bold text-sm">이미지 광고</p>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
+                <p className="text-4xl mb-3">📸</p>
+                <p className="text-white font-bold text-sm">포스팅</p>
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
-                <p className="text-4xl mb-3">🤝</p>
-                <p className="text-white font-bold text-sm">인플 섭외</p>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:border-blue-500/40 transition">
+                <p className="text-4xl mb-3">💰</p>
+                <p className="text-white font-bold text-sm">매출 관리</p>
               </div>
             </div>
             <div className="text-center bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/20 rounded-2xl p-6">
-              <p className="text-white text-lg font-bold mb-1">이 모두 준비되어야 폭발적인 성과가 가능한데,</p>
-              <p className="text-gray-400 text-lg">혼자서 하시려구요?</p>
+              <p className="text-white text-lg font-bold mb-3">이 모든 게 준비되어야 폭발적인 성과가 가능한데,</p>
+              <p className="text-2xl md:text-3xl font-black text-white">혼자서 하시려구요? 🫤</p>
             </div>
           </div>
 
