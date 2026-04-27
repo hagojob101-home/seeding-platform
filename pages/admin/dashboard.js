@@ -12,10 +12,23 @@ export default function AdminDashboard() {
   const [consultations, setConsultations] = useState([])
   const { tab: tabQuery } = router.query
   const [tab, setTab] = useState('campaigns')
+  const [agencies, setAgencies] = useState([])
+  const [selectedAgency, setSelectedAgency] = useState(null)
+  const [agencyInfluencers, setAgencyInfluencers] = useState([])
   
   useEffect(() => {
     if (tabQuery) setTab(tabQuery)
   }, [tabQuery])
+
+  useEffect(() => {
+    if (selectedAgency) {
+      supabase.from('agency_influencers')
+        .select('*')
+        .eq('agency_id', selectedAgency.id)
+        .order('created_at', { ascending: true })
+        .then(({ data }) => setAgencyInfluencers(data || []))
+    }
+  }, [selectedAgency])
   const [loading, setLoading] = useState(true)
   const [selectedParticipation, setSelectedParticipation] = useState(null)
   const [selectedInfluencer, setSelectedInfluencer] = useState(null)
@@ -35,18 +48,20 @@ export default function AdminDashboard() {
   }, [])
 
   const fetchData = async () => {
-    const [c, p, cl, cr, co] = await Promise.all([
+    const [c, p, cl, cr, co, ag] = await Promise.all([
       supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
       supabase.from('participations').select('*, campaigns(name, product_name), users!participations_influencer_id_fkey(name, phone, address, instagram, youtube, bank_name, account_number, account_holder, id_card_url, bank_book_url)').order('created_at', { ascending: false }),
       supabase.from('clients').select('*').order('created_at', { ascending: false }),
       supabase.from('campaign_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('consultations').select('*').order('created_at', { ascending: false }),
+      supabase.from('agencies').select('*').order('created_at', { ascending: false }),
     ])
     setCampaigns(c.data || [])
     setParticipations(p.data || [])
     setClients(cl.data || [])
     setCampaignRequests(cr.data || [])
     setConsultations(co.data || [])
+    setAgencies(ag.data || [])
     setLoading(false)
   }
 
@@ -642,33 +657,67 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
         {/* 고객사 목록 탭 */}
         {tab === 'clients' && (
           <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">고객사 목록</h2>
-            <div className="grid gap-4">
-              {clients.map(c => (
-                <div key={c.id} className="bg-white rounded-2xl shadow p-5">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-bold text-gray-800 text-lg">{c.company_name}</p>
-                      <p className="text-sm text-gray-500">{c.email}</p>
-                    </div>
-                    <span className="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-semibold">고객사</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-                    <div><p className="text-gray-400">홈페이지</p>
-                      {c.homepage ? <a href={c.homepage} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline font-semibold">{c.homepage}</a> : <p>-</p>}
-                    </div>
-                    <div><p className="text-gray-400">사업자등록증</p>
-                      {c.business_reg_url ? <span className="text-green-600 font-semibold">✅ 업로드됨</span> : <span className="text-gray-400">미업로드</span>}
+            <h2 className="text-lg font-bold text-gray-800 mb-4">🏢 고객사 DB</h2>
+            {!selectedAgency ? (
+              <div className="grid gap-4">
+                {agencies.map(a => (
+                  <div key={a.id} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-md hover:border-purple-300 border-2 border-transparent transition" onClick={() => setSelectedAgency(a)}>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-gray-800 text-lg">{a.company_name}</p>
+                        <p className="text-sm text-gray-500">{a.industry} · 시작일: {a.start_date}</p>
+                      </div>
+                      <span className="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full font-semibold">클릭하여 보기 →</span>
                     </div>
                   </div>
+                ))}
+                {agencies.length === 0 && <p className="text-center text-gray-400 py-10">등록된 고객사가 없습니다.</p>}
+              </div>
+            ) : (
+              <div>
+                <button onClick={() => setSelectedAgency(null)} className="mb-4 text-purple-600 hover:underline text-sm font-semibold">← 고객사 목록으로</button>
+                <h3 className="text-xl font-black text-gray-800 mb-2">{selectedAgency.company_name}</h3>
+                <p className="text-sm text-gray-500 mb-6">{selectedAgency.industry} · 시작일: {selectedAgency.start_date}</p>
+                <div className="bg-white rounded-2xl shadow overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-purple-50 text-purple-700">
+                      <tr>
+                        <th className="px-4 py-3 text-left">이름</th>
+                        <th className="px-4 py-3 text-left">연락처</th>
+                        <th className="px-4 py-3 text-left">인스타그램</th>
+                        <th className="px-4 py-3 text-left">단가</th>
+                        <th className="px-4 py-3 text-left">업로드 일정</th>
+                        <th className="px-4 py-3 text-left">계약서</th>
+                        <th className="px-4 py-3 text-left">은행/계좌</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {agencyInfluencers.map((inf, i) => (
+                        <tr key={inf.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                          <td className="px-4 py-3 font-semibold text-gray-800">{inf.name}</td>
+                          <td className="px-4 py-3 text-gray-600">{inf.phone}</td>
+                          <td className="px-4 py-3">
+                            {inf.instagram_url ? <a href={inf.instagram_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">링크</a> : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-gray-800 font-semibold">{inf.unit_price ? `${inf.unit_price}만원` : '-'}</td>
+                          <td className="px-4 py-3 text-gray-600">{inf.upload_schedule || '-'}</td>
+                          <td className="px-4 py-3">{inf.contract === 'O' ? '✅' : '-'}</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs">{inf.bank_info || '-'}</td>
+                        </tr>
+                      ))}
+                      {agencyInfluencers.length === 0 && (
+                        <tr><td colSpan={7} className="text-center text-gray-400 py-10">데이터가 없습니다.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
-              {clients.length === 0 && <p className="text-center text-gray-400 py-10">등록된 고객사가 없습니다.</p>}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* 정산 관리 탭 */}
+산 관리 탭 */}
         {tab === 'payments' && (
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">💰 정산 관리</h2>
