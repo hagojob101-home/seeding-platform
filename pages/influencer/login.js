@@ -11,8 +11,12 @@ export default function InfluencerLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    const { error: loginError } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
     if (loginError) { setError(loginError.message); setLoading(false); return }
+    if (data?.user?.user_metadata?.must_change_password) {
+      router.push('/influencer/change-password')
+      return
+    }
     router.push('/influencer/dashboard')
   }
 
