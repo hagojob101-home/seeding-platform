@@ -14,6 +14,7 @@ export default function InfluencerDashboard() {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/influencer/login'); return }
+      if (user.user_metadata?.must_change_password) { router.push('/influencer/change-password'); return }
       setUser(user)
       const { data } = await supabase
         .from('participations')
