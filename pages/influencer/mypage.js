@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
+import { loadInfluencerProfile } from '../../lib/profile'
 
 export default function InfluencerMypage() {
   const router = useRouter()
@@ -22,7 +23,7 @@ export default function InfluencerMypage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/influencer/login'); return }
       setUser(user)
-      const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
+      const data = await loadInfluencerProfile(user.id)
       setProfile(data)
       if (data) {
         setForm({
@@ -34,7 +35,7 @@ export default function InfluencerMypage() {
           bank_name: data.bank_name || '',
           account_number: data.account_number || '',
           account_holder: data.account_holder || '',
-          resident_number: data.resident_number || '',
+          resident_number: '',
         })
       }
       setLoading(false)
@@ -45,7 +46,7 @@ export default function InfluencerMypage() {
   const uploadFile = async (file, folder) => {
     if (!file) return null
     const ext = file.name.split('.').pop()
-    const filename = folder + '/' + user.id + '_' + Date.now() + '.' + ext
+    const filename = user.id + '/' + folder + '/' + Date.now() + '.' + ext
     const { error } = await supabase.storage.from('influencer-files').upload(filename, file)
     if (error) throw error
     return filename
@@ -67,18 +68,22 @@ export default function InfluencerMypage() {
         address: form.address,
         instagram: form.instagram,
         youtube: form.youtube,
-        bank_name: form.bank_name,
-        account_number: form.account_number,
-        account_holder: form.account_holder,
-        resident_number: form.resident_number,
-        id_card_url: idCardUrl,
-        bank_book_url: bankBookUrl,
       }).eq('id', user.id)
-
       if (error) throw error
+
+      // 정산정보는 서버 함수로만 저장 (주민번호는 DB에서 암호화)
+      const { error: payoutError } = await supabase.rpc('save_payout_profile', {
+        p_bank_name: form.bank_name || null,
+        p_account_number: form.account_number || null,
+        p_account_holder: form.account_holder || null,
+        p_resident_number: form.resident_number.trim() || null,
+        p_bank_book_path: bankFile ? bankBookUrl : null,
+        p_id_card_path: idFile ? idCardUrl : null,
+      })
+      if (payoutError) throw payoutError
+
       alert('저장되었습니다!')
-      const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
-      setProfile(data)
+      setProfile(await loadInfluencerProfile(user.id))
       router.push('/influencer/dashboard')
     } catch (err) {
       alert('오류: ' + err.message)
@@ -150,7 +155,8 @@ export default function InfluencerMypage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">주민등록번호</label>
                   <input value={form.resident_number} onChange={e => setForm({...form, resident_number: e.target.value})}
-                    placeholder="000000-0000000"
+                    placeholder={profile?.has_resident_number ? '입력됨 (변경할 때만 입력)' : '000000-0000000'}
+                    autoComplete="off"
                     className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
                 </div>
               </div>

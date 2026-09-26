@@ -19,6 +19,7 @@ export default function Home() {
         const snsUrl = document.getElementById('snsUrl')?.value || ''
         const websiteUrl = document.getElementById('websiteUrl')?.value || ''
         const inquiryMessage = document.getElementById('inquiryMessage')?.value || ''
+        const companyFax = document.getElementById('companyFax')?.value || ''
 
         try {
           const res = await fetch('/api/consultation', {
@@ -31,6 +32,7 @@ export default function Home() {
               sns_url: snsUrl,
               website_url: websiteUrl,
               inquiry_message: inquiryMessage,
+              company_fax: companyFax,
             })
           })
           if (!res.ok) throw new Error('서버 오류')
@@ -404,6 +406,7 @@ export default function Home() {
               <input type="url" id="snsUrl" placeholder="SNS URL (예: instagram.com/...)" className="input-dark w-full rounded-2xl p-5 text-white" />
             </div>
             <input type="url" id="websiteUrl" placeholder="홈페이지 URL (예: https://...)" className="input-dark w-full rounded-2xl p-5 text-white" />
+            <input type="text" id="companyFax" name="company_fax" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
             <textarea id="inquiryMessage" required placeholder="어떤 점 때문에 문의 주셨나요? 자유롭게 기재해 주세요 😊" rows="5" className="input-dark w-full rounded-2xl p-5 text-white resize-none" />
             <button type="submit" id="submitBtn" className="w-full bg-blue-600 text-white py-8 rounded-[32px] font-black text-2xl hover:bg-blue-700 transition-all">신청하기 →</button>
           </form>

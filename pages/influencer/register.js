@@ -37,19 +37,9 @@ export default function InfluencerRegister() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
+      options: { data: { role: 'influencer', phone: form.phone, instagram: form.instagram, youtube: form.youtube } },
     })
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
-
-    const { error: upsertError } = await supabase.from('users').upsert({
-      id: data.user.id,
-      email: form.email,
-      name: form.email.split('@')[0],
-      phone: form.phone,
-      instagram: form.instagram,
-      youtube: form.youtube,
-      role: 'influencer',
-    })
-    if (upsertError) { setError('계정 생성 오류: ' + upsertError.message); setLoading(false); return }
 
     setLoading(false)
     alert('가입이 완료되었습니다! 마이페이지에서 세부 정보를 입력해주세요.')

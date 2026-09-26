@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
+import { loadInfluencerProfile } from '../../lib/profile'
 
 export default function Apply() {
   const router = useRouter()
@@ -28,7 +29,7 @@ export default function Apply() {
       setUser(user)
 
       // 프로필 불러오기
-      const { data: profileData } = await supabase.from('users').select('*').eq('id', user.id).single()
+      const profileData = await loadInfluencerProfile(user.id)
       setProfile(profileData)
 
       // 프로필 완성 여부 확인
@@ -75,12 +76,6 @@ export default function Apply() {
         address: profile.address,
         instagram: profile.instagram,
         youtube: profile.youtube,
-        bank_name: profile.bank_name,
-        account_number: profile.account_number,
-        account_holder: profile.account_holder,
-        resident_number: profile.resident_number,
-        id_card_url: profile.id_card_url,
-        bank_book_url: profile.bank_book_url,
         // 캠페인별 입력 정보
         followers: form.followers,
         reward: rewardVal,

@@ -17,32 +17,22 @@ export default function ClientRegister() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
+        options: { data: { role: 'client', company_name: form.company_name, homepage: form.homepage } },
       })
       if (authError) throw authError
 
       let businessRegUrl = null
-      if (businessFile) {
+      if (businessFile && authData.session) {
         const ext = businessFile.name.split('.').pop()
-        const filename = 'business/' + authData.user.id + '.' + ext
+        const filename = authData.user.id + '/business/' + Date.now() + '.' + ext
         const { error: uploadError } = await supabase.storage
           .from('influencer-files')
           .upload(filename, businessFile)
         if (!uploadError) businessRegUrl = filename
       }
-
-      await supabase.from('clients').insert({
-        user_id: authData.user.id,
-        email: form.email,
-        company_name: form.company_name,
-        homepage: form.homepage,
-        business_reg_url: businessRegUrl,
-      })
-
-      await supabase.from('users').insert({
-        id: authData.user.id,
-        email: form.email,
-        role: 'client',
-      })
+      if (businessRegUrl) {
+        await supabase.from('clients').update({ business_reg_url: businessRegUrl }).eq('user_id', authData.user.id)
+      }
 
       alert('회원가입이 완료되었습니다!')
       router.push('/client/login')

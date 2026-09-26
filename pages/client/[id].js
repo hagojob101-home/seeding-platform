@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
+import FileLink from '../../components/FileLink'
 
 export default function ClientCampaignDetail() {
   const router = useRouter()
@@ -145,16 +146,16 @@ export default function ClientCampaignDetail() {
                       <p className="text-sm font-bold text-orange-700 mb-2">🎬 콘텐츠 제출됨</p>
                       <div className="flex gap-3 flex-wrap">
                         {p.submit_data.clean_file_url && (
-                          <a href={p.submit_data.clean_file_url} target="_blank" rel="noreferrer"
+                          <FileLink path={p.submit_data.clean_file_url}
                             className="text-blue-600 hover:underline text-sm font-semibold bg-blue-50 px-3 py-1 rounded-lg">
                             📍 클린본 보기
-                          </a>
+                          </FileLink>
                         )}
                         {p.submit_data.final_file_url && (
-                          <a href={p.submit_data.final_file_url} target="_blank" rel="noreferrer"
+                          <FileLink path={p.submit_data.final_file_url}
                             className="text-purple-600 hover:underline text-sm font-semibold bg-purple-50 px-3 py-1 rounded-lg">
                             📍 최종본 보기
-                          </a>
+                          </FileLink>
                         )}
                         {p.submit_data.upload_url && (
                           <a href={p.submit_data.upload_url} target="_blank" rel="noreferrer"

@@ -1,5 +1,5 @@
 import { PDFDocument, rgb } from 'pdf-lib'
-import { supabase } from '../../lib/supabase'
+import { getRequestUser } from '../../lib/supabaseServer'
 import fontkit from '@pdf-lib/fontkit'
 import fs from 'fs'
 import path from 'path'
@@ -7,28 +7,24 @@ import path from 'path'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { participation_id } = req.body
+  const { participation_id } = req.body || {}
+  if (typeof participation_id !== 'string') return res.status(400).json({ error: '잘못된 요청입니다.' })
+
+  const { client, user } = await getRequestUser(req)
+  if (!user) return res.status(401).json({ error: '로그인이 필요합니다.' })
 
   try {
-    const { data: participation, error } = await supabase
-      .from('participations')
-      .select('*, campaigns(*), users(*)')
-      .eq('id', participation_id)
-      .single()
+    // DB 함수가 관리자/본인 여부를 확인하고 주민번호를 복호화해 반환 (권한 없으면 null)
+    const { data: c, error } = await client.rpc('get_contract_data', { p_participation_id: participation_id })
+    if (error || !c) return res.status(404).json({ error: '참여 정보를 찾을 수 없습니다.' })
 
-    if (error || !participation) return res.status(404).json({ error: '참여 정보를 찾을 수 없습니다.' })
-
-    const apply = participation.apply_data || {}
-    const campaign = participation.campaigns || {}
-
-    const name = apply.name || ''
-    const address = apply.address || ''
-    const phone = apply.phone || ''
-    const bank_name = apply.bank_name || ''
-    const bank_account = apply.bank_account || ''
-    const resident_number = apply.resident_number || ''
-    const followers = parseInt(apply.followers) || 0
-    let reward = apply.reward || '50,000원'
+    const name = c.name || ''
+    const address = c.address || ''
+    const phone = c.phone || ''
+    const bank_name = c.bank_name || ''
+    const bank_account = c.bank_account || ''
+    const resident_number = c.resident_number || ''
+    let reward = c.reward || '50,000원'
     // reward에서 '원' 제거하고 숫자만 추출
     reward = reward.replace('원', '').replace(',', '').trim()
     const rewardNum = parseInt(reward)
@@ -202,10 +198,11 @@ export default async function handler(req, res) {
 
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader('Content-Disposition', 'attachment; filename="contract.pdf"')
+    res.setHeader('Cache-Control', 'no-store')
     res.send(buffer)
 
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: '계약서 생성 중 오류가 발생했습니다.' })
   }
 }
