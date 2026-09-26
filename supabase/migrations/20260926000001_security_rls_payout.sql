@@ -281,13 +281,7 @@ update public.users set resident_number = null, account_number = null, bank_name
   account_holder = null, id_card_url = null, bank_book_url = null
 where coalesce(resident_number, account_number, bank_name, account_holder, id_card_url, bank_book_url) is not null;
 
--- agency_influencers.bank_info: 데이터가 있으면 멈춤 (손실 방지)
-do $$ begin
-  if exists (select 1 from public.agency_influencers where coalesce(bank_info, '') <> '') then
-    raise exception 'agency_influencers.bank_info에 데이터가 있습니다. 확인 후 다시 실행하세요.';
-  end if;
-end $$;
-alter table public.agency_influencers drop column bank_info;
+-- agency_influencers.bank_info: 계정 없는 고객사 인플루언서 데이터 → 삭제하지 않고 관리자 전용(RLS)으로 유지, 2단계에서 정리
 
 -- ───────────────── Storage: 비공개 + 폴더 단위 권한 ─────────────────
 update storage.buckets set public = false where id in ('influencer-files', 'documents');

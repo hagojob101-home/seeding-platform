@@ -718,6 +718,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                         <th className="px-4 py-3 text-left">단가</th>
                         <th className="px-4 py-3 text-left">업로드 일정</th>
                         <th className="px-4 py-3 text-left">계약서</th>
+                        <th className="px-4 py-3 text-left">은행/계좌</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -738,6 +739,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                               : '-'
                           }</td>
                           <td className="px-4 py-3">{inf.contract === 'O' ? '✅' : '-'}</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs">{inf.bank_info || '-'}</td>
                         </tr>
                       ))}
                       {agencyInfluencers.length === 0 && (
