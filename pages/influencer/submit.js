@@ -28,7 +28,8 @@ export default function Submit() {
   const uploadFile = async (file, folder) => {
     if (!file) return null
     const ext = file.name.split('.').pop()
-    const filename = folder + '/' + Date.now() + '.' + ext
+    const { data: { user } } = await supabase.auth.getUser()
+    const filename = user.id + '/' + folder + '/' + Date.now() + '.' + ext
     const { error } = await supabase.storage.from('influencer-files').upload(filename, file)
     if (error) throw error
     return filename

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
 import Footer from '../../components/Footer'
+import FileLink, { signedUrl } from '../../components/FileLink'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -57,7 +58,7 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     const [c, p, cl, cr, co, ag] = await Promise.all([
       supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
-      supabase.from('participations').select('*, campaigns(name, product_name), users!participations_influencer_id_fkey(name, phone, address, instagram, youtube, bank_name, account_number, account_holder, id_card_url, bank_book_url)').order('created_at', { ascending: false }),
+      supabase.from('participations').select('*, campaigns(name, product_name), users!participations_influencer_id_fkey(name, phone, address, instagram, youtube, payout_profiles(bank_name, account_number, account_holder, id_card_path, bank_book_path, verified))').order('created_at', { ascending: false }),
       supabase.from('clients').select('*').order('created_at', { ascending: false }),
       supabase.from('campaign_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('consultations').select('*').order('created_at', { ascending: false }),
@@ -140,12 +141,8 @@ export default function AdminDashboard() {
     fetchData()
   }
 
-  const getFileUrl = (path) => {
-    if (!path) return null
-    if (path.startsWith('http')) return path
-    const { data } = supabase.storage.from('influencer-files').getPublicUrl(path)
-    return data?.publicUrl
-  }
+  const payout = (p) => p?.users?.payout_profiles || {}
+  const openImage = async (path, title) => setImageModal({ url: await signedUrl(path), title })
 
   const statusColor = (status) => {
     const map = {
@@ -165,12 +162,6 @@ export default function AdminDashboard() {
     return map[status] || 'bg-gray-100 text-gray-700'
   }
 
-  const SUPABASE_URL = 'https://cbamysedzpvjovpkrlzx.supabase.co'
-const getStorageUrl = (path) => {
-  if (!path) return null
-  if (path.startsWith('http')) return path
-  return `https://cbamysedzpvjovpkrlzx.supabase.co/storage/v1/object/public/influencer-files/${path}`
-}
 
 const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료']
   const STEP_LABELS = {
@@ -380,18 +371,18 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                       <div><p className="text-xs text-gray-400">주소</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.address || '-'}</p></div>
                       <div><p className="text-xs text-gray-400">인스타그램</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.instagram || '-'}</p></div>
                       <div><p className="text-xs text-gray-400">팔로워 수</p><p className="font-semibold text-purple-600">{selectedInfluencer.items[0]?.followers?.toLocaleString() || '-'}명</p></div>
-                      <div><p className="text-xs text-gray-400">은행/계좌</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.bank_name || '-'} {selectedInfluencer.items[0]?.users?.account_number || ''}</p></div>
+                      <div><p className="text-xs text-gray-400">은행/계좌</p><p className="font-semibold">{payout(selectedInfluencer.items[0]).bank_name || '-'} {payout(selectedInfluencer.items[0]).account_number || ''}</p></div>
                       <div><p className="text-xs text-gray-400">유튜브</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.youtube || '-'}</p></div>
-                      <div><p className="text-xs text-gray-400">예금주</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.account_holder || '-'}</p></div>
+                      <div><p className="text-xs text-gray-400">예금주</p><p className="font-semibold">{payout(selectedInfluencer.items[0]).account_holder || '-'}</p></div>
                     </div>
                     {/* 신분증/통장 */}
                     <div className="mt-3 flex gap-3">
-                      {selectedInfluencer.items[0]?.users?.id_card_url && (
-                        <button onClick={() => setImageModal({ url: getStorageUrl(selectedInfluencer.items[0].users.id_card_url), title: '🪪 신분증' })}
+                      {payout(selectedInfluencer.items[0]).id_card_path && (
+                        <button onClick={() => openImage(payout(selectedInfluencer.items[0]).id_card_path, '🪪 신분증')}
                           className="text-xs text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">🪪 신분증 보기</button>
                       )}
-                      {selectedInfluencer.items[0]?.users?.bank_book_url && (
-                        <button onClick={() => setImageModal({ url: getStorageUrl(selectedInfluencer.items[0].users.bank_book_url), title: '🏦 통장사본' })}
+                      {payout(selectedInfluencer.items[0]).bank_book_path && (
+                        <button onClick={() => openImage(payout(selectedInfluencer.items[0]).bank_book_path, '🏦 통장사본')}
                           className="text-xs text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">🏦 통장사본 보기</button>
                       )}
                     </div>
@@ -528,7 +519,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-400 mb-1">은행/계좌</p>
-                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.bank_name || '-'} {selectedParticipation.apply_data?.account_number || ''}</p>
+                      <p className="font-semibold text-gray-800">{payout(selectedParticipation).bank_name || '-'} {payout(selectedParticipation).account_number || ''}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-400 mb-1">정산 상태</p>
@@ -543,15 +534,15 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                     <p className="text-sm font-semibold text-gray-600 mb-3">📁 제출 파일</p>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { label: '🪪 신분증', key: 'id_card_url' },
-                        { label: '🏦 통장사본', key: 'bank_book_url' },
+                        { label: '🪪 신분증', key: 'id_card_path' },
+                        { label: '🏦 통장사본', key: 'bank_book_path' },
                       ].map(({ label, key }) => {
-                        const url = getFileUrl(selectedParticipation.apply_data?.[key])
+                        const path = payout(selectedParticipation)[key]
                         return (
                           <div key={key} className="bg-gray-50 rounded-xl p-3">
                             <p className="text-xs text-gray-400 mb-1">{label}</p>
-                            {url
-                              ? <a href={url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline text-sm font-semibold">📎 보기</a>
+                            {path
+                              ? <FileLink path={path} className="text-purple-600 hover:underline text-sm font-semibold">📎 보기</FileLink>
                               : <p className="text-gray-300 text-sm">미제출</p>}
                           </div>
                         )
@@ -572,8 +563,8 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                             : <span className="text-xs bg-gray-100 text-gray-400 px-2 py-1 rounded-full">미제출</span>}
                         </div>
                         {selectedParticipation.submit_data?.clean_file_url
-                          ? <a href={getFileUrl(selectedParticipation.submit_data.clean_file_url)} target="_blank" rel="noreferrer"
-                              className="text-blue-600 hover:underline text-sm font-semibold">📎 파일 다운로드</a>
+                          ? <FileLink path={selectedParticipation.submit_data.clean_file_url}
+                              className="text-blue-600 hover:underline text-sm font-semibold">📎 파일 다운로드</FileLink>
                           : <p className="text-gray-400 text-sm">아직 제출되지 않았습니다.</p>}
                       </div>
                       {/* 최종본 */}
@@ -585,8 +576,8 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                             : <span className="text-xs bg-gray-100 text-gray-400 px-2 py-1 rounded-full">미제출</span>}
                         </div>
                         {selectedParticipation.submit_data?.final_file_url
-                          ? <a href={getFileUrl(selectedParticipation.submit_data.final_file_url)} target="_blank" rel="noreferrer"
-                              className="text-purple-600 hover:underline text-sm font-semibold">📎 파일 다운로드</a>
+                          ? <FileLink path={selectedParticipation.submit_data.final_file_url}
+                              className="text-purple-600 hover:underline text-sm font-semibold">📎 파일 다운로드</FileLink>
                           : <p className="text-gray-400 text-sm">아직 제출되지 않았습니다.</p>}
                       </div>
                       {/* 업로드 URL */}
@@ -601,8 +592,8 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                       {selectedParticipation.submit_data?.signed_contract_url && (
                         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                           <p className="text-sm font-bold text-orange-700 mb-2">📝 서명된 계약서</p>
-                          <a href={getFileUrl(selectedParticipation.submit_data.signed_contract_url)} target="_blank" rel="noreferrer"
-                            className="text-orange-600 hover:underline text-sm font-semibold">📎 계약서 보기</a>
+                          <FileLink path={selectedParticipation.submit_data.signed_contract_url}
+                            className="text-orange-600 hover:underline text-sm font-semibold">📎 계약서 보기</FileLink>
                         </div>
                       )}
                     </div>
@@ -727,7 +718,6 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                         <th className="px-4 py-3 text-left">단가</th>
                         <th className="px-4 py-3 text-left">업로드 일정</th>
                         <th className="px-4 py-3 text-left">계약서</th>
-                        <th className="px-4 py-3 text-left">은행/계좌</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -748,7 +738,6 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                               : '-'
                           }</td>
                           <td className="px-4 py-3">{inf.contract === 'O' ? '✅' : '-'}</td>
-                          <td className="px-4 py-3 text-gray-600 text-xs">{inf.bank_info || '-'}</td>
                         </tr>
                       ))}
                       {agencyInfluencers.length === 0 && (
@@ -792,11 +781,11 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                       </div>
                       <div className="bg-gray-50 rounded-xl p-3">
                         <p className="text-xs text-gray-400 mb-1">은행/계좌</p>
-                        <p className="font-semibold text-gray-800">{p.apply_data?.bank_name || '-'} {p.apply_data?.account_number || ''}</p>
+                        <p className="font-semibold text-gray-800">{payout(p).bank_name || '-'} {payout(p).account_number || ''}</p>
                       </div>
                       <div className="bg-gray-50 rounded-xl p-3">
                         <p className="text-xs text-gray-400 mb-1">예금주</p>
-                        <p className="font-semibold text-gray-800">{p.apply_data?.account_holder || p.apply_data?.name || '-'}</p>
+                        <p className="font-semibold text-gray-800">{payout(p).account_holder || p.apply_data?.name || '-'}</p>
                       </div>
                       <div className="bg-gray-50 rounded-xl p-3">
                         <p className="text-xs text-gray-400 mb-1">신청일</p>

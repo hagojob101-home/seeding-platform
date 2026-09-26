@@ -10,31 +10,21 @@ export default async function handler(req, res) {
   const { participation_id } = req.body || {}
   if (typeof participation_id !== 'string') return res.status(400).json({ error: '잘못된 요청입니다.' })
 
-  const { client, user, role } = await getRequestUser(req)
+  const { client, user } = await getRequestUser(req)
   if (!user) return res.status(401).json({ error: '로그인이 필요합니다.' })
 
   try {
-    const { data: participation, error } = await client
-      .from('participations')
-      .select('*, campaigns(*), users(*)')
-      .eq('id', participation_id)
-      .single()
+    // DB 함수가 관리자/본인 여부를 확인하고 주민번호를 복호화해 반환 (권한 없으면 null)
+    const { data: c, error } = await client.rpc('get_contract_data', { p_participation_id: participation_id })
+    if (error || !c) return res.status(404).json({ error: '참여 정보를 찾을 수 없습니다.' })
 
-    if (error || !participation) return res.status(404).json({ error: '참여 정보를 찾을 수 없습니다.' })
-    // 관리자 또는 본인 참여 건만 허용
-    if (role !== 'admin' && participation.influencer_id !== user.id) return res.status(403).json({ error: '권한이 없습니다.' })
-
-    const apply = participation.apply_data || {}
-    const campaign = participation.campaigns || {}
-
-    const name = apply.name || ''
-    const address = apply.address || ''
-    const phone = apply.phone || ''
-    const bank_name = apply.bank_name || ''
-    const bank_account = apply.bank_account || ''
-    const resident_number = apply.resident_number || ''
-    const followers = parseInt(apply.followers) || 0
-    let reward = apply.reward || '50,000원'
+    const name = c.name || ''
+    const address = c.address || ''
+    const phone = c.phone || ''
+    const bank_name = c.bank_name || ''
+    const bank_account = c.bank_account || ''
+    const resident_number = c.resident_number || ''
+    let reward = c.reward || '50,000원'
     // reward에서 '원' 제거하고 숫자만 추출
     reward = reward.replace('원', '').replace(',', '').trim()
     const rewardNum = parseInt(reward)
