@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 // 비공개 버킷 파일 → 1시간짜리 서명 URL
-export async function signedUrl(path) {
+export async function signedUrl(path, download = false) {
   if (!path || path.startsWith('http')) return path || null
-  const { data } = await supabase.storage.from('influencer-files').createSignedUrl(path, 3600)
+  const { data } = await supabase.storage.from('influencer-files').createSignedUrl(path, 3600, download ? { download: true } : undefined)
   return data?.signedUrl || null
 }
 

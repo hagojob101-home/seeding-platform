@@ -142,7 +142,10 @@ export default function AdminDashboard() {
   }
 
   const payout = (p) => p?.users?.payout_profiles || {}
-  const openImage = async (path, title) => setImageModal({ url: await signedUrl(path), title })
+  const openImage = async (path, title) => {
+    const [url, downloadUrl] = await Promise.all([signedUrl(path), signedUrl(path, true)])
+    setImageModal({ url, downloadUrl, path, title })
+  }
 
   const statusColor = (status) => {
     const map = {
@@ -858,7 +861,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
       {/* 파일 뷰어 모달 */}
       {imageModal && (() => {
         const url = imageModal.url || ''
-        const ext = url.split('.').pop().toLowerCase().split('?')[0]
+        const ext = (imageModal.path || url).split('?')[0].split('.').pop().toLowerCase()
         const isImage = ['jpg','jpeg','png','gif','webp','heic','heif'].includes(ext)
         const isPdf = ext === 'pdf'
         return (
@@ -871,7 +874,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                 <div className="flex items-center gap-3">
                   <a href={url} target="_blank" rel="noreferrer"
                     className="text-xs text-blue-600 underline hover:text-blue-800">새 탭에서 열기</a>
-                  <a href={url} download
+                  <a href={imageModal.downloadUrl || url}
                     className="text-xs text-green-600 underline hover:text-green-800">다운로드</a>
                   <button onClick={() => setImageModal(null)}
                     className="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none">×</button>
@@ -889,7 +892,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                   <p className="text-4xl mb-4">📄</p>
                   <p className="font-semibold mb-2">{imageModal.title}</p>
                   <p className="text-sm text-gray-400 mb-6">브라우저에서 미리보기가 지원되지 않는 파일입니다.</p>
-                  <a href={url} download
+                  <a href={imageModal.downloadUrl || url}
                     className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
                     📥 파일 다운로드
                   </a>
