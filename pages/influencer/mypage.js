@@ -99,130 +99,130 @@ export default function InfluencerMypage() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">불러오는 중...</p>
+      <p className="text-muted">불러오는 중...</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="min-h-screen bg-highlight ">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/influencer/dashboard')}
-            className="text-gray-400 hover:text-purple-600 text-sm">← 대시보드</button>
-          <h1 className="text-lg font-bold text-purple-700">마이페이지</h1>
+            className="text-muted hover:text-ink text-sm">← 대시보드</button>
+          <h1 className="text-lg font-bold text-ink">마이페이지</h1>
         </div>
         <button onClick={async () => { await supabase.auth.signOut(); router.push('/influencer/login') }}
-          className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
+          className="text-sm text-muted hover:text-ink">로그아웃</button>
       </nav>
 
       <div className="max-w-xl mx-auto px-4 py-8">
         {!isProfileComplete() && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6">
-            <p className="text-sm font-bold text-yellow-700">⚠️ 프로필을 완성해주세요!</p>
-            <p className="text-xs text-yellow-600 mt-1">캠페인 신청을 위해 기본 정보를 먼저 입력해주세요.</p>
+          <div className="bg-highlight border border-line rounded-2xl p-4 mb-6">
+            <p className="text-sm font-bold text-ink">프로필을 완성해주세요!</p>
+            <p className="text-xs text-ink mt-1">캠페인 신청을 위해 기본 정보를 먼저 입력해주세요.</p>
           </div>
         )}
 
         <div className="bg-white rounded-2xl shadow p-8">
           <div className="mb-6 pb-4 border-b">
-            <p className="text-sm text-gray-400 mb-1">로그인 계정</p>
-            <p className="font-bold text-gray-800">{user?.email}</p>
+            <p className="text-sm text-muted mb-1">로그인 계정</p>
+            <p className="font-bold text-ink">{user?.email}</p>
           </div>
 
           <form onSubmit={handleSave} className="space-y-5">
             {/* 기본 정보 */}
             <div>
-              <p className="text-sm font-bold text-purple-700 mb-3">📋 기본 정보</p>
+              <p className="text-sm font-bold text-ink mb-3">기본 정보</p>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">이름 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink mb-1">이름 <span className="text-ink">*</span></label>
                   <input value={form.name} onChange={e => setForm({...form, name: e.target.value})}
                     placeholder="실명 입력" required
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">연락처 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink mb-1">연락처 <span className="text-ink">*</span></label>
                   <input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})}
                     placeholder="010-0000-0000" required
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">주소 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink mb-1">주소 <span className="text-ink">*</span></label>
                   <input value={form.address} onChange={e => setForm({...form, address: e.target.value})}
                     placeholder="배송받을 주소 입력" required
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">주민등록번호</label>
+                  <label className="block text-sm font-medium text-ink mb-1">주민등록번호</label>
                   <input value={form.resident_number} onChange={e => setForm({...form, resident_number: e.target.value})}
                     placeholder={profile?.has_resident_number ? '입력됨 (변경할 때만 입력)' : '000000-0000000'}
                     autoComplete="off"
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
               </div>
             </div>
 
             {/* SNS 정보 */}
             <div>
-              <p className="text-sm font-bold text-purple-700 mb-3">📱 업로드할 SNS 계정</p>
+              <p className="text-sm font-bold text-ink mb-3">업로드할 SNS 계정</p>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">인스타그램 주소 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink mb-1">인스타그램 주소 <span className="text-ink">*</span></label>
                   <input value={form.instagram} onChange={e => setForm({...form, instagram: e.target.value})}
                     placeholder="https://www.instagram.com/아이디" required
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">유튜브 주소</label>
+                  <label className="block text-sm font-medium text-ink mb-1">유튜브 주소</label>
                   <input value={form.youtube} onChange={e => setForm({...form, youtube: e.target.value})}
                     placeholder="https://www.youtube.com/@채널명"
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
               </div>
             </div>
 
             {/* 정산 정보 */}
             <div>
-              <p className="text-sm font-bold text-purple-700 mb-3">🏦 정산 정보</p>
+              <p className="text-sm font-bold text-ink mb-3">정산 정보</p>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">은행명 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink mb-1">은행명 <span className="text-ink">*</span></label>
                   <input value={form.bank_name} onChange={e => setForm({...form, bank_name: e.target.value})}
                     placeholder="예: 국민은행"
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">계좌번호 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink mb-1">계좌번호 <span className="text-ink">*</span></label>
                   <input value={form.account_number} onChange={e => setForm({...form, account_number: e.target.value})}
                     placeholder="계좌번호 입력 (- 없이)"
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">예금주</label>
+                  <label className="block text-sm font-medium text-ink mb-1">예금주</label>
                   <input value={form.account_holder} onChange={e => setForm({...form, account_holder: e.target.value})}
                     placeholder="예금주명"
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
               </div>
             </div>
 
             {/* 파일 업로드 */}
             <div>
-              <p className="text-sm font-bold text-purple-700 mb-3">📎 서류 업로드</p>
+              <p className="text-sm font-bold text-ink mb-3">서류 업로드</p>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">신분증 사본 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink mb-1">신분증 사본 <span className="text-ink">*</span></label>
                   {profile?.id_card_url && (
-                    <p className="text-xs text-green-600 font-semibold mb-1">✅ 업로드됨 (새 파일 선택 시 교체)</p>
+                    <p className="text-xs text-ink font-semibold mb-1">업로드됨 (새 파일 선택 시 교체)</p>
                   )}
                   <input type="file" accept=".pdf,.jpg,.jpeg,.png"
                     onChange={e => setIdFile(e.target.files[0])}
                     className="w-full border rounded-xl px-4 py-3" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">통장 사본 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-ink mb-1">통장 사본 <span className="text-ink">*</span></label>
                   {profile?.bank_book_url && (
-                    <p className="text-xs text-green-600 font-semibold mb-1">✅ 업로드됨 (새 파일 선택 시 교체)</p>
+                    <p className="text-xs text-ink font-semibold mb-1">업로드됨 (새 파일 선택 시 교체)</p>
                   )}
                   <input type="file" accept=".pdf,.jpg,.jpeg,.png"
                     onChange={e => setBankFile(e.target.files[0])}
@@ -232,7 +232,7 @@ export default function InfluencerMypage() {
             </div>
 
             <button type="submit" disabled={saving}
-              className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition disabled:opacity-50">
+              className="w-full bg-ink text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50">
               {saving ? '저장 중...' : '저장하기'}
             </button>
           </form>

@@ -68,46 +68,46 @@ export default function Submit() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="min-h-screen bg-highlight ">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-purple-700">콘텐츠 제출</h1>
-        <button onClick={() => router.push('/influencer/dashboard')} className="text-sm text-gray-500 hover:text-purple-600">← 대시보드</button>
+        <h1 className="text-xl font-bold text-ink">콘텐츠 제출</h1>
+        <button onClick={() => router.push('/influencer/dashboard')} className="text-sm text-muted hover:text-ink">← 대시보드</button>
       </nav>
       <div className="max-w-xl mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl shadow p-8">
           {participation && (
-            <div className="mb-6 bg-purple-50 rounded-xl p-4">
-              <p className="text-sm text-gray-500">캠페인</p>
-              <p className="font-bold text-purple-700">{participation.campaigns?.name}</p>
+            <div className="mb-6 bg-highlight rounded-xl p-4">
+              <p className="text-sm text-muted">캠페인</p>
+              <p className="font-bold text-ink">{participation.campaigns?.name}</p>
             </div>
           )}
-          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-            <p className="text-sm font-bold text-yellow-700 mb-2">📌 파일명 규칙</p>
-            <p className="text-sm text-yellow-600">클린본: <span className="font-mono font-bold">클린본_이름</span></p>
-            <p className="text-sm text-yellow-600">최종본: <span className="font-mono font-bold">최종본_이름</span></p>
+          <div className="mb-6 bg-highlight border border-line rounded-xl p-4">
+            <p className="text-sm font-bold text-ink mb-2">파일명 규칙</p>
+            <p className="text-sm text-ink">클린본: <span className="font-mono font-bold">클린본_이름</span></p>
+            <p className="text-sm text-ink">최종본: <span className="font-mono font-bold">최종본_이름</span></p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">이름</label>
-              <input value={name} onChange={e => setName(e.target.value)} required className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+              <label className="block text-sm font-medium text-ink mb-1">이름</label>
+              <input value={name} onChange={e => setName(e.target.value)} required className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">📍 클린본 파일 업로드</label>
+              <label className="block text-sm font-medium text-ink mb-1">클린본 파일 업로드</label>
               <input type="file" onChange={e => setCleanFile(e.target.files[0])} className="w-full border rounded-xl px-4 py-3" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">📍 최종본 파일 업로드</label>
+              <label className="block text-sm font-medium text-ink mb-1">최종본 파일 업로드</label>
               <input type="file" onChange={e => setFinalFile(e.target.files[0])} className="w-full border rounded-xl px-4 py-3" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">🔗 업로드 URL <span className="text-gray-400 text-xs">(업로드 전이면 계정 URL)</span></label>
-              <input value={uploadUrl} onChange={e => setUploadUrl(e.target.value)} placeholder="https://www.instagram.com/..." className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300" />
+              <label className="block text-sm font-medium text-ink mb-1">업로드 URL <span className="text-muted text-xs">(업로드 전이면 계정 URL)</span></label>
+              <input value={uploadUrl} onChange={e => setUploadUrl(e.target.value)} placeholder="https://www.instagram.com/..." className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">📝 서명된 계약서 업로드</label>
+              <label className="block text-sm font-medium text-ink mb-1">서명된 계약서 업로드</label>
               <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setContractFile(e.target.files[0])} className="w-full border rounded-xl px-4 py-3" />
             </div>
-            <button type="submit" disabled={loading} className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition disabled:opacity-50">
+            <button type="submit" disabled={loading} className="w-full bg-ink text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50">
               {loading ? '제출 중...' : '콘텐츠 제출하기'}
             </button>
           </form>

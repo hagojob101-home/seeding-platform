@@ -93,54 +93,54 @@ export default function InfluencerDashboard() {
 
   const statusColor = (status) => {
     const map = {
-      '신청': 'bg-yellow-100 text-yellow-700',
-      '승인': 'bg-blue-100 text-blue-700',
-      '제품발송': 'bg-purple-100 text-purple-700',
-      '콘텐츠확인': 'bg-orange-100 text-orange-700',
-      '완료': 'bg-green-100 text-green-700',
-      '거절': 'bg-red-100 text-red-700',
+      '신청': 'bg-highlight text-ink',
+      '승인': 'bg-highlight text-ink',
+      '제품발송': 'bg-highlight text-ink',
+      '콘텐츠확인': 'bg-highlight text-ink',
+      '완료': 'bg-highlight text-ink',
+      '거절': 'bg-highlight text-ink',
     }
-    return map[status] || 'bg-gray-100 text-gray-700'
+    return map[status] || 'bg-highlight text-ink'
   }
 
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">불러오는 중...</p>
+      <p className="text-muted">불러오는 중...</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="min-h-screen bg-highlight ">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-purple-700">인플루언서 대시보드</h1>
+        <h1 className="text-xl font-bold text-ink">인플루언서 대시보드</h1>
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/influencer/mypage')}
-            className="text-sm text-purple-600 hover:text-purple-800 font-semibold">👤 마이페이지</button>
+            className="text-sm text-ink hover:text-ink font-semibold">마이페이지</button>
           <button onClick={async () => { await supabase.auth.signOut(); router.push('/influencer/login') }}
-            className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
+            className="text-sm text-muted hover:text-ink">로그아웃</button>
         </div>
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-1">안녕하세요! 👋</h2>
-          <p className="text-gray-500 text-sm">{user?.email}</p>
+          <h2 className="text-lg font-bold text-ink mb-1">안녕하세요! </h2>
+          <p className="text-muted text-sm">{user?.email}</p>
         </div>
 
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-gray-800">참여 중인 캠페인</h2>
+          <h2 className="text-lg font-bold text-ink">참여 중인 캠페인</h2>
           <button onClick={() => router.push('/campaigns')}
-            className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-700 transition">
+            className="bg-ink text-white px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition">
             + 캠페인 신청하기
           </button>
         </div>
 
         {participations.length === 0 ? (
           <div className="bg-white rounded-2xl shadow p-10 text-center">
-            <p className="text-gray-400 mb-4">아직 참여 중인 캠페인이 없습니다.</p>
+            <p className="text-muted mb-4">아직 참여 중인 캠페인이 없습니다.</p>
             <button onClick={() => router.push('/campaigns')}
-              className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+              className="bg-ink text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition">
               캠페인 둘러보기
             </button>
           </div>
@@ -151,8 +151,8 @@ export default function InfluencerDashboard() {
                 <div key={p.id} className="bg-white rounded-2xl shadow p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="font-bold text-gray-800 text-lg">{p.campaigns?.name || '-'}</h3>
-                      <p className="text-sm text-gray-500">{p.campaigns?.product_name || ''}</p>
+                      <h3 className="font-bold text-ink text-lg">{p.campaigns?.name || '-'}</h3>
+                      <p className="text-sm text-muted">{p.campaigns?.product_name || ''}</p>
                     </div>
                     <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>
                       {p.status}
@@ -164,8 +164,8 @@ export default function InfluencerDashboard() {
 
                   {/* 원고료 */}
                   <div className="flex flex-col gap-1 mb-4">
-                    <span className="text-sm text-gray-500">원고료: <span className="font-bold text-purple-700">{formatReward(p)}</span></span>
-                    <span className="text-xs text-gray-400">💡 원고료는 업로드 확인 후 차주 목요일에 입금됩니다.</span>
+                    <span className="text-sm text-muted">원고료: <span className="font-bold text-ink">{formatReward(p)}</span></span>
+                    <span className="text-xs text-muted">원고료는 업로드 확인 후 차주 목요일에 입금됩니다.</span>
                   </div>
 
                   {/* 버튼 영역 */}
@@ -174,52 +174,52 @@ export default function InfluencerDashboard() {
                     {p.status === '승인' && (
                       <button onClick={() => handleDownloadContract(p.id)}
                         disabled={downloadingId === p.id}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-600 transition">
-                        {downloadingId === p.id ? '생성 중...' : '📄 계약서 다운로드'}
+                        className="bg-ink text-white px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition">
+                        {downloadingId === p.id ? '생성 중...' : '계약서 다운로드'}
                       </button>
                     )}
 
                     {/* 콘텐츠 제출 - 제품발송 상태이고 아직 제출 안 한 경우 */}
                     {p.status === '제품발송' && !p.submit_data && (
                       <button onClick={() => router.push('/influencer/submit?participation_id=' + p.id)}
-                        className="bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-600 transition">
-                        📤 콘텐츠 제출
+                        className="bg-ink text-white px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition">
+                        콘텐츠 제출
                       </button>
                     )}
 
                     {/* 콘텐츠 제출됨 - 제품발송이고 제출한 경우 */}
                     {p.status === '제품발송' && p.submit_data && (
-                      <span className="bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                        🎬 콘텐츠 제출됨
+                      <span className="bg-highlight text-ink px-4 py-2 rounded-xl text-sm font-semibold">
+                        콘텐츠 제출됨
                       </span>
                     )}
 
                     {/* 콘텐츠 검토중 */}
                     {p.status === '콘텐츠확인' && (
-                      <span className="bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                        🎬 콘텐츠 검토중
+                      <span className="bg-highlight text-ink px-4 py-2 rounded-xl text-sm font-semibold">
+                        콘텐츠 검토중
                       </span>
                     )}
 
                     {/* 정산 신청 - 업로드 확인 후 */}
                     {p.status === '업로드확인' && (
                       <button onClick={() => handlePaymentRequest(p.id)}
-                        className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-600 transition">
-                        💰 정산 신청하기
+                        className="bg-ink text-white px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition">
+                        정산 신청하기
                       </button>
                     )}
 
                     {/* 정산 신청중 표시 */}
                     {p.status === '정산요청' && (
-                      <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                        ⏳ 정산 신청중
+                      <span className="bg-highlight text-ink px-4 py-2 rounded-xl text-sm font-semibold">
+                        정산 신청중
                       </span>
                     )}
 
                     {/* 지급완료 표시 - 인플루언서에게는 텍스트로만 */}
                     {p.status === '정산완료' && (
-                      <span className="bg-green-100 text-green-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                        ✅ 정산 완료
+                      <span className="bg-highlight text-ink px-4 py-2 rounded-xl text-sm font-semibold">
+                        정산 완료
                       </span>
                     )}
                   </div>
