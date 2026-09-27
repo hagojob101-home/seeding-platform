@@ -132,6 +132,8 @@ create policy campaigns_client_request on public.campaigns for insert to authent
   );
 
 -- ───────────────── 4. 참여 상태 통합 ─────────────────
+-- 이전 중에는 상태 전환 검사 끄기 (6에서 새 함수로 교체 후 다시 켬)
+alter table public.participations disable trigger guard_participation_update;
 update public.participations set status = case
   when payment_status = '지급완료' then '정산완료'
   when payment_request_status = '신청' and status not in ('정산완료', '거절') then '정산요청'
@@ -239,6 +241,7 @@ begin
 
   raise exception '권한이 없습니다.';
 end $$;
+alter table public.participations enable trigger guard_participation_update;
 
 -- 고객사: 본인 캠페인에 제출된 콘텐츠 파일만 열람
 drop policy if exists files_select on storage.objects;
