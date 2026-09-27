@@ -303,25 +303,7 @@ const STEPS = PARTICIPATION_STEPS
                             <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
                           </div>
                           {/* 진행바 */}
-                          <div className="flex items-center">
-                            {STEPS.map((step, idx) => (
-                              <div key={step} className="flex items-center flex-1">
-                                <div className="flex flex-col items-center flex-1">
-                                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
-                                    idx <= getStepIndex(p.status)
-                                      ? 'bg-purple-600 border-purple-600 text-white'
-                                      : 'bg-white border-gray-300 text-gray-400'
-                                  }`}>
-                                    {idx < getStepIndex(p.status) ? '✓' : idx + 1}
-                                  </div>
-                                  <p className={`text-xs mt-1 font-medium text-center ${idx <= getStepIndex(p.status) ? 'text-purple-600' : 'text-gray-400'}`}>{step}</p>
-                                </div>
-                                {idx < STEPS.length - 1 && (
-                                  <div className={`h-0.5 w-full mb-4 ${idx < getStepIndex(p.status) ? 'bg-purple-600' : 'bg-gray-200'}`} />
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                          <Stepper current={getStepIndex(p.status)} />
                         </div>
                       ))}
                     </div>
@@ -402,25 +384,7 @@ const STEPS = PARTICIPATION_STEPS
                   {/* 진행 상황 바 */}
                   <div className="mb-6">
                     <p className="text-sm font-semibold text-gray-600 mb-3">진행 상황</p>
-                    <div className="flex items-center gap-0">
-                      {STEPS.map((step, idx) => (
-                        <div key={step} className="flex items-center flex-1">
-                          <div className="flex flex-col items-center flex-1">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
-                              idx <= getStepIndex(selectedParticipation.status)
-                                ? 'bg-purple-600 border-purple-600 text-white'
-                                : 'bg-white border-gray-300 text-gray-400'
-                            }`}>
-                              {idx < getStepIndex(selectedParticipation.status) ? '✓' : idx + 1}
-                            </div>
-                            <p className={`text-xs mt-1 font-medium ${idx <= getStepIndex(selectedParticipation.status) ? 'text-purple-600' : 'text-gray-400'}`}>{step}</p>
-                          </div>
-                          {idx < STEPS.length - 1 && (
-                            <div className={`h-0.5 w-full mb-4 ${idx < getStepIndex(selectedParticipation.status) ? 'bg-purple-600' : 'bg-gray-200'}`} />
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <Stepper current={getStepIndex(selectedParticipation.status)} />
                   </div>
 
                   {/* 상태 변경 - 상단 */}
@@ -894,5 +858,22 @@ const STEPS = PARTICIPATION_STEPS
       })()}
       <Footer />
     </div>
+  )
+}
+
+// 모든 칸을 위쪽에 맞춰, 글자가 줄바꿈돼도 동그라미와 선의 높이가 같게 유지
+function Stepper({ current }) {
+  return (
+    <ol className="grid" style={{ gridTemplateColumns: `repeat(${PARTICIPATION_STEPS.length}, minmax(0, 1fr))` }}>
+      {PARTICIPATION_STEPS.map((step, idx) => (
+        <li key={step} className="relative flex flex-col items-center" aria-current={idx === current ? 'step' : undefined}>
+          {idx > 0 && <span aria-hidden="true" className={`absolute top-[13px] right-1/2 w-full h-0.5 ${idx <= current ? 'bg-purple-600' : 'bg-gray-200'}`} />}
+          <span className={`relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${idx <= current ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white border-gray-300 text-gray-500'}`}>
+            {idx < current ? <span aria-label="완료">✓</span> : idx + 1}
+          </span>
+          <span className={`text-xs mt-1 font-medium text-center leading-tight ${idx <= current ? 'text-purple-600' : 'text-gray-500'}`}>{step}</span>
+        </li>
+      ))}
+    </ol>
   )
 }
