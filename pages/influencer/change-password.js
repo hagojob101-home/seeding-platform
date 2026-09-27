@@ -56,6 +56,9 @@ export default function ChangePassword() {
           <p className="text-sm text-gray-400 mt-1">
             안전한 계정 이용을 위해 처음 로그인 시 비밀번호를 변경해주세요.
           </p>
+              <p className="text-xs text-gray-400 mt-2 bg-gray-50 rounded-xl py-2 px-3">
+            ※ 계정은 제출하신 정보로 자동 생성되었으며, 임시 비밀번호는 휴대폰 번호 뒷자리 6자리입니다.
+          </p>
         </div>
 
         {error && <p className="text-red-500 text-sm mb-4 text-center bg-red-50 py-2 rounded-xl">{error}</p>}
