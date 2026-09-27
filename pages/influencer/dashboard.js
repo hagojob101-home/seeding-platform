@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
 import Footer from '../../components/Footer'
+import Progress from '../../components/Progress'
+import { PARTICIPATION_STEPS } from '../../lib/constants'
 
 export default function InfluencerDashboard() {
   const router = useRouter()
@@ -101,20 +103,6 @@ export default function InfluencerDashboard() {
     return map[status] || 'bg-gray-100 text-gray-700'
   }
 
-  const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료']
-  const stepIcons = ['📋', '✅', '📦', '🎬', '🔗', '💰']
-  const getStepIndex = (status) => {
-    const map = {
-      '신청': 0,
-      '승인': 1,
-      '제품발송': 2,
-      '콘텐츠확인': 3,
-      '업로드확인': 4,
-      '정산요청': 4,
-      '정산완료': 5,
-    }
-    return map[status] ?? 0
-  }
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -159,7 +147,6 @@ export default function InfluencerDashboard() {
         ) : (
           <div className="flex flex-col gap-4">
             {participations.map(p => {
-              const stepIdx = getStepIndex(p.status)
               return (
                 <div key={p.id} className="bg-white rounded-2xl shadow p-6">
                   <div className="flex justify-between items-start mb-4">
@@ -172,40 +159,8 @@ export default function InfluencerDashboard() {
                     </span>
                   </div>
 
-                  {/* 진행 상황 바 */}
-                  <div className="mb-4">
-                    <div className="flex items-center">
-                      {STEPS.map((step, idx) => (
-                        <div key={step} className="flex items-center flex-1">
-                          <div className="flex flex-col items-center">
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-base border-2 transition-all ${
-                              idx < stepIdx
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : idx === stepIdx && p.status === '정산완료'
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : idx === stepIdx && p.status === '콘텐츠확인'
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : idx === stepIdx && p.status === '업로드확인'
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : idx === stepIdx
-                                ? 'bg-purple-500 border-purple-500 text-white'
-                                : 'bg-white border-gray-200 text-gray-300'
-                            }`}>
-                              {idx < stepIdx ? '✓' : (idx === stepIdx && ['콘텐츠확인','업로드확인','정산완료'].includes(p.status)) ? '✓' : stepIcons[idx]}
-                            </div>
-                            <p className={`text-xs mt-1 font-medium whitespace-nowrap ${
-                              idx <= stepIdx ? 'text-purple-600' : 'text-gray-300'
-                            }`}>{step}</p>
-                          </div>
-                          {idx < STEPS.length - 1 && (
-                            <div className={`h-1 flex-1 mx-1 mb-4 rounded ${
-                              idx < stepIdx ? 'bg-green-400' : 'bg-gray-200'
-                            }`} />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  {/* 진행 상황 */}
+                  <div className="mb-4"><Progress current={PARTICIPATION_STEPS.indexOf(p.status)} /></div>
 
                   {/* 원고료 */}
                   <div className="flex flex-col gap-1 mb-4">

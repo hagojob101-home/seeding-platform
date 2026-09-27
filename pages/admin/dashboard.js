@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import Footer from '../../components/Footer'
 import FileLink, { signedUrl } from '../../components/FileLink'
 import { PARTICIPATION_STEPS } from '../../lib/constants'
+import Progress, { StepLabels } from '../../components/Progress'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -294,6 +295,8 @@ const STEPS = PARTICIPATION_STEPS
                   {/* 캠페인별 진행바 - 상단 */}
                   <div className="mb-6">
                     <p className="text-sm font-semibold text-gray-600 mb-4">📋 캠페인별 진행 현황</p>
+                    {/* 단계 이름은 목록 위에 한 번만 (카드 안쪽 여백과 맞춤) */}
+                    <div className="px-4 border border-transparent mb-2"><StepLabels /></div>
                     <div className="flex flex-col gap-4">
                       {selectedInfluencer.items.map(p => (
                         <div key={p.id} className={`border rounded-2xl p-4 cursor-pointer transition ${selectedParticipation?.id === p.id ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'}`}
@@ -303,7 +306,7 @@ const STEPS = PARTICIPATION_STEPS
                             <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
                           </div>
                           {/* 진행바 */}
-                          <Stepper current={getStepIndex(p.status)} />
+                          <Progress current={STEPS.indexOf(p.status)} labels={false} />
                         </div>
                       ))}
                     </div>
@@ -384,7 +387,7 @@ const STEPS = PARTICIPATION_STEPS
                   {/* 진행 상황 바 */}
                   <div className="mb-6">
                     <p className="text-sm font-semibold text-gray-600 mb-3">진행 상황</p>
-                    <Stepper current={getStepIndex(selectedParticipation.status)} />
+                    <Progress current={STEPS.indexOf(selectedParticipation.status)} />
                   </div>
 
                   {/* 상태 변경 - 상단 */}
@@ -861,19 +864,3 @@ const STEPS = PARTICIPATION_STEPS
   )
 }
 
-// 모든 칸을 위쪽에 맞춰, 글자가 줄바꿈돼도 동그라미와 선의 높이가 같게 유지
-function Stepper({ current }) {
-  return (
-    <ol className="grid" style={{ gridTemplateColumns: `repeat(${PARTICIPATION_STEPS.length}, minmax(0, 1fr))` }}>
-      {PARTICIPATION_STEPS.map((step, idx) => (
-        <li key={step} className="relative flex flex-col items-center" aria-current={idx === current ? 'step' : undefined}>
-          {idx > 0 && <span aria-hidden="true" className={`absolute top-[13px] right-1/2 w-full h-0.5 ${idx <= current ? 'bg-purple-600' : 'bg-gray-200'}`} />}
-          <span className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${idx <= current ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white border-gray-300 text-gray-500'}`}>
-            {idx < current ? <span aria-label="완료">✓</span> : idx + 1}
-          </span>
-          <span className={`text-xs mt-1 font-medium text-center leading-tight ${idx <= current ? 'text-purple-600' : 'text-gray-500'}`}>{step}</span>
-        </li>
-      ))}
-    </ol>
-  )
-}

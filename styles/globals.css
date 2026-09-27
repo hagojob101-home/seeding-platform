@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 임시 디자인 색: 여기와 tailwind.config.js 매핑에서만 정의 (최종 디자인 때 이 값만 교체) */
+:root {
+  --bg: #ffffff;
+  --text: #191919;
+  --muted: #6b6b6b;      /* 흰 배경 대비 5.3:1 */
+  --highlight: #f1f1ef;  /* 강조·선택·호버 */
+  --border: #e3e3e0;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

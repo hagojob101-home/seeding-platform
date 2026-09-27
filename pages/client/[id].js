@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
 import FileLink from '../../components/FileLink'
+import Progress from '../../components/Progress'
 
 export default function ClientCampaignDetail() {
   const router = useRouter()
@@ -15,7 +16,6 @@ export default function ClientCampaignDetail() {
   // 업로드확인 이후(정산 단계 포함)는 고객사 화면에서 '완료'로 표시
   const getStepIndex = (status) => ['업로드확인', '정산요청', '정산완료'].includes(status) ? 4 : STEPS.indexOf(status)
 
-  const stepIcons = ['📋', '✅', '📦', '🎬', '🏆']
 
   useEffect(() => {
     if (!id) return
@@ -75,7 +75,6 @@ export default function ClientCampaignDetail() {
         ) : (
           <div className="flex flex-col gap-4">
             {participations.map(p => {
-              const stepIdx = getStepIndex(p.status)
               return (
                 <div key={p.id} className="bg-white rounded-2xl shadow p-6">
                   {/* 인플루언서 기본 정보 */}
@@ -96,34 +95,8 @@ export default function ClientCampaignDetail() {
                     </div>
                   </div>
 
-                  {/* 진행 상황 바 */}
-                  <div className="mb-4">
-                    <div className="flex items-center">
-                      {STEPS.map((step, idx) => (
-                        <div key={step} className="flex items-center flex-1">
-                          <div className="flex flex-col items-center">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg border-2 transition-all ${
-                              idx < stepIdx
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : idx === stepIdx
-                                ? 'bg-blue-500 border-blue-500 text-white'
-                                : 'bg-white border-gray-200 text-gray-300'
-                            }`}>
-                              {idx < stepIdx ? '✓' : stepIcons[idx]}
-                            </div>
-                            <p className={`text-xs mt-1 font-medium whitespace-nowrap ${
-                              idx <= stepIdx ? 'text-blue-600' : 'text-gray-300'
-                            }`}>{step}</p>
-                          </div>
-                          {idx < STEPS.length - 1 && (
-                            <div className={`h-1 flex-1 mx-1 mb-4 rounded ${
-                              idx < stepIdx ? 'bg-green-400' : 'bg-gray-200'
-                            }`} />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  {/* 진행 상황 */}
+                  <div className="mb-4"><Progress steps={STEPS} current={getStepIndex(p.status)} /></div>
 
                   {/* 발송 버튼 - 승인 상태일 때만 */}
                   {p.status === '승인' && (
