@@ -60,6 +60,7 @@ export default function ClientLogin() {
             {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
+        <p className="text-center text-sm mt-4"><a href="/forgot-password" className="text-muted hover:underline">비밀번호를 잊으셨나요?</a></p>
         <p className="text-center text-sm text-muted mt-4">
           광고주 계정이 없으신가요?{' '}
           <a href="/client/register" className="text-ink font-semibold hover:underline">회원가입</a>
