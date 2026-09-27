@@ -69,14 +69,8 @@ export default function Apply() {
     setSubmitting(true)
     try {
       const rewardVal = calcReward(form.followers)
+      // 캠페인별 답변만 (기본정보는 users, 정산정보는 payout_profiles)
       const applyData = {
-        // 마이페이지에서 불러온 정보
-        name: profile.name,
-        phone: profile.phone,
-        address: profile.address,
-        instagram: profile.instagram,
-        youtube: profile.youtube,
-        // 캠페인별 입력 정보
         followers: form.followers,
         reward: rewardVal,
         adult_verified: form.adult_verified,

@@ -67,10 +67,8 @@ export default function InfluencerDashboard() {
   }
 
   const handlePaymentRequest = async (participationId) => {
-    const { error } = await supabase.from('participations').update({
-      payment_request_status: '신청',
-      payment_request_at: new Date().toISOString(),
-    }).eq('id', participationId)
+    // 요청 시각은 DB가 기록, 정산정보 미완료면 DB가 거절
+    const { error } = await supabase.from('participations').update({ status: '정산요청' }).eq('id', participationId)
     if (error) { alert('오류: ' + error.message); return }
     alert('정산 신청이 완료되었습니다! 관리자 확인 후 처리됩니다.')
     const { data } = await supabase
@@ -112,9 +110,8 @@ export default function InfluencerDashboard() {
       '제품발송': 2,
       '콘텐츠확인': 3,
       '업로드확인': 4,
+      '정산요청': 4,
       '정산완료': 5,
-      '완료': 5,
-      '지급완료': 5,
     }
     return map[status] ?? 0
   }
@@ -249,8 +246,8 @@ export default function InfluencerDashboard() {
                       </span>
                     )}
 
-                    {/* 정산 신청 - 완료 상태이고 아직 정산 신청 안 한 경우 */}
-                    {p.status === '완료' && p.payment_request_status !== '신청' && p.payment_status !== '지급완료' && (
+                    {/* 정산 신청 - 업로드 확인 후 */}
+                    {p.status === '업로드확인' && (
                       <button onClick={() => handlePaymentRequest(p.id)}
                         className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-600 transition">
                         💰 정산 신청하기
@@ -258,14 +255,14 @@ export default function InfluencerDashboard() {
                     )}
 
                     {/* 정산 신청중 표시 */}
-                    {p.payment_request_status === '신청' && p.payment_status !== '지급완료' && (
+                    {p.status === '정산요청' && (
                       <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-sm font-semibold">
                         ⏳ 정산 신청중
                       </span>
                     )}
 
                     {/* 지급완료 표시 - 인플루언서에게는 텍스트로만 */}
-                    {p.payment_status === '지급완료' && (
+                    {p.status === '정산완료' && (
                       <span className="bg-green-100 text-green-700 px-4 py-2 rounded-xl text-sm font-semibold">
                         ✅ 정산 완료
                       </span>

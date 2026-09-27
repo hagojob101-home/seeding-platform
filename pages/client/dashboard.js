@@ -23,51 +23,50 @@ export default function ClientDashboard() {
       setUser(user)
       const { data: cData } = await supabase.from('clients').select('*').eq('user_id', user.id).single()
       setClientInfo(cData)
-      const { data: rData } = await supabase
-        .from('campaign_requests')
-        .select('*')
-        .eq('client_id', user.id)
-        .order('created_at', { ascending: false })
-      setRequests(rData || [])
+      if (cData) setRequests(await fetchCampaigns(cData.id))
       setLoading(false)
     }
     init()
   }, [])
 
+  const fetchCampaigns = async (clientId) => {
+    const { data } = await supabase.from('campaigns').select('*').eq('client_id', clientId).order('created_at', { ascending: false })
+    return data || []
+  }
+
+  // 캠페인 요청 = 상태 '요청'인 캠페인
   const handleSubmitRequest = async (e) => {
     e.preventDefault()
-    const { error } = await supabase.from('campaign_requests').insert({
-      client_id: user.id,
-      company_name: clientInfo?.company_name || '',
+    if (!clientInfo) { alert('고객사 정보를 찾을 수 없습니다.'); return }
+    const { error } = await supabase.from('campaigns').insert({
+      client_id: clientInfo.id,
+      name: form.product_name + ' 캠페인',
+      description: (clientInfo.company_name || '') + ' 시딩 캠페인',
       monthly_budget: parseInt(form.monthly_budget),
       product_url: form.product_url,
       product_name: form.product_name,
       product_price: parseInt(form.product_price),
       min_influencers: parseInt(form.min_influencers),
-      status: '검토중'
+      status: '요청'
     })
     if (error) { alert('오류: ' + error.message); return }
     alert('캠페인 요청이 제출되었습니다!')
     setShowForm(false)
-    const { data: rData } = await supabase
-      .from('campaign_requests')
-      .select('*')
-      .eq('client_id', user.id)
-      .order('created_at', { ascending: false })
-    setRequests(rData || [])
+    setRequests(await fetchCampaigns(clientInfo.id))
   }
 
   const statusBadge = (status) => {
     const map = {
-      '검토중': 'bg-yellow-100 text-yellow-700',
-      '승인': 'bg-green-100 text-green-700',
+      '요청': 'bg-yellow-100 text-yellow-700',
+      '진행': 'bg-green-100 text-green-700',
+      '완료': 'bg-gray-100 text-gray-700',
       '거절': 'bg-red-100 text-red-700'
     }
     return map[status] || 'bg-gray-100 text-gray-700'
   }
 
-  const approved = requests.filter(r => r.status === '승인')
-  const pending = requests.filter(r => r.status === '검토중')
+  const approved = requests.filter(r => r.status === '진행' || r.status === '완료')
+  const pending = requests.filter(r => r.status === '요청')
   const rejected = requests.filter(r => r.status === '거절')
 
   const menuItems = [
@@ -233,7 +232,7 @@ export default function ClientDashboard() {
                 {approved.map(r => (
                   <div key={r.id}
                     className="bg-white rounded-2xl shadow p-6 cursor-pointer hover:shadow-md transition"
-                    onClick={() => r.campaign_id && router.push('/client/' + r.campaign_id)}
+                    onClick={() => router.push('/client/' + r.id)}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -242,7 +241,7 @@ export default function ClientDashboard() {
                           버짓: {r.monthly_budget?.toLocaleString()}원 · 최소 {r.min_influencers}명
                         </p>
                       </div>
-                      <span className="text-xs px-3 py-1 rounded-full font-semibold bg-green-100 text-green-700">승인</span>
+                      <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusBadge(r.status)}`}>{r.status}</span>
                     </div>
                     <p className="text-sm text-gray-600">제품가: {r.product_price?.toLocaleString()}원</p>
                     {r.product_url && (

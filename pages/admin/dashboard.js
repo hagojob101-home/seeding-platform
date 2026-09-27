@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
 import Footer from '../../components/Footer'
 import FileLink, { signedUrl } from '../../components/FileLink'
+import { PARTICIPATION_STEPS } from '../../lib/constants'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -30,9 +31,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (selectedAgency) {
-      supabase.from('agency_influencers')
+      supabase.from('client_influencers')
         .select('*')
-        .eq('agency_id', selectedAgency.id)
+        .eq('client_id', selectedAgency.id)
         .order('created_at', { ascending: true })
         .then(({ data }) => setAgencyInfluencers(data || []))
     }
@@ -56,26 +57,26 @@ export default function AdminDashboard() {
   }, [])
 
   const fetchData = async () => {
-    const [c, p, cl, cr, co, ag] = await Promise.all([
-      supabase.from('campaigns').select('*').order('created_at', { ascending: false }),
+    const [c, p, cl, co] = await Promise.all([
+      supabase.from('campaigns').select('*, clients(company_name)').order('created_at', { ascending: false }),
       supabase.from('participations').select('*, campaigns(name, product_name), users!participations_influencer_id_fkey(name, phone, address, instagram, youtube, payout_profiles(bank_name, account_number, account_holder, id_card_path, bank_book_path, verified))').order('created_at', { ascending: false }),
       supabase.from('clients').select('*').order('created_at', { ascending: false }),
-      supabase.from('campaign_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('consultations').select('*').order('created_at', { ascending: false }),
-      supabase.from('agencies').select('*').order('created_at', { ascending: false }),
     ])
-    setCampaigns(c.data || [])
+    // 캠페인 하나의 표: 요청·거절은 '캠페인 요청' 탭, 진행·완료는 '캠페인 관리' 탭
+    const all = c.data || []
+    setCampaigns(all.filter(x => x.status === '진행' || x.status === '완료'))
+    setCampaignRequests(all.filter(x => x.status === '요청' || x.status === '거절'))
     setParticipations(p.data || [])
     setClients(cl.data || [])
-    setCampaignRequests(cr.data || [])
     setConsultations(co.data || [])
-    setAgencies(ag.data || [])
+    setAgencies(cl.data || [])
     setLoading(false)
   }
 
   const handleCreateCampaign = async (e) => {
     e.preventDefault()
-    const { error } = await supabase.from('campaigns').insert(newCampaign)
+    const { error } = await supabase.from('campaigns').insert({ ...newCampaign, status: '진행' })
     if (error) { alert('오류: ' + error.message); return }
     alert('캠페인이 생성되었습니다!')
     setShowForm(false)
@@ -110,32 +111,20 @@ export default function AdminDashboard() {
   }
 
   const handlePaymentUpdate = async (id) => {
-    await supabase.from('participations').update({ payment_status: '지급완료' }).eq('id', id)
-    fetchData()
-    if (selectedParticipation?.id === id) setSelectedParticipation(prev => ({ ...prev, payment_status: '지급완료' }))
+    await handleStatusUpdate(id, '정산완료')
   }
 
   const handleRequestApprove = async (id) => {
-    const request = campaignRequests.find(r => r.id === id)
-    if (!request) return
-    const { data: newCampaignData, error: campaignError } = await supabase.from('campaigns').insert({
-      name: request.product_name + ' 캠페인',
-      product_name: request.product_name,
-      description: request.company_name + ' 시딩 캠페인',
-      form_type: 'basic',
-      client_id: request.client_id,
-      campaign_request_id: id,
-    }).select().single()
-    if (campaignError) { alert('캠페인 생성 오류: ' + campaignError.message); return }
-    await supabase.from('campaign_requests').update({ status: '승인', campaign_id: newCampaignData.id }).eq('id', id)
+    const { error } = await supabase.from('campaigns').update({ status: '진행' }).eq('id', id)
+    if (error) { alert('오류: ' + error.message); return }
     fetchData()
-    alert('승인되었습니다! 캠페인이 자동 생성되었습니다.')
+    alert('승인되었습니다! 캠페인이 진행 상태로 바뀌었습니다.')
   }
 
   const handleRequestReject = async (id) => {
     const reason = window.prompt('거절 사유를 입력해주세요:')
     if (!reason) return
-    const { error } = await supabase.from('campaign_requests').update({ status: '거절', rejection_reason: reason }).eq('id', id)
+    const { error } = await supabase.from('campaigns').update({ status: '거절', rejection_reason: reason }).eq('id', id)
     if (error) { alert('오류: ' + error.message); return }
     alert('거절 처리되었습니다.')
     fetchData()
@@ -154,6 +143,7 @@ export default function AdminDashboard() {
       '제품발송': 'bg-purple-100 text-purple-700',
       '콘텐츠확인': 'bg-orange-100 text-orange-700',
       '업로드확인': 'bg-cyan-100 text-cyan-700',
+      '정산요청': 'bg-amber-100 text-amber-700',
       '정산완료': 'bg-green-100 text-green-700',
       '거절': 'bg-red-100 text-red-700',
     }
@@ -161,24 +151,24 @@ export default function AdminDashboard() {
   }
 
   const requestStatusColor = (status) => {
-    const map = { '검토중': 'bg-yellow-100 text-yellow-700', '승인': 'bg-green-100 text-green-700', '거절': 'bg-red-100 text-red-700' }
+    const map = { '요청': 'bg-yellow-100 text-yellow-700', '진행': 'bg-green-100 text-green-700', '거절': 'bg-red-100 text-red-700' }
     return map[status] || 'bg-gray-100 text-gray-700'
   }
 
 
-const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드확인', '정산완료']
+const STEPS = PARTICIPATION_STEPS
   const STEP_LABELS = {
     '신청': '📋 신청',
     '승인': '✅ 승인',
     '제품발송': '📦 제품발송',
     '콘텐츠확인': '🎬 콘텐츠확인',
     '업로드확인': '🔗 업로드확인',
+    '정산요청': '🧾 정산요청',
     '정산완료': '💰 정산완료',
   }
 
   const getStepIndex = (status) => {
-    const map = { '신청': 0, '승인': 1, '제품발송': 2, '콘텐츠확인': 3, '업로드확인': 4, '정산완료': 5 }
-    return map[status] ?? 0
+    return Math.max(0, STEPS.indexOf(status))
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
@@ -196,10 +186,10 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
           {[
             { id: 'campaigns', label: '📋 캠페인 관리' },
             { id: 'participations', label: '👥 인플루언서 현황' },
-            { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '검토중').length },
+            { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '요청').length },
             { id: 'clients', label: '🏢 고객사 목록' },
             { id: 'agencydb', label: '📊 고객사 DB' },
-            { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.payment_request_status === '신청' && p.payment_status !== '지급완료').length },
+            { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.status === '정산요청').length },
             { id: 'consultations', label: '📞 컨설팅 신청', count: consultations.length },
           ].map(t => (
             <button key={t.id} onClick={() => { setTab(t.id); router.push({ pathname: '/admin/dashboard', query: { tab: t.id } }, undefined, { shallow: true }) }}
@@ -267,7 +257,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                   // 이름으로 그룹핑
                   const grouped = {}
                   participations.forEach(p => {
-                    const name = p.apply_data?.name || p.name || '-'
+                    const name = p.users?.name || p.name || '-'
                     if (!grouped[name]) grouped[name] = []
                     grouped[name].push(p)
                   })
@@ -403,7 +393,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                 <div className="bg-white rounded-2xl shadow p-6">
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-800">{selectedParticipation.apply_data?.name || '-'}</h3>
+                      <h3 className="text-xl font-bold text-gray-800">{selectedParticipation.users?.name || '-'}</h3>
                       <p className="text-sm text-gray-500">{selectedParticipation.campaigns?.name || '-'}</p>
                     </div>
                     <span className={`text-sm px-3 py-1 rounded-full font-semibold ${statusColor(selectedParticipation.status)}`}>{selectedParticipation.status}</span>
@@ -498,19 +488,19 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-400 mb-1">이름</p>
-                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.name || '-'}</p>
+                      <p className="font-semibold text-gray-800">{selectedParticipation.users?.name || '-'}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-400 mb-1">연락처</p>
-                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.phone || '-'}</p>
+                      <p className="font-semibold text-gray-800">{selectedParticipation.users?.phone || '-'}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-400 mb-1">주소</p>
-                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.address || '-'}</p>
+                      <p className="font-semibold text-gray-800">{selectedParticipation.users?.address || '-'}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-400 mb-1">인스타그램</p>
-                      <p className="font-semibold text-gray-800">@{selectedParticipation.apply_data?.instagram || '-'}</p>
+                      <p className="font-semibold text-gray-800">@{selectedParticipation.users?.instagram || '-'}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-400 mb-1">팔로워 수</p>
@@ -526,8 +516,8 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-400 mb-1">정산 상태</p>
-                      <p className={`font-semibold ${selectedParticipation.payment_status === '지급완료' ? 'text-green-600' : 'text-gray-400'}`}>
-                        {selectedParticipation.payment_status === '지급완료' ? '✅ 지급완료' : '⏳ 대기중'}
+                      <p className={`font-semibold ${selectedParticipation.status === '정산완료' ? 'text-green-600' : 'text-gray-400'}`}>
+                        {selectedParticipation.status === '정산완료' ? '✅ 지급완료' : '⏳ 대기중'}
                       </p>
                     </div>
                   </div>
@@ -625,7 +615,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <p className="font-bold text-gray-800 text-lg">{r.product_name}</p>
-                      <p className="text-sm text-gray-500">{r.company_name}</p>
+                      <p className="text-sm text-gray-500">{r.clients?.company_name || '-'}</p>
                     </div>
                     <span className={`text-xs px-3 py-1 rounded-full font-semibold ${requestStatusColor(r.status)}`}>{r.status}</span>
                   </div>
@@ -638,7 +628,7 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                       {r.product_url ? <a href={r.product_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">{r.product_url}</a> : <p>-</p>}
                     </div>
                   </div>
-                  {r.status === '검토중' && (
+                  {r.status === '요청' && (
                     <div className="flex gap-3">
                       <button onClick={() => handleRequestApprove(r.id)} className="flex-1 bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">✅ 승인</button>
                       <button onClick={() => handleRequestReject(r.id)} className="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold hover:bg-red-600 transition">❌ 거절</button>
@@ -761,19 +751,19 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4">💰 정산 관리</h2>
             <div className="grid gap-4">
-              {participations.filter(p => p.payment_request_status === '신청').length === 0 ? (
+              {participations.filter(p => p.status === '정산요청' || p.status === '정산완료').length === 0 ? (
                 <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
                   <p>정산 신청 내역이 없습니다.</p>
                 </div>
               ) : (
-                participations.filter(p => p.payment_request_status === '신청').map(p => (
+                participations.filter(p => p.status === '정산요청' || p.status === '정산완료').map(p => (
                   <div key={p.id} className="bg-white rounded-2xl shadow p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <p className="font-bold text-gray-800 text-lg">{p.apply_data?.name || '-'}</p>
+                        <p className="font-bold text-gray-800 text-lg">{p.users?.name || '-'}</p>
                         <p className="text-sm text-gray-500">{p.campaigns?.name || '-'}</p>
                       </div>
-                      {p.payment_status === '지급완료' ? (
+                      {p.status === '정산완료' ? (
                         <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">✅ 지급완료</span>
                       ) : (
                         <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">⏳ 정산대기</span>
@@ -790,14 +780,14 @@ const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '업로드
                       </div>
                       <div className="bg-gray-50 rounded-xl p-3">
                         <p className="text-xs text-gray-400 mb-1">예금주</p>
-                        <p className="font-semibold text-gray-800">{payout(p).account_holder || p.apply_data?.name || '-'}</p>
+                        <p className="font-semibold text-gray-800">{payout(p).account_holder || p.users?.name || '-'}</p>
                       </div>
                       <div className="bg-gray-50 rounded-xl p-3">
                         <p className="text-xs text-gray-400 mb-1">신청일</p>
                         <p className="font-semibold text-gray-800">{p.payment_request_at ? new Date(p.payment_request_at).toLocaleDateString('ko-KR') : '-'}</p>
                       </div>
                     </div>
-                    {p.payment_status !== '지급완료' && (
+                    {p.status !== '정산완료' && (
                       <button onClick={() => handlePaymentUpdate(p.id)}
                         className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition">
                         💰 정산 완료 처리

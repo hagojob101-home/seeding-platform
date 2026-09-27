@@ -12,7 +12,8 @@ export default function ClientCampaignDetail() {
 
   const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '완료']
 
-  const getStepIndex = (status) => STEPS.indexOf(status)
+  // 업로드확인 이후(정산 단계 포함)는 고객사 화면에서 '완료'로 표시
+  const getStepIndex = (status) => ['업로드확인', '정산요청', '정산완료'].includes(status) ? 4 : STEPS.indexOf(status)
 
   const stepIcons = ['📋', '✅', '📦', '🎬', '🏆']
 
@@ -23,11 +24,7 @@ export default function ClientCampaignDetail() {
       if (!user) { router.push('/client/login'); return }
       const { data: cData } = await supabase.from('campaigns').select('*').eq('id', id).single()
       setCampaign(cData)
-      const { data: pData } = await supabase
-        .from('participations')
-        .select('*')
-        .eq('campaign_id', id)
-        .order('created_at', { ascending: false })
+      const { data: pData } = await supabase.rpc('campaign_participants', { p_campaign_id: id })
       setParticipations(pData || [])
       setLoading(false)
     }
@@ -84,13 +81,13 @@ export default function ClientCampaignDetail() {
                   {/* 인플루언서 기본 정보 */}
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="font-bold text-gray-800 text-lg">{p.apply_data?.name || '-'}</p>
+                      <p className="font-bold text-gray-800 text-lg">{p.name || '-'}</p>
                       <div className="flex gap-4 text-sm text-gray-500 mt-1">
-                        <span>📱 {p.apply_data?.phone || '-'}</span>
-                        <span>📍 {p.apply_data?.address || '-'}</span>
+                        <span>📱 {p.phone || '-'}</span>
+                        <span>📍 {p.address || '-'}</span>
                       </div>
                       <div className="flex gap-4 text-sm text-gray-500 mt-1">
-                        <span>📸 @{p.apply_data?.instagram || '-'} · 팔로워 {p.apply_data?.followers ? Number(p.apply_data.followers).toLocaleString() : '-'}</span>
+                        <span>📸 @{p.instagram || '-'} · 팔로워 {p.apply_data?.followers ? Number(p.apply_data.followers).toLocaleString() : '-'}</span>
                       </div>
                     </div>
                     <div className="text-right">
