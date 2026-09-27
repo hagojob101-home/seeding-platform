@@ -868,7 +868,7 @@ function Stepper({ current }) {
       {PARTICIPATION_STEPS.map((step, idx) => (
         <li key={step} className="relative flex flex-col items-center" aria-current={idx === current ? 'step' : undefined}>
           {idx > 0 && <span aria-hidden="true" className={`absolute top-[13px] right-1/2 w-full h-0.5 ${idx <= current ? 'bg-purple-600' : 'bg-gray-200'}`} />}
-          <span className={`relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${idx <= current ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white border-gray-300 text-gray-500'}`}>
+          <span className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${idx <= current ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white border-gray-300 text-gray-500'}`}>
             {idx < current ? <span aria-label="완료">✓</span> : idx + 1}
           </span>
           <span className={`text-xs mt-1 font-medium text-center leading-tight ${idx <= current ? 'text-purple-600' : 'text-gray-500'}`}>{step}</span>
