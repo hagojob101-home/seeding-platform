@@ -49,7 +49,7 @@ export default function ClientLogin() {
       </div>
       <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-ink mb-2">고객사 / 관리자 로그인</h2>
+          <h2 className="text-2xl font-bold text-ink mb-2">광고주 / 관리자 로그인</h2>
           <p className="text-muted text-sm">시딩 플랫폼</p>
         </div>
         {error && <p className="text-ink text-sm mb-4 text-center bg-highlight p-3 rounded-xl">{error}</p>}
@@ -61,7 +61,7 @@ export default function ClientLogin() {
           </button>
         </form>
         <p className="text-center text-sm text-muted mt-4">
-          고객사 계정이 없으신가요?{' '}
+          광고주 계정이 없으신가요?{' '}
           <a href="/client/register" className="text-ink font-semibold hover:underline">회원가입</a>
         </p>
       </div>

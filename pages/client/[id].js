@@ -13,7 +13,7 @@ export default function ClientCampaignDetail() {
 
   const STEPS = ['신청', '승인', '제품발송', '콘텐츠확인', '완료']
 
-  // 업로드확인 이후(정산 단계 포함)는 고객사 화면에서 '완료'로 표시
+  // 업로드확인 이후(정산 단계 포함)는 광고주 화면에서 '완료'로 표시
   const getStepIndex = (status) => ['업로드확인', '정산요청', '정산완료'].includes(status) ? 4 : STEPS.indexOf(status)
 
 

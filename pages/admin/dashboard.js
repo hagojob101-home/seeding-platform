@@ -188,8 +188,8 @@ const STEPS = PARTICIPATION_STEPS
             { id: 'campaigns', label: '캠페인 관리' },
             { id: 'participations', label: '인플루언서 현황' },
             { id: 'requests', label: '캠페인 요청', count: campaignRequests.filter(r => r.status === '요청').length },
-            { id: 'clients', label: '고객사 목록' },
-            { id: 'agencydb', label: '고객사 DB' },
+            { id: 'clients', label: '광고주 목록' },
+            { id: 'agencydb', label: '광고주 DB' },
             { id: 'payments', label: '정산 관리', count: participations.filter(p => p.status === '정산요청').length },
             { id: 'consultations', label: '컨설팅 신청', count: consultations.length },
           ].map(t => (
@@ -613,10 +613,10 @@ const STEPS = PARTICIPATION_STEPS
           </div>
         )}
 
-        {/* 고객사 목록 탭 */}
+        {/* 광고주 목록 탭 */}
         {tab === 'clients' && (
           <div>
-            <h2 className="text-lg font-bold text-ink mb-4">고객사 목록</h2>
+            <h2 className="text-lg font-bold text-ink mb-4">광고주 목록</h2>
             <div className="grid gap-4">
               {clients.map(c => (
                 <div key={c.id} className="bg-white rounded-2xl shadow p-5">
@@ -625,7 +625,7 @@ const STEPS = PARTICIPATION_STEPS
                       <p className="font-bold text-ink text-lg">{c.company_name}</p>
                       <p className="text-sm text-muted">{c.email}</p>
                     </div>
-                    <span className="bg-highlight text-ink text-xs px-3 py-1 rounded-full font-semibold">고객사</span>
+                    <span className="bg-highlight text-ink text-xs px-3 py-1 rounded-full font-semibold">광고주</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
                     <div><p className="text-muted">월 예산</p><p className="font-semibold">{c.monthly_budget ? c.monthly_budget.toLocaleString() + '원' : '-'}</p></div>
@@ -639,14 +639,14 @@ const STEPS = PARTICIPATION_STEPS
                   </div>
                 </div>
               ))}
-              {clients.length === 0 && <p className="text-center text-muted py-10">등록된 고객사가 없습니다.</p>}
+              {clients.length === 0 && <p className="text-center text-muted py-10">등록된 광고주가 없습니다.</p>}
             </div>
           </div>
         )}
 
         {tab === 'agencydb' && (
           <div>
-            <h2 className="text-lg font-bold text-ink mb-4">고객사 DB</h2>
+            <h2 className="text-lg font-bold text-ink mb-4">광고주 DB</h2>
             {!selectedAgency ? (
               <div className="grid gap-4">
                 {agencies.map(a => (
@@ -660,11 +660,11 @@ const STEPS = PARTICIPATION_STEPS
                     </div>
                   </div>
                 ))}
-                {agencies.length === 0 && <p className="text-center text-muted py-10">등록된 고객사가 없습니다.</p>}
+                {agencies.length === 0 && <p className="text-center text-muted py-10">등록된 광고주가 없습니다.</p>}
               </div>
             ) : (
               <div>
-                <button onClick={() => { setSelectedAgency(null); router.push({ pathname: '/admin/dashboard', query: { tab: 'agencydb' } }, undefined, { shallow: true }) }} className="mb-4 text-ink hover:underline text-sm font-semibold">← 고객사 목록으로</button>
+                <button onClick={() => { setSelectedAgency(null); router.push({ pathname: '/admin/dashboard', query: { tab: 'agencydb' } }, undefined, { shallow: true }) }} className="mb-4 text-ink hover:underline text-sm font-semibold">← 광고주 목록으로</button>
                 <h3 className="text-xl font-black text-ink mb-2">{selectedAgency.company_name}</h3>
                 <p className="text-sm text-muted mb-6">{selectedAgency.industry} · 시작일: {selectedAgency.start_date}</p>
                 <div className="bg-white rounded-2xl shadow overflow-x-auto">

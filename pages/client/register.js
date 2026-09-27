@@ -45,8 +45,8 @@ export default function ClientRegister() {
   return (
     <div className="min-h-screen bg-highlight flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-ink mb-2">고객사 회원가입</h1>
-        <p className="text-sm text-muted mb-6">시딩 플랫폼 고객사 계정을 만들어보세요</p>
+        <h1 className="text-2xl font-bold text-ink mb-2">광고주 회원가입</h1>
+        <p className="text-sm text-muted mb-6">시딩 플랫폼 광고주 계정을 만들어보세요</p>
         {error && <div className="bg-highlight text-ink rounded-xl px-4 py-3 mb-4 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

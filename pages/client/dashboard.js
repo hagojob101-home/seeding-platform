@@ -37,7 +37,7 @@ export default function ClientDashboard() {
   // 캠페인 요청 = 상태 '요청'인 캠페인
   const handleSubmitRequest = async (e) => {
     e.preventDefault()
-    if (!clientInfo) { alert('고객사 정보를 찾을 수 없습니다.'); return }
+    if (!clientInfo) { alert('광고주 정보를 찾을 수 없습니다.'); return }
     const { error } = await supabase.from('campaigns').insert({
       client_id: clientInfo.id,
       name: form.product_name + ' 캠페인',
@@ -89,7 +89,7 @@ export default function ClientDashboard() {
       {/* 사이드바 */}
       <aside className="w-56 bg-white shadow-sm flex flex-col py-6 px-3 min-h-screen">
         <div className="mb-8 px-3">
-          <h1 className="text-lg font-bold text-ink">고객사 포털</h1>
+          <h1 className="text-lg font-bold text-ink">광고주 포털</h1>
           <p className="text-xs text-muted mt-1">{clientInfo?.company_name}</p>
         </div>
         <nav className="flex flex-col gap-1 flex-1">

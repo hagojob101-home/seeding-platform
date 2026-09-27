@@ -43,23 +43,23 @@ export default function Login() {
 
           <div className="border-t border-line my-2" />
 
-          {/* 고객사 로그인 */}
+          {/* 광고주 로그인 */}
           <button onClick={() => router.push('/client/login')}
             className="bg-white rounded-2xl shadow-sm hover:shadow-sm transition-all p-6 text-left border-2 border-transparent hover:border-ink group">
             <div className="flex items-center gap-4">
               <div>
-                <p className="font-bold text-ink text-lg">고객사 로그인</p>
+                <p className="font-bold text-ink text-lg">광고주 로그인</p>
                 <p className="text-sm text-muted">캠페인 요청 및 진행 현황 확인</p>
               </div>
               <span className="ml-auto text-muted group-hover:text-ink text-xl transition">→</span>
             </div>
           </button>
 
-          {/* 고객사 회원가입 */}
+          {/* 광고주 회원가입 */}
           <button onClick={() => router.push('/client/register')}
             className="bg-white rounded-2xl border border-line hover:bg-highlight transition-all p-4 text-left group">
             <div className="flex items-center gap-4">
-              <p className="font-bold text-ink text-sm">고객사 회원가입</p>
+              <p className="font-bold text-ink text-sm">광고주 회원가입</p>
               <span className="ml-auto text-muted group-hover:text-ink text-lg transition">→</span>
             </div>
           </button>
