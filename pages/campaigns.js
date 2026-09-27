@@ -14,6 +14,7 @@ export default function Campaigns() {
       const { data } = await supabase
         .from('campaigns')
         .select('*')
+        .eq('status', '진행')
         .order('created_at', { ascending: false })
       setCampaigns(data || [])
       setLoading(false)

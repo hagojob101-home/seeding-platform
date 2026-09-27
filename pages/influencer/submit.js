@@ -18,9 +18,9 @@ export default function Submit() {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/influencer/login'); return }
-      const { data } = await supabase.from('participations').select('*, campaigns(name)').eq('id', participation_id).single()
+      const { data } = await supabase.from('participations').select('*, campaigns(name), users!participations_influencer_id_fkey(name)').eq('id', participation_id).single()
       setParticipation(data)
-      setName(data?.apply_data?.name || '')
+      setName(data?.users?.name || '')
     }
     init()
   }, [participation_id])
