@@ -63,14 +63,6 @@ export default function Login() {
             </div>
           </button>
 
-          {/* 광고주 회원가입 */}
-          <button onClick={() => router.push('/client/register')}
-            className="bg-white rounded-2xl border border-line hover:bg-highlight transition-all p-4 text-left group">
-            <div className="flex items-center gap-4">
-              <p className="font-bold text-ink text-sm">광고주 회원가입</p>
-              <span className="ml-auto text-muted group-hover:text-ink text-lg transition">→</span>
-            </div>
-          </button>
 
           <div className="border-t border-line my-2" />
 

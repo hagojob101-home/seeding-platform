@@ -64,8 +64,8 @@ export default function ClientLogin() {
         <p className="text-center text-sm mt-4"><a href="/forgot-password" className="text-muted hover:underline">비밀번호를 잊으셨나요?</a></p>
         {!isAdmin && (
         <p className="text-center text-sm text-muted mt-4">
-          광고주 계정이 없으신가요?{' '}
-          <a href="/client/register" className="text-ink font-semibold hover:underline">회원가입</a>
+          광고주 계정이 없으신가요? 먼저 상담 문의를 신청해주세요.{' '}
+          <a href="/#apply" className="text-ink font-semibold hover:underline">상담 신청하기</a>
         </p>
         )}
       </div>
