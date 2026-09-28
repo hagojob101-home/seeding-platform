@@ -44,6 +44,9 @@ export default function AdminDashboard() {
   const [selectedInfluencer, setSelectedInfluencer] = useState(null)
   const [imageModal, setImageModal] = useState(null) // { url, title }
   const [showForm, setShowForm] = useState(false)
+  const [signedIn, setSignedIn] = useState({}) // 광고주 user_id → 로그인 이력 여부
+  const [invite, setInvite] = useState(null) // 초대 입력값 (null = 닫힘)
+  const [inviteMsg, setInviteMsg] = useState('')
   const [newCampaign, setNewCampaign] = useState({ name: '', product_name: '', description: '', form_type: 'basic' })
 
   useEffect(() => {
@@ -58,12 +61,14 @@ export default function AdminDashboard() {
   }, [])
 
   const fetchData = async () => {
-    const [c, p, cl, co] = await Promise.all([
+    const [c, p, cl, co, st] = await Promise.all([
       supabase.from('campaigns').select('*, clients(company_name)').order('created_at', { ascending: false }),
       supabase.from('participations').select('*, campaigns(name, product_name), users!participations_influencer_id_fkey(name, phone, address, instagram, youtube, payout_profiles(bank_name, account_number, account_holder, id_card_path, bank_book_path, verified))').order('created_at', { ascending: false }),
       supabase.from('clients').select('*').order('created_at', { ascending: false }),
       supabase.from('consultations').select('*').order('created_at', { ascending: false }),
+      supabase.rpc('client_account_status'),
     ])
+    setSignedIn(Object.fromEntries((st.data || []).map(r => [r.user_id, !!r.last_sign_in_at])))
     // 캠페인 하나의 표: 요청·거절은 '캠페인 요청' 탭, 진행·완료는 '캠페인 관리' 탭
     const all = c.data || []
     setCampaigns(all.filter(x => x.status === '진행' || x.status === '완료'))
@@ -128,6 +133,22 @@ export default function AdminDashboard() {
     const { error } = await supabase.from('campaigns').update({ status: '거절', rejection_reason: reason }).eq('id', id)
     if (error) { alert('오류: ' + error.message); return }
     alert('거절 처리되었습니다.')
+    fetchData()
+  }
+
+  const handleInvite = async (e) => {
+    e.preventDefault()
+    setInviteMsg('보내는 중...')
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/admin/invite-client', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify(invite),
+    }).catch(() => null)
+    const body = await res?.json().catch(() => ({}))
+    if (!res?.ok) return setInviteMsg(body?.error || '네트워크 오류가 발생했습니다.')
+    setInviteMsg(`${invite.email}로 초대 메일을 보냈습니다.`)
+    setInvite(null)
     fetchData()
   }
 
@@ -616,7 +637,25 @@ const STEPS = PARTICIPATION_STEPS
         {/* 광고주 목록 탭 */}
         {tab === 'clients' && (
           <div>
-            <h2 className="text-lg font-bold text-ink mb-4">광고주 목록</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-ink">광고주 목록</h2>
+              {!invite && <button onClick={() => { setInvite({ company_name: '', name: '', email: '', phone: '', homepage: '' }); setInviteMsg('') }} className="bg-ink text-white px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition">광고주 초대</button>}
+            </div>
+            <p role="status" className="text-sm text-ink mb-4">{inviteMsg}</p>
+            {invite && (
+              <form onSubmit={handleInvite} className="bg-white rounded-2xl shadow p-5 mb-6 grid sm:grid-cols-2 gap-3 text-sm">
+                {[['company_name', '회사명 *', 'text', true], ['name', '담당자 이름', 'text'], ['email', '담당자 이메일 *', 'email', true], ['phone', '연락처', 'tel'], ['homepage', '홈페이지', 'url']].map(([k, label, type, req]) => (
+                  <label key={k} className="flex flex-col gap-1 text-muted font-semibold">{label}
+                    <input type={type} required={req} value={invite[k]} onChange={e => setInvite({ ...invite, [k]: e.target.value })} className="border border-line rounded-xl px-3 py-2 text-ink font-normal" />
+                  </label>
+                ))}
+                <p className="sm:col-span-2 text-xs text-muted">담당자가 메일의 링크로 비밀번호를 정하면 광고주 대시보드를 쓸 수 있습니다. 사업자 정보는 광고주가 마이페이지에서 입력합니다.</p>
+                <div className="sm:col-span-2 flex gap-2 justify-end">
+                  <button type="button" onClick={() => setInvite(null)} className="px-4 py-2 rounded-xl border border-line font-semibold">취소</button>
+                  <button type="submit" disabled={inviteMsg === '보내는 중...'} className="bg-ink text-white px-4 py-2 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50">초대 메일 보내기</button>
+                </div>
+              </form>
+            )}
             <div className="grid gap-4">
               {clients.map(c => (
                 <div key={c.id} className="bg-white rounded-2xl shadow p-5">
@@ -625,7 +664,7 @@ const STEPS = PARTICIPATION_STEPS
                       <p className="font-bold text-ink text-lg">{c.company_name}</p>
                       <p className="text-sm text-muted">{c.email}</p>
                     </div>
-                    <span className="bg-highlight text-ink text-xs px-3 py-1 rounded-full font-semibold">광고주</span>
+                    <span className="bg-highlight text-ink text-xs px-3 py-1 rounded-full font-semibold">{signedIn[c.user_id] ? '사용 중' : '초대됨'}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
                     <div><p className="text-muted">월 예산</p><p className="font-semibold">{c.monthly_budget ? c.monthly_budget.toLocaleString() + '원' : '-'}</p></div>
