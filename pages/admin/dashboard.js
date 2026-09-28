@@ -49,9 +49,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/client/login'); return }
+      if (!user) { router.push('/client/login?as=admin'); return }
       const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
-      if (userData?.role !== 'admin') { router.push('/client/login'); return }
+      if (userData?.role !== 'admin') { router.push('/client/login?as=admin'); return }
       fetchData()
     }
     checkAdmin()
@@ -178,7 +178,7 @@ const STEPS = PARTICIPATION_STEPS
     <div className="min-h-screen bg-highlight">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-ink">관리자 대시보드</h1>
-        <button onClick={async () => { await supabase.auth.signOut(); router.push('/client/login') }} className="text-sm text-muted hover:text-ink">로그아웃</button>
+        <button onClick={async () => { await supabase.auth.signOut(); router.push('/client/login?as=admin') }} className="text-sm text-muted hover:text-ink">로그아웃</button>
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-8">

@@ -57,7 +57,7 @@ export default function Login() {
             <div className="flex items-center gap-4">
               <div>
                 <p className="font-bold text-ink text-lg">광고주 로그인</p>
-                <p className="text-sm text-muted">캠페인 요청 및 진행 현황 확인</p>
+                <p className="text-sm text-muted">브랜드 · 캠페인 요청 및 진행 현황 확인</p>
               </div>
               <span className="ml-auto text-muted group-hover:text-ink text-xl transition">→</span>
             </div>
@@ -75,12 +75,12 @@ export default function Login() {
           <div className="border-t border-line my-2" />
 
           {/* 관리자 로그인 */}
-          <button onClick={() => router.push('/client/login')}
+          <button onClick={() => router.push('/client/login?as=admin')}
             className="bg-white rounded-2xl transition-all p-6 text-left border-2 border-line hover:border-ink group">
             <div className="flex items-center gap-4">
               <div>
                 <p className="font-bold text-ink text-lg">관리자 로그인</p>
-                <p className="text-sm text-muted">시스템 관리 및 캠페인 운영</p>
+                <p className="text-sm text-muted">053 운영팀 · 전체 현황 관리</p>
               </div>
               <span className="ml-auto text-muted group-hover:text-ink text-xl transition">→</span>
             </div>

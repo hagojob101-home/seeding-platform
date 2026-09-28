@@ -7,6 +7,7 @@ export default function ClientLogin() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const isAdmin = router.query.as === 'admin'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -49,8 +50,8 @@ export default function ClientLogin() {
       </div>
       <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-ink mb-2">광고주 / 관리자 로그인</h2>
-          <p className="text-muted text-sm">시딩 플랫폼</p>
+          <h2 className="text-2xl font-bold text-ink mb-2">{isAdmin ? '관리자 로그인' : '광고주 로그인'}</h2>
+          <p className="text-muted text-sm">{isAdmin ? '053 운영팀 전용' : '브랜드 담당자용'}</p>
         </div>
         {error && <p className="text-ink text-sm mb-4 text-center bg-highlight p-3 rounded-xl">{error}</p>}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -61,10 +62,12 @@ export default function ClientLogin() {
           </button>
         </form>
         <p className="text-center text-sm mt-4"><a href="/forgot-password" className="text-muted hover:underline">비밀번호를 잊으셨나요?</a></p>
+        {!isAdmin && (
         <p className="text-center text-sm text-muted mt-4">
           광고주 계정이 없으신가요?{' '}
           <a href="/client/register" className="text-ink font-semibold hover:underline">회원가입</a>
         </p>
+        )}
       </div>
     </div>
   )
