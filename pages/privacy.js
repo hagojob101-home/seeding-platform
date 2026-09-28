@@ -36,7 +36,7 @@ export default function Privacy() {
                   <td className="px-4 py-3 text-gray-600">회원 탈퇴 후 5년</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 text-gray-600 font-medium">고객사</td>
+                  <td className="px-4 py-3 text-gray-600 font-medium">광고주</td>
                   <td className="px-4 py-3 text-gray-600">회사명, 담당자 이메일, 홈페이지, 사업자등록번호, 사업자등록증, 세금계산서 이메일</td>
                   <td className="px-4 py-3 text-gray-600">계약 종료 후 5년</td>
                 </tr>

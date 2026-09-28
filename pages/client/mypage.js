@@ -84,57 +84,57 @@ export default function ClientMypage() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">불러오는 중...</p>
+      <p className="text-muted">불러오는 중...</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="min-h-screen bg-highlight ">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/client/dashboard')}
-            className="text-gray-400 hover:text-blue-600 text-sm">← 대시보드</button>
-          <h1 className="text-lg font-bold text-blue-700">마이페이지</h1>
+            className="text-muted hover:text-ink text-sm">← 대시보드</button>
+          <h1 className="text-lg font-bold text-ink">마이페이지</h1>
         </div>
         <button onClick={async () => { await supabase.auth.signOut(); router.push('/client/login') }}
-          className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
+          className="text-sm text-muted hover:text-ink">로그아웃</button>
       </nav>
 
       <div className="max-w-xl mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl shadow p-8">
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-800">{clientInfo?.company_name}</h2>
-            <p className="text-sm text-gray-400">{user?.email}</p>
+            <h2 className="text-xl font-bold text-ink">{clientInfo?.company_name}</h2>
+            <p className="text-sm text-muted">{user?.email}</p>
           </div>
 
           <form onSubmit={handleSave} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">회사명 <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-ink mb-1">회사명 <span className="text-ink">*</span></label>
               <input required value={form.company_name}
                 onChange={e => setForm({...form, company_name: e.target.value})}
-                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">홈페이지 URL</label>
+              <label className="block text-sm font-medium text-ink mb-1">홈페이지 URL</label>
               <input placeholder="https://example.com" value={form.homepage}
                 onChange={e => setForm({...form, homepage: e.target.value})}
-                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">사업자등록번호</label>
+              <label className="block text-sm font-medium text-ink mb-1">사업자등록번호</label>
               <input placeholder="000-00-00000" value={form.business_reg_number}
                 onChange={e => setForm({...form, business_reg_number: e.target.value})}
-                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">사업자등록증 업로드</label>
+              <label className="block text-sm font-medium text-ink mb-1">사업자등록증 업로드</label>
               {clientInfo?.business_reg_url && (
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="text-green-600 text-sm font-semibold">✅ 등록됨</span>
-                  <span className="text-gray-400 text-xs">새 파일 업로드 시 교체됩니다</span>
+                  <span className="text-ink text-sm font-semibold">등록됨</span>
+                  <span className="text-muted text-xs">새 파일 업로드 시 교체됩니다</span>
                 </div>
               )}
               <input type="file" accept=".pdf,.jpg,.jpeg,.png"
@@ -143,23 +143,23 @@ export default function ClientMypage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">세금계산서 받을 이메일</label>
+              <label className="block text-sm font-medium text-ink mb-1">세금계산서 받을 이메일</label>
               <div className="flex items-center gap-2 mb-2">
                 <input type="checkbox" id="sameAsLogin" checked={sameAsLogin}
                   onChange={e => handleSameAsLogin(e.target.checked)}
                   className="w-4 h-4 accent-blue-600" />
-                <label htmlFor="sameAsLogin" className="text-sm text-gray-600 cursor-pointer">
+                <label htmlFor="sameAsLogin" className="text-sm text-muted cursor-pointer">
                   로그인 아이디와 동일 ({user?.email})
                 </label>
               </div>
               <input type="email" placeholder="tax@example.com" value={form.tax_email}
                 onChange={e => { setForm({...form, tax_email: e.target.value}); setSameAsLogin(false) }}
                 disabled={sameAsLogin}
-                className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300 ${sameAsLogin ? 'bg-gray-50 text-gray-400' : ''}`} />
+                className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink ${sameAsLogin ? 'bg-highlight text-muted' : ''}`} />
             </div>
 
             <button type="submit" disabled={saving}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+              className="w-full bg-ink text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50">
               {saving ? '저장 중...' : '저장하기'}
             </button>
           </form>

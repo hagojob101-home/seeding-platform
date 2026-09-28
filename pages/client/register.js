@@ -43,52 +43,52 @@ export default function ClientRegister() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-blue-700 mb-2">고객사 회원가입</h1>
-        <p className="text-sm text-gray-400 mb-6">시딩 플랫폼 고객사 계정을 만들어보세요</p>
-        {error && <div className="bg-red-50 text-red-600 rounded-xl px-4 py-3 mb-4 text-sm">{error}</div>}
+    <div className="min-h-screen bg-highlight flex items-center justify-center px-4">
+      <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold text-ink mb-2">광고주 회원가입</h1>
+        <p className="text-sm text-muted mb-6">시딩 플랫폼 광고주 계정을 만들어보세요</p>
+        {error && <div className="bg-highlight text-ink rounded-xl px-4 py-3 mb-4 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">이메일 <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-ink mb-1">이메일 <span className="text-ink">*</span></label>
             <input required type="email" placeholder="company@example.com" value={form.email}
               onChange={e => setForm({...form, email: e.target.value})}
-              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호 <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-ink mb-1">비밀번호 <span className="text-ink">*</span></label>
             <input required type="password" placeholder="6자 이상" value={form.password}
               onChange={e => setForm({...form, password: e.target.value})}
-              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">회사명 <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-ink mb-1">회사명 <span className="text-ink">*</span></label>
             <input required placeholder="주식회사 예시" value={form.company_name}
               onChange={e => setForm({...form, company_name: e.target.value})}
-              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">홈페이지 URL</label>
+            <label className="block text-sm font-medium text-ink mb-1">홈페이지 URL</label>
             <input placeholder="https://example.com" value={form.homepage}
               onChange={e => setForm({...form, homepage: e.target.value})}
-              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              사업자등록증 <span className="text-gray-400 text-xs">(선택 - 나중에 마이페이지에서 등록 가능)</span>
+            <label className="block text-sm font-medium text-ink mb-1">
+              사업자등록증 <span className="text-muted text-xs">(선택 - 나중에 마이페이지에서 등록 가능)</span>
             </label>
             <input type="file" accept=".pdf,.jpg,.jpeg,.png"
               onChange={e => setBusinessFile(e.target.files[0])}
               className="w-full border rounded-xl px-4 py-3" />
           </div>
           <button type="submit" disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+            className="w-full bg-ink text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50">
             {loading ? '가입 중...' : '회원가입'}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-400 mt-4">
+        <p className="text-center text-sm text-muted mt-4">
           이미 계정이 있으신가요?{' '}
-          <a href="/client/login" className="text-blue-600 font-semibold hover:underline">로그인</a>
+          <a href="/client/login" className="text-ink font-semibold hover:underline">로그인</a>
         </p>
       </div>
     </div>

@@ -7,6 +7,7 @@ export default function ClientLogin() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const isAdmin = router.query.as === 'admin'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -37,33 +38,36 @@ export default function ClientLogin() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-highlight">
       {/* 상단 네비게이션 버튼 */}
       <div className="fixed top-4 left-4 flex gap-2">
-        <button onClick={() => router.push('/')} className="bg-white/10 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/20 transition border border-white/20">
+        <button onClick={() => router.push('/')} className="bg-white text-ink px-4 py-2 rounded-xl text-sm font-semibold hover:bg-highlight transition border border-line">
           053 Meta
         </button>
-        <button onClick={() => router.push('/login')} className="bg-white/10 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/20 transition border border-white/20">
+        <button onClick={() => router.push('/login')} className="bg-white text-ink px-4 py-2 rounded-xl text-sm font-semibold hover:bg-highlight transition border border-line">
           시딩 플랫폼
         </button>
       </div>
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+      <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">고객사 / 관리자 로그인</h2>
-          <p className="text-gray-500 text-sm">시딩 플랫폼</p>
+          <h2 className="text-2xl font-bold text-ink mb-2">{isAdmin ? '관리자 로그인' : '광고주 로그인'}</h2>
+          <p className="text-muted text-sm">{isAdmin ? '053 운영팀 전용' : '브랜드 담당자용'}</p>
         </div>
-        {error && <p className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded-xl">{error}</p>}
+        {error && <p className="text-ink text-sm mb-4 text-center bg-highlight p-3 rounded-xl">{error}</p>}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input className="border rounded-xl px-4 py-3" placeholder="이메일" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required />
           <input className="border rounded-xl px-4 py-3" placeholder="비밀번호" type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required />
-          <button type="submit" disabled={loading} className="bg-gray-900 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transition">
+          <button type="submit" disabled={loading} className="bg-ink text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
             {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
-          고객사 계정이 없으신가요?{' '}
-          <a href="/client/register" className="text-gray-800 font-semibold hover:underline">회원가입</a>
+        <p className="text-center text-sm mt-4"><a href="/forgot-password" className="text-muted hover:underline">비밀번호를 잊으셨나요?</a></p>
+        {!isAdmin && (
+        <p className="text-center text-sm text-muted mt-4">
+          광고주 계정이 없으신가요? 먼저 상담 문의를 신청해주세요.{' '}
+          <a href="/#apply" className="text-ink font-semibold hover:underline whitespace-nowrap">상담 신청하기</a>
         </p>
+        )}
       </div>
     </div>
   )

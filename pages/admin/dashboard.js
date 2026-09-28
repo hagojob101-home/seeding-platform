@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import Footer from '../../components/Footer'
 import FileLink, { signedUrl } from '../../components/FileLink'
 import { PARTICIPATION_STEPS } from '../../lib/constants'
+import Progress, { StepLabels } from '../../components/Progress'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -48,9 +49,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkAdmin = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/client/login'); return }
+      if (!user) { router.push('/client/login?as=admin'); return }
       const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
-      if (userData?.role !== 'admin') { router.push('/client/login'); return }
+      if (userData?.role !== 'admin') { router.push('/client/login?as=admin'); return }
       fetchData()
     }
     checkAdmin()
@@ -88,7 +89,7 @@ export default function AdminDashboard() {
     const { data: pData } = await supabase.from('participations').select('id').eq('campaign_id', id)
     const count = pData?.length || 0
     if (count > 0) {
-      const first = window.confirm('⚠️ ' + name + ' 캠페인에\n인플루언서 신청 내역이 ' + count + '건 있어요.\n\n캠페인을 삭제하시겠어요?')
+      const first = window.confirm('' + name + ' 캠페인에\n인플루언서 신청 내역이 ' + count + '건 있어요.\n\n캠페인을 삭제하시겠어요?')
       if (!first) return
       const second = window.confirm('정말 삭제하시겠습니까?\n신청 내역 ' + count + '건이 함께 삭제되며\n복구가 불가능합니다.')
       if (!second) return
@@ -138,64 +139,64 @@ export default function AdminDashboard() {
 
   const statusColor = (status) => {
     const map = {
-      '신청': 'bg-yellow-100 text-yellow-700',
-      '승인': 'bg-blue-100 text-blue-700',
-      '제품발송': 'bg-purple-100 text-purple-700',
-      '콘텐츠확인': 'bg-orange-100 text-orange-700',
-      '업로드확인': 'bg-cyan-100 text-cyan-700',
-      '정산요청': 'bg-amber-100 text-amber-700',
-      '정산완료': 'bg-green-100 text-green-700',
-      '거절': 'bg-red-100 text-red-700',
+      '신청': 'bg-highlight text-ink',
+      '승인': 'bg-highlight text-ink',
+      '제품발송': 'bg-highlight text-ink',
+      '콘텐츠확인': 'bg-highlight text-ink',
+      '업로드확인': 'bg-highlight text-ink',
+      '정산요청': 'bg-highlight text-ink',
+      '정산완료': 'bg-highlight text-ink',
+      '거절': 'bg-highlight text-ink',
     }
-    return map[status] || 'bg-gray-100 text-gray-700'
+    return map[status] || 'bg-highlight text-ink'
   }
 
   const requestStatusColor = (status) => {
-    const map = { '요청': 'bg-yellow-100 text-yellow-700', '진행': 'bg-green-100 text-green-700', '거절': 'bg-red-100 text-red-700' }
-    return map[status] || 'bg-gray-100 text-gray-700'
+    const map = { '요청': 'bg-highlight text-ink', '진행': 'bg-highlight text-ink', '거절': 'bg-highlight text-ink' }
+    return map[status] || 'bg-highlight text-ink'
   }
 
 
 const STEPS = PARTICIPATION_STEPS
   const STEP_LABELS = {
-    '신청': '📋 신청',
-    '승인': '✅ 승인',
-    '제품발송': '📦 제품발송',
-    '콘텐츠확인': '🎬 콘텐츠확인',
-    '업로드확인': '🔗 업로드확인',
-    '정산요청': '🧾 정산요청',
-    '정산완료': '💰 정산완료',
+    '신청': '신청',
+    '승인': '승인',
+    '제품발송': '제품발송',
+    '콘텐츠확인': '콘텐츠확인',
+    '업로드확인': '업로드확인',
+    '정산요청': '정산요청',
+    '정산완료': '정산완료',
   }
 
   const getStepIndex = (status) => {
     return Math.max(0, STEPS.indexOf(status))
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">불러오는 중...</p></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-muted">불러오는 중...</p></div>
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-highlight">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-purple-700">🛠 관리자 대시보드</h1>
-        <button onClick={async () => { await supabase.auth.signOut(); router.push('/client/login') }} className="text-sm text-gray-500 hover:text-red-500">로그아웃</button>
+        <h1 className="text-xl font-bold text-ink">관리자 대시보드</h1>
+        <button onClick={async () => { await supabase.auth.signOut(); router.push('/client/login?as=admin') }} className="text-sm text-muted hover:text-ink">로그아웃</button>
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 탭 메뉴 */}
         <div className="flex gap-2 mb-6 flex-wrap">
           {[
-            { id: 'campaigns', label: '📋 캠페인 관리' },
-            { id: 'participations', label: '👥 인플루언서 현황' },
-            { id: 'requests', label: '📨 캠페인 요청', count: campaignRequests.filter(r => r.status === '요청').length },
-            { id: 'clients', label: '🏢 고객사 목록' },
-            { id: 'agencydb', label: '📊 고객사 DB' },
-            { id: 'payments', label: '💰 정산 관리', count: participations.filter(p => p.status === '정산요청').length },
-            { id: 'consultations', label: '📞 컨설팅 신청', count: consultations.length },
+            { id: 'campaigns', label: '캠페인 관리' },
+            { id: 'participations', label: '인플루언서 현황' },
+            { id: 'requests', label: '캠페인 요청', count: campaignRequests.filter(r => r.status === '요청').length },
+            { id: 'clients', label: '광고주 목록' },
+            { id: 'agencydb', label: '광고주 DB' },
+            { id: 'payments', label: '정산 관리', count: participations.filter(p => p.status === '정산요청').length },
+            { id: 'consultations', label: '컨설팅 신청', count: consultations.length },
           ].map(t => (
             <button key={t.id} onClick={() => { setTab(t.id); router.push({ pathname: '/admin/dashboard', query: { tab: t.id } }, undefined, { shallow: true }) }}
-              className={`px-4 py-2 rounded-xl font-semibold text-sm transition flex items-center gap-2 ${tab === t.id ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-purple-50'}`}>
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition flex items-center gap-2 ${tab === t.id ? 'bg-ink text-white' : 'bg-white text-muted hover:bg-highlight'}`}>
               {t.label}
-              {t.count > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{t.count}</span>}
+              {t.count > 0 && <span className="bg-ink text-white text-xs px-2 py-0.5 rounded-full">{t.count}</span>}
             </button>
           ))}
         </div>
@@ -204,8 +205,8 @@ const STEPS = PARTICIPATION_STEPS
         {tab === 'campaigns' && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-gray-800">캠페인 목록</h2>
-              <button onClick={() => setShowForm(!showForm)} className="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-purple-700">+ 새 캠페인</button>
+              <h2 className="text-lg font-bold text-ink">캠페인 목록</h2>
+              <button onClick={() => setShowForm(!showForm)} className="bg-ink text-white px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90">+ 새 캠페인</button>
             </div>
             {showForm && (
               <form onSubmit={handleCreateCampaign} className="bg-white rounded-2xl shadow p-6 mb-6 space-y-3">
@@ -216,32 +217,32 @@ const STEPS = PARTICIPATION_STEPS
                   <option value="basic">기본 폼</option>
                   <option value="liquor">주류 폼</option>
                 </select>
-                <button type="submit" className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold">생성하기</button>
+                <button type="submit" className="w-full bg-ink text-white py-3 rounded-xl font-semibold">생성하기</button>
               </form>
             )}
             <div className="grid gap-4">
               {campaigns.map(c => (
-                <div key={c.id} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-md transition" onClick={() => { setTab('participations') }}>
+                <div key={c.id} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-sm transition" onClick={() => { setTab('participations') }}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-bold text-gray-800 text-lg">{c.name}</p>
-                      <p className="text-sm text-gray-500">{c.product_name}</p>
+                      <p className="font-bold text-ink text-lg">{c.name}</p>
+                      <p className="text-sm text-muted">{c.product_name}</p>
                     </div>
-                    <span className={`text-xs px-3 py-1 rounded-full font-semibold ${c.form_type === 'liquor' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {c.form_type === 'liquor' ? '🍶 주류' : '📋 일반'}
+                    <span className={`text-xs px-3 py-1 rounded-full font-semibold ${c.form_type === 'liquor' ? 'bg-highlight text-ink' : 'bg-highlight text-ink'}`}>
+                      {c.form_type === 'liquor' ? '주류' : '일반'}
                     </span>
                   </div>
-                  {c.description && <p className="text-sm text-gray-500 mt-2">{c.description}</p>}
+                  {c.description && <p className="text-sm text-muted mt-2">{c.description}</p>}
                   <div className="mt-3 flex justify-end">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDeleteCampaign(c.id, c.name) }}
-                      className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-1 rounded-lg transition">
-                      🗑 삭제
+                      className="text-xs text-muted hover:text-ink hover:bg-highlight px-3 py-1 rounded-lg transition">
+                      삭제
                     </button>
                   </div>
                 </div>
               ))}
-              {campaigns.length === 0 && <p className="text-center text-gray-400 py-10">등록된 캠페인이 없습니다.</p>}
+              {campaigns.length === 0 && <p className="text-center text-muted py-10">등록된 캠페인이 없습니다.</p>}
             </div>
           </div>
         )}
@@ -251,7 +252,7 @@ const STEPS = PARTICIPATION_STEPS
           <div className="flex gap-6">
             {/* 왼쪽: 인플루언서 이름으로 그룹핑 */}
             <div className="w-80 flex-shrink-0">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">인플루언서 현황</h2>
+              <h2 className="text-lg font-bold text-ink mb-4">인플루언서 현황</h2>
               <div className="flex flex-col gap-3">
                 {(() => {
                   // 이름으로 그룹핑
@@ -264,15 +265,15 @@ const STEPS = PARTICIPATION_STEPS
                   return Object.entries(grouped).map(([name, items]) => (
                     <div key={name}
                       onClick={() => setSelectedInfluencer({ name, items })}
-                      className={`bg-white rounded-2xl shadow p-4 cursor-pointer hover:shadow-md transition ${selectedInfluencer?.name === name ? 'ring-2 ring-purple-500' : ''}`}>
+                      className={`bg-white rounded-2xl shadow p-4 cursor-pointer hover:shadow-sm transition ${selectedInfluencer?.name === name ? 'ring-2 ring-ink' : ''}`}>
                       <div className="flex justify-between items-center mb-2">
-                        <p className="font-bold text-gray-800">{name}</p>
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-semibold">{items.length}개 캠페인</span>
+                        <p className="font-bold text-ink">{name}</p>
+                        <span className="text-xs bg-highlight text-ink px-2 py-1 rounded-full font-semibold">{items.length}개 캠페인</span>
                       </div>
                       <div className="flex flex-col gap-1">
                         {items.map(p => (
                           <div key={p.id} className="flex justify-between items-center">
-                            <p className="text-xs text-gray-500 truncate max-w-[150px]">{p.campaigns?.name || '-'}</p>
+                            <p className="text-xs text-muted truncate max-w-[150px]">{p.campaigns?.name || '-'}</p>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
                           </div>
                         ))}
@@ -280,7 +281,7 @@ const STEPS = PARTICIPATION_STEPS
                     </div>
                   ))
                 })()}
-                {participations.length === 0 && <p className="text-center text-gray-400 py-10">신청 내역이 없습니다.</p>}
+                {participations.length === 0 && <p className="text-center text-muted py-10">신청 내역이 없습니다.</p>}
               </div>
             </div>
 
@@ -289,21 +290,23 @@ const STEPS = PARTICIPATION_STEPS
               {selectedInfluencer ? (
                 <div className="bg-white rounded-2xl shadow p-6">
                   {/* 인플루언서 이름 */}
-                  <h3 className="text-xl font-bold text-gray-800 mb-6">👤 {selectedInfluencer.name}</h3>
+                  <h3 className="text-xl font-bold text-ink mb-6">{selectedInfluencer.name}</h3>
 
                   {/* 캠페인별 진행바 - 상단 */}
                   <div className="mb-6">
-                    <p className="text-sm font-semibold text-gray-600 mb-4">📋 캠페인별 진행 현황</p>
+                    <p className="text-sm font-semibold text-muted mb-4">캠페인별 진행 현황</p>
+                    {/* 단계 이름은 목록 위에 한 번만 (카드 안쪽 여백과 맞춤) */}
+                    <div className="px-4 border border-transparent mb-2"><StepLabels /></div>
                     <div className="flex flex-col gap-4">
                       {selectedInfluencer.items.map(p => (
-                        <div key={p.id} className={`border rounded-2xl p-4 cursor-pointer transition ${selectedParticipation?.id === p.id ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'}`}
+                        <div key={p.id} className={`border rounded-2xl p-4 cursor-pointer transition ${selectedParticipation?.id === p.id ? 'border-ink bg-highlight' : 'border-line hover:border-line'}`}
                           onClick={() => setSelectedParticipation(p)}>
                           <div className="flex justify-between items-center mb-3">
-                            <p className="font-semibold text-gray-800">{p.campaigns?.name || '-'}</p>
+                            <p className="font-semibold text-ink">{p.campaigns?.name || '-'}</p>
                             <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusColor(p.status)}`}>{p.status}</span>
                           </div>
                           {/* 진행바 */}
-                          <Stepper current={getStepIndex(p.status)} />
+                          <Progress current={STEPS.indexOf(p.status)} labels={false} />
                         </div>
                       ))}
                     </div>
@@ -311,60 +314,60 @@ const STEPS = PARTICIPATION_STEPS
 
                   {/* 선택된 캠페인 상태 변경 */}
                   {selectedParticipation && selectedInfluencer.items.find(i => i.id === selectedParticipation.id) && (
-                    <div className="mb-6 bg-gray-50 rounded-2xl p-4">
-                      <p className="text-sm font-semibold text-gray-600 mb-3">🔄 [{selectedParticipation.campaigns?.name}] 상태 변경</p>
+                    <div className="mb-6 bg-highlight rounded-2xl p-4">
+                      <p className="text-sm font-semibold text-muted mb-3">[{selectedParticipation.campaigns?.name}] 상태 변경</p>
                       {selectedParticipation.status === '신청' && (
                         <div className="flex gap-3">
-                          <button onClick={() => handleStatusUpdate(selectedParticipation.id, '승인')} className="flex-1 bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">✅ 승인</button>
-                          <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')} className="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold hover:bg-red-600 transition">❌ 거절</button>
+                          <button onClick={() => handleStatusUpdate(selectedParticipation.id, '승인')} className="flex-1 bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">승인</button>
+                          <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')} className="flex-1 bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">거절</button>
                         </div>
                       )}
                       {selectedParticipation.status === '승인' && (
-                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '제품발송')} className="w-full bg-blue-500 text-white py-2 rounded-xl font-semibold hover:bg-blue-600 transition">📦 제품 발송 완료</button>
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '제품발송')} className="w-full bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">제품 발송 완료</button>
                       )}
                       {selectedParticipation.status === '제품발송' && (
-                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '콘텐츠확인')} className="w-full bg-orange-500 text-white py-2 rounded-xl font-semibold hover:bg-orange-600 transition">🎬 콘텐츠 확인 완료</button>
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '콘텐츠확인')} className="w-full bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">콘텐츠 확인 완료</button>
                       )}
                       {selectedParticipation.status === '콘텐츠확인' && (
-                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '업로드확인')} className="w-full bg-purple-500 text-white py-2 rounded-xl font-semibold hover:bg-purple-600 transition">📱 업로드 확인 완료</button>
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '업로드확인')} className="w-full bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">업로드 확인 완료</button>
                       )}
                       {selectedParticipation.status === '업로드확인' && (
-                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '정산완료')} className="w-full bg-green-600 text-white py-2 rounded-xl font-semibold hover:bg-green-700 transition">💰 정산 완료</button>
+                        <button onClick={() => handleStatusUpdate(selectedParticipation.id, '정산완료')} className="w-full bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">정산 완료</button>
                       )}
                       {(selectedParticipation.status === '정산완료' || selectedParticipation.status === '완료') && (
-                        <div className="text-center text-green-600 font-semibold py-2">✅ 정산 완료된 건입니다.</div>
+                        <div className="text-center text-ink font-semibold py-2">정산 완료된 건입니다.</div>
                       )}
                     </div>
                   )}
 
                   {/* 개인정보 - 하단 */}
                   <div className="border-t pt-4 mt-2">
-                    <p className="text-sm font-semibold text-gray-600 mb-3">👤 개인 정보</p>
+                    <p className="text-sm font-semibold text-muted mb-3">개인 정보</p>
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div><p className="text-xs text-gray-400">이름</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.name || selectedInfluencer.name || '-'}</p></div>
-                      <div><p className="text-xs text-gray-400">연락처</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.phone || '-'}</p></div>
-                      <div><p className="text-xs text-gray-400">주소</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.address || '-'}</p></div>
-                      <div><p className="text-xs text-gray-400">인스타그램</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.instagram || '-'}</p></div>
-                      <div><p className="text-xs text-gray-400">팔로워 수</p><p className="font-semibold text-purple-600">{selectedInfluencer.items[0]?.followers?.toLocaleString() || '-'}명</p></div>
-                      <div><p className="text-xs text-gray-400">은행/계좌</p><p className="font-semibold">{payout(selectedInfluencer.items[0]).bank_name || '-'} {payout(selectedInfluencer.items[0]).account_number || ''}</p></div>
-                      <div><p className="text-xs text-gray-400">유튜브</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.youtube || '-'}</p></div>
-                      <div><p className="text-xs text-gray-400">예금주</p><p className="font-semibold">{payout(selectedInfluencer.items[0]).account_holder || '-'}</p></div>
+                      <div><p className="text-xs text-muted">이름</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.name || selectedInfluencer.name || '-'}</p></div>
+                      <div><p className="text-xs text-muted">연락처</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.phone || '-'}</p></div>
+                      <div><p className="text-xs text-muted">주소</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.address || '-'}</p></div>
+                      <div><p className="text-xs text-muted">인스타그램</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.instagram || '-'}</p></div>
+                      <div><p className="text-xs text-muted">팔로워 수</p><p className="font-semibold text-ink">{selectedInfluencer.items[0]?.followers?.toLocaleString() || '-'}명</p></div>
+                      <div><p className="text-xs text-muted">은행/계좌</p><p className="font-semibold">{payout(selectedInfluencer.items[0]).bank_name || '-'} {payout(selectedInfluencer.items[0]).account_number || ''}</p></div>
+                      <div><p className="text-xs text-muted">유튜브</p><p className="font-semibold">{selectedInfluencer.items[0]?.users?.youtube || '-'}</p></div>
+                      <div><p className="text-xs text-muted">예금주</p><p className="font-semibold">{payout(selectedInfluencer.items[0]).account_holder || '-'}</p></div>
                     </div>
                     {/* 신분증/통장 */}
                     <div className="mt-3 flex gap-3">
                       {payout(selectedInfluencer.items[0]).id_card_path && (
-                        <button onClick={() => openImage(payout(selectedInfluencer.items[0]).id_card_path, '🪪 신분증')}
-                          className="text-xs text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">🪪 신분증 보기</button>
+                        <button onClick={() => openImage(payout(selectedInfluencer.items[0]).id_card_path, '신분증')}
+                          className="text-xs text-ink underline hover:text-ink bg-transparent border-none cursor-pointer">신분증 보기</button>
                       )}
                       {payout(selectedInfluencer.items[0]).bank_book_path && (
-                        <button onClick={() => openImage(payout(selectedInfluencer.items[0]).bank_book_path, '🏦 통장사본')}
-                          className="text-xs text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">🏦 통장사본 보기</button>
+                        <button onClick={() => openImage(payout(selectedInfluencer.items[0]).bank_book_path, '통장사본')}
+                          className="text-xs text-ink underline hover:text-ink bg-transparent border-none cursor-pointer">통장사본 보기</button>
                       )}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
+                <div className="bg-white rounded-2xl shadow p-10 text-center text-muted">
                   <p>왼쪽에서 인플루언서를 선택해주세요.</p>
                 </div>
               )}
@@ -375,66 +378,66 @@ const STEPS = PARTICIPATION_STEPS
                 <div className="bg-white rounded-2xl shadow p-6">
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-800">{selectedParticipation.users?.name || '-'}</h3>
-                      <p className="text-sm text-gray-500">{selectedParticipation.campaigns?.name || '-'}</p>
+                      <h3 className="text-xl font-bold text-ink">{selectedParticipation.users?.name || '-'}</h3>
+                      <p className="text-sm text-muted">{selectedParticipation.campaigns?.name || '-'}</p>
                     </div>
                     <span className={`text-sm px-3 py-1 rounded-full font-semibold ${statusColor(selectedParticipation.status)}`}>{selectedParticipation.status}</span>
                   </div>
 
                   {/* 진행 상황 바 */}
                   <div className="mb-6">
-                    <p className="text-sm font-semibold text-gray-600 mb-3">진행 상황</p>
-                    <Stepper current={getStepIndex(selectedParticipation.status)} />
+                    <p className="text-sm font-semibold text-muted mb-3">진행 상황</p>
+                    <Progress current={STEPS.indexOf(selectedParticipation.status)} />
                   </div>
 
                   {/* 상태 변경 - 상단 */}
-                  <div className="mb-6 bg-gray-50 rounded-2xl p-4">
-                    <p className="text-sm font-semibold text-gray-600 mb-3">🔄 상태 변경</p>
+                  <div className="mb-6 bg-highlight rounded-2xl p-4">
+                    <p className="text-sm font-semibold text-muted mb-3">상태 변경</p>
                     {/* 신청 단계: 승인/거절 버튼 */}
                     {selectedParticipation.status === '신청' && (
                       <div className="flex gap-3">
                         <button onClick={() => handleStatusUpdate(selectedParticipation.id, '승인')}
-                          className="flex-1 bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">
-                          ✅ 승인
+                          className="flex-1 bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">
+                          승인
                         </button>
                         <button onClick={() => handleStatusUpdate(selectedParticipation.id, '거절')}
-                          className="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold hover:bg-red-600 transition">
-                          ❌ 거절
+                          className="flex-1 bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">
+                          거절
                         </button>
                       </div>
                     )}
                     {/* 승인 단계: 제품발송 버튼 */}
                     {selectedParticipation.status === '승인' && (
                       <button onClick={() => handleStatusUpdate(selectedParticipation.id, '제품발송')}
-                        className="w-full bg-purple-500 text-white py-2 rounded-xl font-semibold hover:bg-purple-600 transition">
-                        📦 제품 발송 완료
+                        className="w-full bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">
+                        제품 발송 완료
                       </button>
                     )}
                     {/* 제품발송 단계: 콘텐츠확인 버튼 */}
                     {selectedParticipation.status === '제품발송' && (
                       <button onClick={() => handleStatusUpdate(selectedParticipation.id, '콘텐츠확인')}
-                        className="w-full bg-orange-500 text-white py-2 rounded-xl font-semibold hover:bg-orange-600 transition">
-                        🎬 콘텐츠 확인 완료
+                        className="w-full bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">
+                        콘텐츠 확인 완료
                       </button>
                     )}
                     {/* 콘텐츠확인 단계: 업로드확인 버튼 */}
                     {selectedParticipation.status === '콘텐츠확인' && (
                       <button onClick={() => handleStatusUpdate(selectedParticipation.id, '업로드확인')}
-                        className="w-full bg-cyan-500 text-white py-2 rounded-xl font-semibold hover:bg-cyan-600 transition">
-                        🔗 업로드 확인 완료
+                        className="w-full bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">
+                        업로드 확인 완료
                       </button>
                     )}
                     {/* 업로드확인 단계: 정산완료 버튼 */}
                     {selectedParticipation.status === '업로드확인' && (
                       <button onClick={() => handleStatusUpdate(selectedParticipation.id, '정산완료')}
-                        className="w-full bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">
-                        💰 정산 완료 처리
+                        className="w-full bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">
+                        정산 완료 처리
                       </button>
                     )}
                     {/* 완료/거절 상태 표시 */}
                     {(selectedParticipation.status === '정산완료' || selectedParticipation.status === '거절') && (
-                      <div className={`text-center py-2 rounded-xl font-semibold text-sm ${selectedParticipation.status === '정산완료' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {selectedParticipation.status === '정산완료' ? '✅ 정산 완료된 건입니다.' : '❌ 거절된 신청입니다.'}
+                      <div className={`text-center py-2 rounded-xl font-semibold text-sm ${selectedParticipation.status === '정산완료' ? 'bg-highlight text-ink' : 'bg-highlight text-ink'}`}>
+                        {selectedParticipation.status === '정산완료' ? '정산 완료된 건입니다.' : '거절된 신청입니다.'}
                       </div>
                     )}
                     {/* 이전 단계로 되돌리기 */}
@@ -442,7 +445,7 @@ const STEPS = PARTICIPATION_STEPS
                       <button onClick={() => {
                         const prev = STEPS[getStepIndex(selectedParticipation.status) - 1]
                         if (prev && window.confirm(prev + ' 단계로 되돌리시겠습니까?')) handleStatusUpdate(selectedParticipation.id, prev)
-                      }} className="mt-2 w-full bg-white border border-gray-200 text-gray-500 py-2 rounded-xl text-sm hover:bg-gray-50 transition">
+                      }} className="mt-2 w-full bg-white border border-line text-muted py-2 rounded-xl text-sm hover:bg-highlight transition">
                         ↩ 이전 단계로
                       </button>
                     )}
@@ -450,57 +453,57 @@ const STEPS = PARTICIPATION_STEPS
 
                   {/* 기본 정보 */}
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-400 mb-1">이름</p>
-                      <p className="font-semibold text-gray-800">{selectedParticipation.users?.name || '-'}</p>
+                    <div className="bg-highlight rounded-xl p-3">
+                      <p className="text-xs text-muted mb-1">이름</p>
+                      <p className="font-semibold text-ink">{selectedParticipation.users?.name || '-'}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-400 mb-1">연락처</p>
-                      <p className="font-semibold text-gray-800">{selectedParticipation.users?.phone || '-'}</p>
+                    <div className="bg-highlight rounded-xl p-3">
+                      <p className="text-xs text-muted mb-1">연락처</p>
+                      <p className="font-semibold text-ink">{selectedParticipation.users?.phone || '-'}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-400 mb-1">주소</p>
-                      <p className="font-semibold text-gray-800">{selectedParticipation.users?.address || '-'}</p>
+                    <div className="bg-highlight rounded-xl p-3">
+                      <p className="text-xs text-muted mb-1">주소</p>
+                      <p className="font-semibold text-ink">{selectedParticipation.users?.address || '-'}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-400 mb-1">인스타그램</p>
-                      <p className="font-semibold text-gray-800">@{selectedParticipation.users?.instagram || '-'}</p>
+                    <div className="bg-highlight rounded-xl p-3">
+                      <p className="text-xs text-muted mb-1">인스타그램</p>
+                      <p className="font-semibold text-ink">@{selectedParticipation.users?.instagram || '-'}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-400 mb-1">팔로워 수</p>
-                      <p className="font-semibold text-gray-800">{selectedParticipation.apply_data?.followers ? Number(selectedParticipation.apply_data.followers).toLocaleString() + '명' : '-'}</p>
+                    <div className="bg-highlight rounded-xl p-3">
+                      <p className="text-xs text-muted mb-1">팔로워 수</p>
+                      <p className="font-semibold text-ink">{selectedParticipation.apply_data?.followers ? Number(selectedParticipation.apply_data.followers).toLocaleString() + '명' : '-'}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-400 mb-1">원고료</p>
-                      <p className="font-semibold text-purple-600">{selectedParticipation.apply_data?.reward || '-'}</p>
+                    <div className="bg-highlight rounded-xl p-3">
+                      <p className="text-xs text-muted mb-1">원고료</p>
+                      <p className="font-semibold text-ink">{selectedParticipation.apply_data?.reward || '-'}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-400 mb-1">은행/계좌</p>
-                      <p className="font-semibold text-gray-800">{payout(selectedParticipation).bank_name || '-'} {payout(selectedParticipation).account_number || ''}</p>
+                    <div className="bg-highlight rounded-xl p-3">
+                      <p className="text-xs text-muted mb-1">은행/계좌</p>
+                      <p className="font-semibold text-ink">{payout(selectedParticipation).bank_name || '-'} {payout(selectedParticipation).account_number || ''}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-400 mb-1">정산 상태</p>
-                      <p className={`font-semibold ${selectedParticipation.status === '정산완료' ? 'text-green-600' : 'text-gray-400'}`}>
-                        {selectedParticipation.status === '정산완료' ? '✅ 지급완료' : '⏳ 대기중'}
+                    <div className="bg-highlight rounded-xl p-3">
+                      <p className="text-xs text-muted mb-1">정산 상태</p>
+                      <p className={`font-semibold ${selectedParticipation.status === '정산완료' ? 'text-ink' : 'text-muted'}`}>
+                        {selectedParticipation.status === '정산완료' ? '지급완료' : '대기중'}
                       </p>
                     </div>
                   </div>
 
                   {/* 제출 파일 */}
                   <div className="mb-6">
-                    <p className="text-sm font-semibold text-gray-600 mb-3">📁 제출 파일</p>
+                    <p className="text-sm font-semibold text-muted mb-3">제출 파일</p>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { label: '🪪 신분증', key: 'id_card_path' },
-                        { label: '🏦 통장사본', key: 'bank_book_path' },
+                        { label: '신분증', key: 'id_card_path' },
+                        { label: '통장사본', key: 'bank_book_path' },
                       ].map(({ label, key }) => {
                         const path = payout(selectedParticipation)[key]
                         return (
-                          <div key={key} className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-xs text-gray-400 mb-1">{label}</p>
+                          <div key={key} className="bg-highlight rounded-xl p-3">
+                            <p className="text-xs text-muted mb-1">{label}</p>
                             {path
-                              ? <FileLink path={path} className="text-purple-600 hover:underline text-sm font-semibold">📎 보기</FileLink>
-                              : <p className="text-gray-300 text-sm">미제출</p>}
+                              ? <FileLink path={path} className="text-ink hover:underline text-sm font-semibold">보기</FileLink>
+                              : <p className="text-muted text-sm">미제출</p>}
                           </div>
                         )
                       })}
@@ -509,48 +512,48 @@ const STEPS = PARTICIPATION_STEPS
 
                   {/* 콘텐츠 파일 */}
                   <div className="mb-6">
-                    <p className="text-sm font-semibold text-gray-600 mb-3">🎬 콘텐츠 파일</p>
+                    <p className="text-sm font-semibold text-muted mb-3">콘텐츠 파일</p>
                     <div className="grid grid-cols-1 gap-3">
                       {/* 클린본 */}
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <div className="bg-highlight border border-line rounded-xl p-4">
                         <div className="flex justify-between items-center mb-2">
-                          <p className="text-sm font-bold text-blue-700">📍 클린본</p>
+                          <p className="text-sm font-bold text-ink">클린본</p>
                           {selectedParticipation.submit_data?.clean_file_url
-                            ? <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">✅ 제출됨</span>
-                            : <span className="text-xs bg-gray-100 text-gray-400 px-2 py-1 rounded-full">미제출</span>}
+                            ? <span className="text-xs bg-highlight text-ink px-2 py-1 rounded-full">제출됨</span>
+                            : <span className="text-xs bg-highlight text-muted px-2 py-1 rounded-full">미제출</span>}
                         </div>
                         {selectedParticipation.submit_data?.clean_file_url
                           ? <FileLink path={selectedParticipation.submit_data.clean_file_url}
-                              className="text-blue-600 hover:underline text-sm font-semibold">📎 파일 다운로드</FileLink>
-                          : <p className="text-gray-400 text-sm">아직 제출되지 않았습니다.</p>}
+                              className="text-ink hover:underline text-sm font-semibold">파일 다운로드</FileLink>
+                          : <p className="text-muted text-sm">아직 제출되지 않았습니다.</p>}
                       </div>
                       {/* 최종본 */}
-                      <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                      <div className="bg-highlight border border-line rounded-xl p-4">
                         <div className="flex justify-between items-center mb-2">
-                          <p className="text-sm font-bold text-purple-700">📍 최종본</p>
+                          <p className="text-sm font-bold text-ink">최종본</p>
                           {selectedParticipation.submit_data?.final_file_url
-                            ? <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">✅ 제출됨</span>
-                            : <span className="text-xs bg-gray-100 text-gray-400 px-2 py-1 rounded-full">미제출</span>}
+                            ? <span className="text-xs bg-highlight text-ink px-2 py-1 rounded-full">제출됨</span>
+                            : <span className="text-xs bg-highlight text-muted px-2 py-1 rounded-full">미제출</span>}
                         </div>
                         {selectedParticipation.submit_data?.final_file_url
                           ? <FileLink path={selectedParticipation.submit_data.final_file_url}
-                              className="text-purple-600 hover:underline text-sm font-semibold">📎 파일 다운로드</FileLink>
-                          : <p className="text-gray-400 text-sm">아직 제출되지 않았습니다.</p>}
+                              className="text-ink hover:underline text-sm font-semibold">파일 다운로드</FileLink>
+                          : <p className="text-muted text-sm">아직 제출되지 않았습니다.</p>}
                       </div>
                       {/* 업로드 URL */}
                       {selectedParticipation.submit_data?.upload_url && (
-                        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                          <p className="text-sm font-bold text-green-700 mb-1">🔗 업로드 URL</p>
+                        <div className="bg-highlight border border-line rounded-xl p-4">
+                          <p className="text-sm font-bold text-ink mb-1">업로드 URL</p>
                           <a href={selectedParticipation.submit_data.upload_url} target="_blank" rel="noreferrer"
-                            className="text-green-600 hover:underline text-sm">{selectedParticipation.submit_data.upload_url}</a>
+                            className="text-ink hover:underline text-sm">{selectedParticipation.submit_data.upload_url}</a>
                         </div>
                       )}
                       {/* 서명 계약서 */}
                       {selectedParticipation.submit_data?.signed_contract_url && (
-                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                          <p className="text-sm font-bold text-orange-700 mb-2">📝 서명된 계약서</p>
+                        <div className="bg-highlight border border-line rounded-xl p-4">
+                          <p className="text-sm font-bold text-ink mb-2">서명된 계약서</p>
                           <FileLink path={selectedParticipation.submit_data.signed_contract_url}
-                            className="text-orange-600 hover:underline text-sm font-semibold">📎 계약서 보기</FileLink>
+                            className="text-ink hover:underline text-sm font-semibold">계약서 보기</FileLink>
                         </div>
                       )}
                     </div>
@@ -562,7 +565,7 @@ const STEPS = PARTICIPATION_STEPS
                 </div>
               ) : (
                 <div className="bg-white rounded-2xl shadow p-10 text-center">
-                  <p className="text-gray-400">왼쪽에서 인플루언서를 선택해주세요.</p>
+                  <p className="text-muted">왼쪽에서 인플루언서를 선택해주세요.</p>
                 </div>
               )}
             </div>
@@ -572,101 +575,101 @@ const STEPS = PARTICIPATION_STEPS
         {/* 캠페인 요청 탭 */}
         {tab === 'requests' && (
           <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">캠페인 요청 목록</h2>
+            <h2 className="text-lg font-bold text-ink mb-4">캠페인 요청 목록</h2>
             <div className="grid gap-4">
               {campaignRequests.map(r => (
                 <div key={r.id} className="bg-white rounded-2xl shadow p-5">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <p className="font-bold text-gray-800 text-lg">{r.product_name}</p>
-                      <p className="text-sm text-gray-500">{r.clients?.company_name || '-'}</p>
+                      <p className="font-bold text-ink text-lg">{r.product_name}</p>
+                      <p className="text-sm text-muted">{r.clients?.company_name || '-'}</p>
                     </div>
                     <span className={`text-xs px-3 py-1 rounded-full font-semibold ${requestStatusColor(r.status)}`}>{r.status}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                    <div><p className="text-gray-400">월 버짓</p><p className="font-bold text-purple-600">{r.monthly_budget ? Number(r.monthly_budget).toLocaleString() + '원' : '-'}</p></div>
-                    <div><p className="text-gray-400">제품 가격</p><p className="font-semibold">{r.product_price ? Number(r.product_price).toLocaleString() + '원' : '-'}</p></div>
-                    <div><p className="text-gray-400">최소 인플루언서</p><p className="font-semibold">{r.min_influencers}명</p></div>
-                    <div><p className="text-gray-400">요청일</p><p className="font-semibold">{new Date(r.created_at).toLocaleDateString('ko-KR')}</p></div>
-                    <div className="col-span-2"><p className="text-gray-400">제품 URL</p>
-                      {r.product_url ? <a href={r.product_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">{r.product_url}</a> : <p>-</p>}
+                    <div><p className="text-muted">월 버짓</p><p className="font-bold text-ink">{r.monthly_budget ? Number(r.monthly_budget).toLocaleString() + '원' : '-'}</p></div>
+                    <div><p className="text-muted">제품 가격</p><p className="font-semibold">{r.product_price ? Number(r.product_price).toLocaleString() + '원' : '-'}</p></div>
+                    <div><p className="text-muted">최소 인플루언서</p><p className="font-semibold">{r.min_influencers}명</p></div>
+                    <div><p className="text-muted">요청일</p><p className="font-semibold">{new Date(r.created_at).toLocaleDateString('ko-KR')}</p></div>
+                    <div className="col-span-2"><p className="text-muted">제품 URL</p>
+                      {r.product_url ? <a href={r.product_url} target="_blank" rel="noreferrer" className="text-ink hover:underline">{r.product_url}</a> : <p>-</p>}
                     </div>
                   </div>
                   {r.status === '요청' && (
                     <div className="flex gap-3">
-                      <button onClick={() => handleRequestApprove(r.id)} className="flex-1 bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">✅ 승인</button>
-                      <button onClick={() => handleRequestReject(r.id)} className="flex-1 bg-red-500 text-white py-2 rounded-xl font-semibold hover:bg-red-600 transition">❌ 거절</button>
+                      <button onClick={() => handleRequestApprove(r.id)} className="flex-1 bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">승인</button>
+                      <button onClick={() => handleRequestReject(r.id)} className="flex-1 bg-ink text-white py-2 rounded-xl font-semibold hover:opacity-90 transition">거절</button>
                     </div>
                   )}
                   {r.rejection_reason && (
-                    <div className="mt-3 bg-red-50 border border-red-200 rounded-xl p-3">
-                      <p className="text-sm text-red-600"><span className="font-semibold">거절 사유:</span> {r.rejection_reason}</p>
+                    <div className="mt-3 bg-highlight border border-line rounded-xl p-3">
+                      <p className="text-sm text-ink"><span className="font-semibold">거절 사유:</span> {r.rejection_reason}</p>
                     </div>
                   )}
                 </div>
               ))}
-              {campaignRequests.length === 0 && <p className="text-center text-gray-400 py-10">캠페인 요청이 없습니다.</p>}
+              {campaignRequests.length === 0 && <p className="text-center text-muted py-10">캠페인 요청이 없습니다.</p>}
             </div>
           </div>
         )}
 
-        {/* 고객사 목록 탭 */}
+        {/* 광고주 목록 탭 */}
         {tab === 'clients' && (
           <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">🏢 고객사 목록</h2>
+            <h2 className="text-lg font-bold text-ink mb-4">광고주 목록</h2>
             <div className="grid gap-4">
               {clients.map(c => (
                 <div key={c.id} className="bg-white rounded-2xl shadow p-5">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-bold text-gray-800 text-lg">{c.company_name}</p>
-                      <p className="text-sm text-gray-500">{c.email}</p>
+                      <p className="font-bold text-ink text-lg">{c.company_name}</p>
+                      <p className="text-sm text-muted">{c.email}</p>
                     </div>
-                    <span className="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-semibold">고객사</span>
+                    <span className="bg-highlight text-ink text-xs px-3 py-1 rounded-full font-semibold">광고주</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-                    <div><p className="text-gray-400">월 예산</p><p className="font-semibold">{c.monthly_budget ? c.monthly_budget.toLocaleString() + '원' : '-'}</p></div>
-                    <div><p className="text-gray-400">제품명</p><p className="font-semibold">{c.product_name || '-'}</p></div>
-                    <div><p className="text-gray-400">홈페이지</p>
-                      {c.homepage ? <a href={c.homepage} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline font-semibold">{c.homepage}</a> : <p>-</p>}
+                    <div><p className="text-muted">월 예산</p><p className="font-semibold">{c.monthly_budget ? c.monthly_budget.toLocaleString() + '원' : '-'}</p></div>
+                    <div><p className="text-muted">제품명</p><p className="font-semibold">{c.product_name || '-'}</p></div>
+                    <div><p className="text-muted">홈페이지</p>
+                      {c.homepage ? <a href={c.homepage} target="_blank" rel="noreferrer" className="text-ink hover:underline font-semibold">{c.homepage}</a> : <p>-</p>}
                     </div>
-                    <div><p className="text-gray-400">사업자등록증</p>
-                      {c.business_reg_url ? <span className="text-green-600 font-semibold">✅ 업로드됨</span> : <span className="text-gray-400">미업로드</span>}
+                    <div><p className="text-muted">사업자등록증</p>
+                      {c.business_reg_url ? <span className="text-ink font-semibold">업로드됨</span> : <span className="text-muted">미업로드</span>}
                     </div>
                   </div>
                 </div>
               ))}
-              {clients.length === 0 && <p className="text-center text-gray-400 py-10">등록된 고객사가 없습니다.</p>}
+              {clients.length === 0 && <p className="text-center text-muted py-10">등록된 광고주가 없습니다.</p>}
             </div>
           </div>
         )}
 
         {tab === 'agencydb' && (
           <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">🏢 고객사 DB</h2>
+            <h2 className="text-lg font-bold text-ink mb-4">광고주 DB</h2>
             {!selectedAgency ? (
               <div className="grid gap-4">
                 {agencies.map(a => (
-                  <div key={a.id} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-md hover:border-purple-300 border-2 border-transparent transition" onClick={() => { setSelectedAgency(a); router.push({ pathname: '/admin/dashboard', query: { tab: 'agencydb', agency: a.id } }, undefined, { shallow: true }) }}>
+                  <div key={a.id} className="bg-white rounded-2xl shadow p-5 cursor-pointer hover:shadow-sm hover:border-line border-2 border-transparent transition" onClick={() => { setSelectedAgency(a); router.push({ pathname: '/admin/dashboard', query: { tab: 'agencydb', agency: a.id } }, undefined, { shallow: true }) }}>
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="font-bold text-gray-800 text-lg">{a.company_name}</p>
-                        <p className="text-sm text-gray-500">{a.industry} · 시작일: {a.start_date}</p>
+                        <p className="font-bold text-ink text-lg">{a.company_name}</p>
+                        <p className="text-sm text-muted">{a.industry} · 시작일: {a.start_date}</p>
                       </div>
-                      <span className="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full font-semibold">클릭하여 보기 →</span>
+                      <span className="bg-highlight text-ink text-xs px-3 py-1 rounded-full font-semibold">클릭하여 보기 →</span>
                     </div>
                   </div>
                 ))}
-                {agencies.length === 0 && <p className="text-center text-gray-400 py-10">등록된 고객사가 없습니다.</p>}
+                {agencies.length === 0 && <p className="text-center text-muted py-10">등록된 광고주가 없습니다.</p>}
               </div>
             ) : (
               <div>
-                <button onClick={() => { setSelectedAgency(null); router.push({ pathname: '/admin/dashboard', query: { tab: 'agencydb' } }, undefined, { shallow: true }) }} className="mb-4 text-purple-600 hover:underline text-sm font-semibold">← 고객사 목록으로</button>
-                <h3 className="text-xl font-black text-gray-800 mb-2">{selectedAgency.company_name}</h3>
-                <p className="text-sm text-gray-500 mb-6">{selectedAgency.industry} · 시작일: {selectedAgency.start_date}</p>
+                <button onClick={() => { setSelectedAgency(null); router.push({ pathname: '/admin/dashboard', query: { tab: 'agencydb' } }, undefined, { shallow: true }) }} className="mb-4 text-ink hover:underline text-sm font-semibold">← 광고주 목록으로</button>
+                <h3 className="text-xl font-black text-ink mb-2">{selectedAgency.company_name}</h3>
+                <p className="text-sm text-muted mb-6">{selectedAgency.industry} · 시작일: {selectedAgency.start_date}</p>
                 <div className="bg-white rounded-2xl shadow overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-purple-50 text-purple-700">
+                    <thead className="bg-highlight text-ink">
                       <tr>
                         <th className="px-4 py-3 text-left">이름</th>
                         <th className="px-4 py-3 text-left">연락처</th>
@@ -680,27 +683,27 @@ const STEPS = PARTICIPATION_STEPS
                     </thead>
                     <tbody>
                       {agencyInfluencers.map((inf, i) => (
-                        <tr key={inf.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-4 py-3 font-semibold text-gray-800">{inf.name}</td>
-                          <td className="px-4 py-3 text-gray-600">{inf.phone}</td>
-                          <td className="px-4 py-3 text-gray-600 text-xs max-w-xs">{inf.address || '-'}</td>
+                        <tr key={inf.id} className={i % 2 === 0 ? 'bg-white' : 'bg-highlight'}>
+                          <td className="px-4 py-3 font-semibold text-ink">{inf.name}</td>
+                          <td className="px-4 py-3 text-muted">{inf.phone}</td>
+                          <td className="px-4 py-3 text-muted text-xs max-w-xs">{inf.address || '-'}</td>
                           <td className="px-4 py-3">
-                            {inf.instagram_url ? <a href={inf.instagram_url} target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">링크</a> : '-'}
+                            {inf.instagram_url ? <a href={inf.instagram_url} target="_blank" rel="noreferrer" className="text-ink hover:underline">링크</a> : '-'}
                           </td>
-                          <td className="px-4 py-3 text-gray-800 font-semibold">{inf.unit_price ? `${inf.unit_price}만원` : '-'}</td>
-                          <td className="px-4 py-3 text-gray-600">{
+                          <td className="px-4 py-3 text-ink font-semibold">{inf.unit_price ? `${inf.unit_price}만원` : '-'}</td>
+                          <td className="px-4 py-3 text-muted">{
                             inf.upload_schedule
                               ? inf.upload_schedule.includes('00:00:00')
                                 ? new Date(inf.upload_schedule).toLocaleDateString('ko-KR', {month: 'long', day: 'numeric'})
                                 : inf.upload_schedule
                               : '-'
                           }</td>
-                          <td className="px-4 py-3">{inf.contract === 'O' ? '✅' : '-'}</td>
-                          <td className="px-4 py-3 text-gray-600 text-xs">{inf.bank_info || '-'}</td>
+                          <td className="px-4 py-3">{inf.contract === 'O' ? '' : '-'}</td>
+                          <td className="px-4 py-3 text-muted text-xs">{inf.bank_info || '-'}</td>
                         </tr>
                       ))}
                       {agencyInfluencers.length === 0 && (
-                        <tr><td colSpan={8} className="text-center text-gray-400 py-10">데이터가 없습니다.</td></tr>
+                        <tr><td colSpan={8} className="text-center text-muted py-10">데이터가 없습니다.</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -711,99 +714,89 @@ const STEPS = PARTICIPATION_STEPS
         )}
 
         {/* 정산 관리 탭 */}
-        {tab === 'payments' && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">💰 정산 관리</h2>
-            <div className="grid gap-4">
-              {participations.filter(p => p.status === '정산요청' || p.status === '정산완료').length === 0 ? (
-                <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
-                  <p>정산 신청 내역이 없습니다.</p>
-                </div>
-              ) : (
-                participations.filter(p => p.status === '정산요청' || p.status === '정산완료').map(p => (
-                  <div key={p.id} className="bg-white rounded-2xl shadow p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <p className="font-bold text-gray-800 text-lg">{p.users?.name || '-'}</p>
-                        <p className="text-sm text-gray-500">{p.campaigns?.name || '-'}</p>
-                      </div>
-                      {p.status === '정산완료' ? (
-                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">✅ 지급완료</span>
-                      ) : (
-                        <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-semibold">⏳ 정산대기</span>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs text-gray-400 mb-1">원고료</p>
-                        <p className="font-bold text-purple-600">{p.apply_data?.reward || '-'}</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs text-gray-400 mb-1">은행/계좌</p>
-                        <p className="font-semibold text-gray-800">{payout(p).bank_name || '-'} {payout(p).account_number || ''}</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs text-gray-400 mb-1">예금주</p>
-                        <p className="font-semibold text-gray-800">{payout(p).account_holder || p.users?.name || '-'}</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl p-3">
-                        <p className="text-xs text-gray-400 mb-1">신청일</p>
-                        <p className="font-semibold text-gray-800">{p.payment_request_at ? new Date(p.payment_request_at).toLocaleDateString('ko-KR') : '-'}</p>
-                      </div>
-                    </div>
-                    {p.status !== '정산완료' && (
-                      <button onClick={() => handlePaymentUpdate(p.id)}
-                        className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition">
-                        💰 정산 완료 처리
-                      </button>
-                    )}
-                  </div>
-                ))
+        {tab === 'payments' && (() => {
+          const table = (rows, done) => (
+            <div className="bg-white rounded-2xl shadow overflow-x-auto">
+              <table className="w-full text-sm text-left whitespace-nowrap">
+                <thead className="text-xs text-muted border-b border-line">
+                  <tr>{['이름', '캠페인', '원고료', '은행', '계좌', '예금주', ''].map((h, i) => <th key={i} scope="col" className="px-4 py-3 font-semibold">{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {rows.map(p => (
+                    <tr key={p.id} className="border-b border-line last:border-0">
+                      <td className="px-4 py-3 font-semibold text-ink">{p.users?.name || '-'}</td>
+                      <td className="px-4 py-3 text-muted">{p.campaigns?.name || '-'}</td>
+                      <td className="px-4 py-3 font-semibold text-ink">{p.apply_data?.reward || '-'}</td>
+                      <td className="px-4 py-3">{payout(p).bank_name || '-'}</td>
+                      <td className="px-4 py-3 font-mono">{payout(p).account_number || '-'}</td>
+                      <td className="px-4 py-3">{payout(p).account_holder || '-'}</td>
+                      <td className="px-4 py-3 text-right">
+                        {done ? <span className="text-xs text-muted">완료</span> : (
+                          <button onClick={() => handlePaymentUpdate(p.id)} className="bg-ink text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition">정산 완료</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+          const pending = participations.filter(p => p.status === '정산요청')
+          const done = participations.filter(p => p.status === '정산완료')
+          return (
+            <div>
+              <h2 className="text-lg font-bold text-ink mb-4">정산 필요 <span className="text-muted font-normal">{pending.length}건</span></h2>
+              {pending.length ? table(pending, false) : <p className="bg-white rounded-2xl shadow p-10 text-center text-muted">정산할 내역이 없습니다.</p>}
+              {done.length > 0 && (
+                <details className="mt-6">
+                  <summary className="cursor-pointer text-sm font-semibold text-muted mb-3">정산 완료 내역 {done.length}건</summary>
+                  {table(done, true)}
+                </details>
               )}
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* 컨설팅 신청 탭 */}
         {tab === 'consultations' && (
           <div>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">📞 컨설팅 신청 목록</h2>
+            <h2 className="text-lg font-bold text-ink mb-4">컨설팅 신청 목록</h2>
             <div className="grid gap-4">
               {consultations.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow p-10 text-center text-gray-400">
+                <div className="bg-white rounded-2xl shadow p-10 text-center text-muted">
                   <p>컨설팅 신청 내역이 없습니다.</p>
                 </div>
               ) : (
                 consultations.map(c => (
                   <div key={c.id} className="bg-white rounded-2xl shadow p-6">
                     <div className="flex justify-between items-start mb-2">
-                      <p className="text-xs text-gray-400">{new Date(c.created_at).toLocaleString('ko-KR')}</p>
+                      <p className="text-xs text-muted">{new Date(c.created_at).toLocaleString('ko-KR')}</p>
                     </div>
                     <div className="grid md:grid-cols-2 gap-3 mt-2">
                       <div>
-                        <p className="text-xs text-gray-400">담당자</p>
-                        <p className="font-bold text-gray-800">{c.manager_name || '-'}</p>
+                        <p className="text-xs text-muted">담당자</p>
+                        <p className="font-bold text-ink">{c.manager_name || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">직함/직위</p>
-                        <p className="text-gray-700">{c.job_title || '-'}</p>
+                        <p className="text-xs text-muted">직함/직위</p>
+                        <p className="text-ink">{c.job_title || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">전화번호</p>
-                        <p className="text-gray-700">{c.phone_number || '-'}</p>
+                        <p className="text-xs text-muted">전화번호</p>
+                        <p className="text-ink">{c.phone_number || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">SNS URL</p>
-                        <p className="text-gray-700 text-sm break-all">{c.sns_url || '-'}</p>
+                        <p className="text-xs text-muted">SNS URL</p>
+                        <p className="text-ink text-sm break-all">{c.sns_url || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">홈페이지</p>
-                        <p className="text-gray-700 text-sm break-all">{c.website_url || '-'}</p>
+                        <p className="text-xs text-muted">홈페이지</p>
+                        <p className="text-ink text-sm break-all">{c.website_url || '-'}</p>
                       </div>
                     </div>
                     <div className="mt-3">
-                      <p className="text-xs text-gray-400">문의 내용</p>
-                      <p className="text-gray-700 mt-1 bg-gray-50 rounded-xl p-3">{c.inquiry_message || '-'}</p>
+                      <p className="text-xs text-muted">문의 내용</p>
+                      <p className="text-ink mt-1 bg-highlight rounded-xl p-3">{c.inquiry_message || '-'}</p>
                     </div>
                   </div>
                 ))
@@ -821,17 +814,17 @@ const STEPS = PARTICIPATION_STEPS
         return (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
             onClick={() => setImageModal(null)}>
-            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-4"
+            <div className="bg-white rounded-2xl shadow-sm max-w-3xl w-full p-4"
               onClick={e => e.stopPropagation()}>
               <div className="flex justify-between items-center mb-3">
-                <p className="font-bold text-gray-800">{imageModal.title}</p>
+                <p className="font-bold text-ink">{imageModal.title}</p>
                 <div className="flex items-center gap-3">
                   <a href={url} target="_blank" rel="noreferrer"
-                    className="text-xs text-blue-600 underline hover:text-blue-800">새 탭에서 열기</a>
+                    className="text-xs text-ink underline hover:text-ink">새 탭에서 열기</a>
                   <a href={imageModal.downloadUrl || url}
-                    className="text-xs text-green-600 underline hover:text-green-800">다운로드</a>
+                    className="text-xs text-ink underline hover:text-ink">다운로드</a>
                   <button onClick={() => setImageModal(null)}
-                    className="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none">×</button>
+                    className="text-muted hover:text-ink text-2xl font-bold leading-none">×</button>
                 </div>
               </div>
               {isImage && (
@@ -842,13 +835,13 @@ const STEPS = PARTICIPATION_STEPS
                 <iframe src={url} className="w-full rounded-xl" style={{height: '70vh'}} />
               )}
               {!isImage && !isPdf && (
-                <div className="text-center py-16 text-gray-500">
-                  <p className="text-4xl mb-4">📄</p>
+                <div className="text-center py-16 text-muted">
+                  <p className="text-4xl mb-4"></p>
                   <p className="font-semibold mb-2">{imageModal.title}</p>
-                  <p className="text-sm text-gray-400 mb-6">브라우저에서 미리보기가 지원되지 않는 파일입니다.</p>
+                  <p className="text-sm text-muted mb-6">브라우저에서 미리보기가 지원되지 않는 파일입니다.</p>
                   <a href={imageModal.downloadUrl || url}
-                    className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
-                    📥 파일 다운로드
+                    className="bg-ink text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition">
+                    파일 다운로드
                   </a>
                 </div>
               )}
@@ -861,19 +854,3 @@ const STEPS = PARTICIPATION_STEPS
   )
 }
 
-// 모든 칸을 위쪽에 맞춰, 글자가 줄바꿈돼도 동그라미와 선의 높이가 같게 유지
-function Stepper({ current }) {
-  return (
-    <ol className="grid" style={{ gridTemplateColumns: `repeat(${PARTICIPATION_STEPS.length}, minmax(0, 1fr))` }}>
-      {PARTICIPATION_STEPS.map((step, idx) => (
-        <li key={step} className="relative flex flex-col items-center" aria-current={idx === current ? 'step' : undefined}>
-          {idx > 0 && <span aria-hidden="true" className={`absolute top-[13px] right-1/2 w-full h-0.5 ${idx <= current ? 'bg-purple-600' : 'bg-gray-200'}`} />}
-          <span className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${idx <= current ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white border-gray-300 text-gray-500'}`}>
-            {idx < current ? <span aria-label="완료">✓</span> : idx + 1}
-          </span>
-          <span className={`text-xs mt-1 font-medium text-center leading-tight ${idx <= current ? 'text-purple-600' : 'text-gray-500'}`}>{step}</span>
-        </li>
-      ))}
-    </ol>
-  )
-}
