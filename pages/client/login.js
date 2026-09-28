@@ -65,7 +65,7 @@ export default function ClientLogin() {
         {!isAdmin && (
         <p className="text-center text-sm text-muted mt-4">
           광고주 계정이 없으신가요? 먼저 상담 문의를 신청해주세요.{' '}
-          <a href="/#apply" className="text-ink font-semibold hover:underline">상담 신청하기</a>
+          <a href="/#apply" className="text-ink font-semibold hover:underline whitespace-nowrap">상담 신청하기</a>
         </p>
         )}
       </div>
