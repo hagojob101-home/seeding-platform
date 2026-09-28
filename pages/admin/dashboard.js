@@ -714,58 +714,48 @@ const STEPS = PARTICIPATION_STEPS
         )}
 
         {/* 정산 관리 탭 */}
-        {tab === 'payments' && (
-          <div>
-            <h2 className="text-lg font-bold text-ink mb-4">정산 관리</h2>
-            <div className="grid gap-4">
-              {participations.filter(p => p.status === '정산요청' || p.status === '정산완료').length === 0 ? (
-                <div className="bg-white rounded-2xl shadow p-10 text-center text-muted">
-                  <p>정산 신청 내역이 없습니다.</p>
-                </div>
-              ) : (
-                participations.filter(p => p.status === '정산요청' || p.status === '정산완료').map(p => (
-                  <div key={p.id} className="bg-white rounded-2xl shadow p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <p className="font-bold text-ink text-lg">{p.users?.name || '-'}</p>
-                        <p className="text-sm text-muted">{p.campaigns?.name || '-'}</p>
-                      </div>
-                      {p.status === '정산완료' ? (
-                        <span className="text-xs bg-highlight text-ink px-3 py-1 rounded-full font-semibold">지급완료</span>
-                      ) : (
-                        <span className="text-xs bg-highlight text-ink px-3 py-1 rounded-full font-semibold">정산대기</span>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                      <div className="bg-highlight rounded-xl p-3">
-                        <p className="text-xs text-muted mb-1">원고료</p>
-                        <p className="font-bold text-ink">{p.apply_data?.reward || '-'}</p>
-                      </div>
-                      <div className="bg-highlight rounded-xl p-3">
-                        <p className="text-xs text-muted mb-1">은행/계좌</p>
-                        <p className="font-semibold text-ink">{payout(p).bank_name || '-'} {payout(p).account_number || ''}</p>
-                      </div>
-                      <div className="bg-highlight rounded-xl p-3">
-                        <p className="text-xs text-muted mb-1">예금주</p>
-                        <p className="font-semibold text-ink">{payout(p).account_holder || p.users?.name || '-'}</p>
-                      </div>
-                      <div className="bg-highlight rounded-xl p-3">
-                        <p className="text-xs text-muted mb-1">신청일</p>
-                        <p className="font-semibold text-ink">{p.payment_request_at ? new Date(p.payment_request_at).toLocaleDateString('ko-KR') : '-'}</p>
-                      </div>
-                    </div>
-                    {p.status !== '정산완료' && (
-                      <button onClick={() => handlePaymentUpdate(p.id)}
-                        className="w-full bg-ink text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
-                        정산 완료 처리
-                      </button>
-                    )}
-                  </div>
-                ))
+        {tab === 'payments' && (() => {
+          const table = (rows, done) => (
+            <div className="bg-white rounded-2xl shadow overflow-x-auto">
+              <table className="w-full text-sm text-left whitespace-nowrap">
+                <thead className="text-xs text-muted border-b border-line">
+                  <tr>{['이름', '캠페인', '원고료', '은행', '계좌', '예금주', ''].map((h, i) => <th key={i} scope="col" className="px-4 py-3 font-semibold">{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {rows.map(p => (
+                    <tr key={p.id} className="border-b border-line last:border-0">
+                      <td className="px-4 py-3 font-semibold text-ink">{p.users?.name || '-'}</td>
+                      <td className="px-4 py-3 text-muted">{p.campaigns?.name || '-'}</td>
+                      <td className="px-4 py-3 font-semibold text-ink">{p.apply_data?.reward || '-'}</td>
+                      <td className="px-4 py-3">{payout(p).bank_name || '-'}</td>
+                      <td className="px-4 py-3 font-mono">{payout(p).account_number || '-'}</td>
+                      <td className="px-4 py-3">{payout(p).account_holder || '-'}</td>
+                      <td className="px-4 py-3 text-right">
+                        {done ? <span className="text-xs text-muted">완료</span> : (
+                          <button onClick={() => handlePaymentUpdate(p.id)} className="bg-ink text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition">정산 완료</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+          const pending = participations.filter(p => p.status === '정산요청')
+          const done = participations.filter(p => p.status === '정산완료')
+          return (
+            <div>
+              <h2 className="text-lg font-bold text-ink mb-4">정산 필요 <span className="text-muted font-normal">{pending.length}건</span></h2>
+              {pending.length ? table(pending, false) : <p className="bg-white rounded-2xl shadow p-10 text-center text-muted">정산할 내역이 없습니다.</p>}
+              {done.length > 0 && (
+                <details className="mt-6">
+                  <summary className="cursor-pointer text-sm font-semibold text-muted mb-3">정산 완료 내역 {done.length}건</summary>
+                  {table(done, true)}
+                </details>
               )}
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* 컨설팅 신청 탭 */}
         {tab === 'consultations' && (
