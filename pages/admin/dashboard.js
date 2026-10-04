@@ -5,7 +5,7 @@ import Footer from '../../components/Footer'
 import FileLink, { signedUrl } from '../../components/FileLink'
 import { PARTICIPATION_STEPS } from '../../lib/constants'
 import Progress, { StepLabels } from '../../components/Progress'
-import AutomationFrame from '../../components/AutomationFrame'
+import AutomationPanel from '../../components/AutomationPanel'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -799,7 +799,7 @@ const STEPS = PARTICIPATION_STEPS
         })()}
 
         {/* 컨설팅 신청 탭 */}
-        {tab === 'automation' && <AutomationFrame />}
+        {tab === 'automation' && <AutomationPanel />}
 
         {tab === 'consultations' && (
           <div>
