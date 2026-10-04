@@ -5,6 +5,7 @@ import Footer from '../../components/Footer'
 import FileLink, { signedUrl } from '../../components/FileLink'
 import { PARTICIPATION_STEPS } from '../../lib/constants'
 import Progress, { StepLabels } from '../../components/Progress'
+import AutomationPanel from '../../components/AutomationPanel'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -213,6 +214,7 @@ const STEPS = PARTICIPATION_STEPS
             { id: 'agencydb', label: '광고주 DB' },
             { id: 'payments', label: '정산 관리', count: participations.filter(p => p.status === '정산요청').length },
             { id: 'consultations', label: '컨설팅 신청', count: consultations.length },
+            { id: 'automation', label: '캠페인 자동화' },
           ].map(t => (
             <button key={t.id} onClick={() => { setTab(t.id); router.push({ pathname: '/admin/dashboard', query: { tab: t.id } }, undefined, { shallow: true }) }}
               className={`px-4 py-2 rounded-xl font-semibold text-sm transition flex items-center gap-2 ${tab === t.id ? 'bg-ink text-white' : 'bg-white text-muted hover:bg-highlight'}`}>
@@ -797,6 +799,8 @@ const STEPS = PARTICIPATION_STEPS
         })()}
 
         {/* 컨설팅 신청 탭 */}
+        {tab === 'automation' && <AutomationPanel />}
+
         {tab === 'consultations' && (
           <div>
             <h2 className="text-lg font-bold text-ink mb-4">컨설팅 신청 목록</h2>
