@@ -12,6 +12,7 @@ module.exports = {
         muted: 'var(--muted)',
         highlight: 'var(--highlight)',
         line: 'var(--border)',
+        brand: '#1F4FB8', // simfle 랜딩
       },
     },
   },

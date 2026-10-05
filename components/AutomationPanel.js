@@ -53,7 +53,7 @@ export default function AutomationPanel() {
   const loadCampaigns = () => call('listCampaigns').then(setCampaigns).catch(e => setLoadError(e.message))
   useEffect(() => {
     loadCampaigns()
-    call('getSenderOptions').then(list => { setSenders(list); setSender(list[0] || '') }).catch(() => {})
+    call('getSenderOptions').then(list => { setSenders(list); setSender(list[0] || '') }).catch(e => setLoadError(e.message))
   }, [])
 
   // 상품 URL 입력 → 브랜드명 자동 추출 (직접 고친 뒤에는 건드리지 않음)
