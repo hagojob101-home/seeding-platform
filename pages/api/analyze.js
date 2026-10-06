@@ -107,7 +107,8 @@ const decode = s => s.replace(/&(#x[\da-f]+|#\d+|\w+);/gi, (m, e) => {
   const n = e[1].toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : +e.slice(1)
   return n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : m
 })
-const clean = s => (s ? decode(s).replace(/\s+/g, ' ').trim().slice(0, 500) : '') || null
+// 앞뒤 구분 기호 제거 (예: '| LANEIGE ...')
+const clean = s => (s ? decode(s).replace(/\s+/g, ' ').replace(/^[\s|\-–—·:]+|[\s|\-–—·:]+$/g, '').slice(0, 500) : '') || null
 
 function extract(html) {
   const metas = {}
