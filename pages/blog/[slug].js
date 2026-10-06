@@ -7,12 +7,16 @@ export const getStaticPaths = () => ({ paths: POSTS.map(p => ({ params: { slug: 
 export const getStaticProps = ({ params }) => ({ props: { post: POSTS.find(p => p.slug === params.slug) } })
 
 export default function Post({ post }) {
-  const Body = BODIES[post.slug]
+  const { Body, faq } = BODIES[post.slug]
   const url = `${SITE_URL}/blog/${post.slug}`
   const ld = JSON.stringify({
     '@context': 'https://schema.org', '@type': 'Article',
     headline: post.title, description: post.description, datePublished: post.date, dateModified: post.updated || post.date,
     mainEntityOfPage: url, author: { '@type': 'Organization', name: 'simfle', url: SITE_URL }, publisher: { '@type': 'Organization', name: 'simfle', url: SITE_URL },
+  }).replace(/</g, '\\u003c')
+  const faqLd = faq && JSON.stringify({
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
   }).replace(/</g, '\\u003c')
   return (
     <div className="sf font-plex text-sf-ink bg-white leading-[1.6] break-keep">
@@ -25,6 +29,7 @@ export default function Post({ post }) {
         <meta property="og:description" content={post.description} />
         <meta property="og:url" content={url} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
+        {faqLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqLd }} />}
       </Head>
       <SfHeader />
       <main className={`${sfWrap} max-w-[820px] py-24`}>
