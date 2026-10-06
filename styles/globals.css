@@ -52,3 +52,18 @@ body {
   .sf-pc:hover, .sf-pc:focus-within { transform: none; }
   .sf-mqw { overflow-x: auto !important; }
 }
+
+/* 블로그 본문 (simfle) */
+.sf-prose { font-size: 17px; line-height: 1.8; color: var(--sf-body); }
+.sf-prose > * + * { margin-top: 1.1em; }
+.sf-prose h2 { margin-top: 2em; font-size: 26px; line-height: 1.35; letter-spacing: -0.02em; color: var(--sf-ink); font-weight: 700; }
+.sf-prose h3 { margin-top: 1.6em; font-size: 20px; color: var(--sf-ink); font-weight: 700; }
+.sf-prose ul, .sf-prose ol { padding-left: 1.4em; }
+.sf-prose ul { list-style: disc; }
+.sf-prose ol { list-style: decimal; }
+.sf-prose li + li { margin-top: .4em; }
+.sf-prose a { color: var(--sf-ink); text-decoration: underline; }
+.sf-prose strong { color: var(--sf-ink); }
+.sf-prose blockquote { padding-left: 14px; border-left: 4px solid var(--sf-accent); }
+.sf-prose table { width: 100%; border-collapse: collapse; font-size: 15px; display: block; overflow-x: auto; }
+.sf-prose th, .sf-prose td { padding: 10px 12px; border-bottom: 1px solid var(--sf-line); text-align: left; }

@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import { useEffect, useRef, useState } from 'react'
+import { SfHeader, SfFooter, SITE_URL } from '../components/SfLayout'
 
 const COUNTRY_NAME = { KR: '한국', BR: '브라질' }
 
@@ -26,6 +27,11 @@ const FAQ = [
   ['결제는 어떻게 하나요?', '결제는 계좌이체로 진행하며, 입금이 확인되면 세금계산서를 발행해 드립니다.'],
   ['어떻게 시작하나요?', '아래에서 상담을 신청하시면 담당자가 연락드립니다.'],
 ].filter(([, a]) => a)
+// AI·검색 엔진용 FAQ 구조화 데이터 ('<'는 이스케이프해 script 탈출 방지)
+const FAQ_LD = JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+}).replace(/</g, '\\u003c')
 
 const STEPS = [
   ['캠페인 요청', '제품과 목표만 알려주세요. 조건과 가이드는 simfle이 정리합니다.', null],
@@ -380,7 +386,6 @@ export default function Home() {
   const analyzeByName = e => { e.preventDefault(); start(run.url, run.country, e.currentTarget.productName.value.trim()) }
 
   const bubble = 'm-0 self-start max-w-full px-[18px] py-3.5 text-base bg-white border border-sf-line rounded-[4px_16px_16px_16px]'
-  const navLink = 'inline-flex items-center min-h-[44px] px-3.5 text-[15px] no-underline text-sf-ink hover:text-[#444]'
 
   return (
     <div className="sf font-plex text-sf-ink bg-white leading-[1.6] break-keep">
@@ -388,21 +393,11 @@ export default function Home() {
         <title>simfle — 제품 URL로 광고 중인 인플루언서 찾기</title>
         <meta name="description" content="제품 페이지 URL 하나로, 같은 카테고리에서 실제로 Meta 광고에 등장한 인플루언서를 보여드립니다." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="canonical" href={`${SITE_URL}/`} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: FAQ_LD }} />
       </Head>
 
-      <header className="border-b border-sf-line">
-        <div className={`${wrap} py-4 flex flex-wrap items-center justify-between gap-4`}>
-          <a href="#top" className="font-plexmono text-2xl font-medium no-underline text-sf-ink tracking-[-0.02em]">simfle</a>
-          <nav aria-label="주요 메뉴" className="flex flex-wrap items-center gap-1">
-            <a href="#result" className={navLink}>분석 예시</a>
-            <a href="#flow" className={navLink}>진행 방식</a>
-            <a href="#pricing" className={navLink}>요금</a>
-            <a href="#faq" className={navLink}>자주 묻는 질문</a>
-            <a href="/login" className={navLink}>로그인</a>
-            <a href="#contact" className="inline-flex items-center min-h-[44px] px-[18px] text-[15px] font-medium no-underline text-white bg-sf-ink rounded-lg">상담 신청</a>
-          </nav>
-        </div>
-      </header>
+      <SfHeader />
 
       <main id="top">
         <section className={`${wrap} pt-24 pb-20 flex flex-col gap-7`}>
@@ -588,15 +583,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className={`${wrap} py-8 flex flex-wrap justify-between gap-3 text-sm text-sf-sub`}>
-        <address className="not-italic flex flex-col gap-1">
-          <span>스튜디오1216 · 사업자등록번호 825-16-02903</span>
-          <span>(04785) 서울특별시 성동구 뚝섬로13길 38 (성수동2가 271-1) KT&amp;G 상상플래닛</span>
-          <span>(42956) 대구 달성군 화원읍 성천로 5 달성청년혁신센터</span>
-          <span>© 2026 simfle</span>
-        </address>
-        <a href="/privacy" className="inline-flex items-center min-h-[44px] text-sf-sub">개인정보처리방침</a>
-      </footer>
+      <SfFooter />
     </div>
   )
 }
