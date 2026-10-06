@@ -127,6 +127,19 @@ function extract(html) {
 
 const norm = s => (s || '').normalize('NFC').toLowerCase().replace(/\s+/g, '')
 
+// 두 글의 가장 긴 공통 부분 길이. 한글이 들어가면 2자 이상, 아니면 4자 이상만 인정 (예: 수분크림 ↔ 쏙보습크림 = '크림')
+function overlap(a, b) {
+  let best = ''
+  const prev = new Array(b.length + 1).fill(0)
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = b.length; j >= 1; j--) {
+      prev[j] = a[i - 1] === b[j - 1] ? prev[j - 1] + 1 : 0
+      if (prev[j] > best.length) best = a.slice(i - prev[j], i)
+    }
+  }
+  return best.length >= (/[가-힣]/.test(best) ? 2 : 4) ? best.length : 0
+}
+
 function clientIp(req) {
   return req.headers['x-real-ip'] || String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || ''
 }
@@ -174,14 +187,26 @@ async function analyze(db, target, country, log, name) {
 
     // 제목·설명·페이지 키워드에 들어 있는 검색어 전부(최대 5개). 대표 = 가장 긴 것, 같으면 accounts 큰 쪽
     const text = norm(`${title || ''} ${description || ''} ${pageKeywords || ''}`)
-    const hits = keywords
+    let hits = keywords
       .filter(k => norm(k.keyword) && text.includes(norm(k.keyword)))
       .sort((a, b) => norm(b.keyword).length - norm(a.keyword).length || (b.accounts ?? 0) - (a.accounts ?? 0))
       .slice(0, 5)
+    // 그대로 맞는 게 없으면 제품명과 일부만 겹치는 검색어(최대 3개). 설명은 길어서 우연히 겹치기 쉬우니 제목만 본다
+    const similar = !hits.length
+    if (similar) {
+      const t = norm(title)
+      hits = keywords
+        .map(k => ({ k, n: overlap(norm(k.keyword), t) }))
+        .filter(x => x.n)
+        .sort((a, b) => b.n - a.n || (b.k.accounts ?? 0) - (a.k.accounts ?? 0))
+        .slice(0, 3)
+        .map(x => x.k)
+    }
     if (!hits.length) return [200, { matched: false, title }]
     const [hit] = hits
     const hitNames = hits.map(k => k.keyword)
-    log.matched_keyword = hitNames.join(', ').slice(0, 500)
+    // 비슷한 검색어로 찾은 건 '≈ '로 구분 (나중에 추출할 제품 목록용)
+    log.matched_keyword = ((similar ? '≈ ' : '') + hitNames.join(', ')).slice(0, 500)
 
     const related = hit.category
       ? keywords.filter(k => k.category === hit.category && !hitNames.includes(k.keyword)).sort((a, b) => (b.accounts ?? 0) - (a.accounts ?? 0)).slice(0, 5).map(k => k.keyword)
@@ -195,7 +220,7 @@ async function analyze(db, target, country, log, name) {
     const influencers = unique.sort((a, b) => score(b) - score(a)).slice(0, 2).map(({ handle, brand, followers, keyword }) => ({ handle, brand, followers, keyword }))
 
     return [200, {
-      matched: true, title, keyword: hit.keyword, matchedKeywords: hitNames.slice(1), category: hit.category, related, collectedOn: hit.collected_on,
+      matched: true, similar, title, keyword: hit.keyword, matchedKeywords: hitNames.slice(1), category: hit.category, related, collectedOn: hit.collected_on,
       stats: { ads: hit.ads, accounts: hit.accounts, collab: hit.collab, brand: hit.brand },
       influencers, lockedCount: unique.length - influencers.length,
     }]

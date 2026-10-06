@@ -92,7 +92,8 @@ function chatLines(r, { country, name: typed }) {
   if (!r.matched) return [first, `${name}에서 수집한 검색어 중 이 제품과 맞는 검색어를 찾지 못했습니다.`]
   return [
     first,
-    r.matchedKeywords?.length ? `수집한 검색어 중 ‘${r.keyword}’ 외 ${r.matchedKeywords.length}개가 이 제품과 맞습니다.` : `수집한 검색어 중 ‘${r.keyword}’ 검색어가 가장 잘 맞습니다.`,
+    r.similar ? `정확히 맞는 검색어가 없어, 제품명과 비슷한 ‘${r.keyword}’${r.matchedKeywords?.length ? ` 외 ${r.matchedKeywords.length}개` : ''} 검색어 기준으로 찾았습니다.`
+      : r.matchedKeywords?.length ? `수집한 검색어 중 ‘${r.keyword}’ 외 ${r.matchedKeywords.length}개가 이 제품과 맞습니다.` : `수집한 검색어 중 ‘${r.keyword}’ 검색어가 가장 잘 맞습니다.`,
     r.stats.accounts != null ? `${name}에서 ‘${r.keyword}’ Meta 광고를 집행한 계정 ${fmt(r.stats.accounts)}개를 확인했습니다.` : `${name}에서 집행 중인 Meta 광고를 확인했습니다.`,
     '광고 협업 경험이 있는 인플루언서를 찾았습니다. 아래에서 결과를 확인하세요.',
   ]
@@ -117,7 +118,7 @@ function Result({ r }) {
                 </span>LIVE
               </span>
             )}
-            <p className="m-0 text-sm font-medium text-sf-sub">{r.example ? '분석 결과 예시 · ' : ''}{name}{r.collectedOn ? ` · ${r.collectedOn} 수집일 기준` : ''}</p>
+            <p className="m-0 text-sm font-medium text-sf-sub">{r.example ? '분석 결과 예시 · ' : ''}{name}{r.collectedOn ? ` · ${r.collectedOn} 수집일 기준` : ''}{r.similar ? ' · 비슷한 검색어 기준' : ''}</p>
           </div>
           <h2 id="result-h" className="m-0 text-[clamp(26px,3.2vw,36px)] leading-[1.3] tracking-[-0.02em] font-bold break-all">
             {r.example ? '예시 제품 분석 결과' : `${r.title || '제품'} 분석 결과`}
@@ -132,7 +133,7 @@ function Result({ r }) {
             </div>
           )}
           <div className="flex-[2_1_420px] bg-white border border-sf-line rounded-[14px] p-6 flex flex-col gap-3">
-            <h3 className="m-0 text-sm font-medium text-sf-sub">맞은 검색어</h3>
+            <h3 className="m-0 text-sm font-medium text-sf-sub">{r.similar ? '비슷한 검색어' : '맞은 검색어'}</h3>
             <ul className="list-none m-0 p-0 flex flex-wrap gap-2">
               <li className="px-3.5 py-1.5 text-base font-bold bg-sf-accent rounded-full">{r.keyword}</li>
               {(r.matchedKeywords || []).map(k => <li key={k} className="px-3.5 py-1 text-base font-bold border-2 border-sf-ink rounded-full">{k}</li>)}
