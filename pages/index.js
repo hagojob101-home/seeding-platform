@@ -92,7 +92,7 @@ function chatLines(r, country) {
   if (!r.matched) return [first, `${name}에서 수집한 검색어 중 이 제품과 맞는 검색어를 찾지 못했습니다.`]
   return [
     first,
-    `수집한 검색어 중 ‘${r.keyword}’ 검색어가 가장 잘 맞습니다.`,
+    r.matchedKeywords?.length ? `수집한 검색어 중 ‘${r.keyword}’ 외 ${r.matchedKeywords.length}개가 이 제품과 맞습니다.` : `수집한 검색어 중 ‘${r.keyword}’ 검색어가 가장 잘 맞습니다.`,
     r.stats.accounts != null ? `${name}에서 ‘${r.keyword}’ Meta 광고를 집행한 계정 ${fmt(r.stats.accounts)}개를 확인했습니다.` : `${name}에서 집행 중인 Meta 광고를 확인했습니다.`,
     '광고 협업 경험이 있는 인플루언서를 찾았습니다. 아래에서 결과를 확인하세요.',
   ]
@@ -132,11 +132,19 @@ function Result({ r }) {
             </div>
           )}
           <div className="flex-[2_1_420px] bg-white border border-sf-line rounded-[14px] p-6 flex flex-col gap-3">
-            <h3 className="m-0 text-sm font-medium text-sf-sub">{r.related.length ? '연관 검색어' : '검색어'}</h3>
+            <h3 className="m-0 text-sm font-medium text-sf-sub">맞은 검색어</h3>
             <ul className="list-none m-0 p-0 flex flex-wrap gap-2">
               <li className="px-3.5 py-1.5 text-base font-bold bg-sf-accent rounded-full">{r.keyword}</li>
-              {r.related.map(k => <li key={k} className="px-3.5 py-1.5 text-base border border-sf-ink rounded-full">{k}</li>)}
+              {(r.matchedKeywords || []).map(k => <li key={k} className="px-3.5 py-1 text-base font-bold border-2 border-sf-ink rounded-full">{k}</li>)}
             </ul>
+            {r.related.length > 0 && (
+              <>
+                <h3 className="m-0 mt-2 text-sm font-medium text-sf-sub">연관 검색어</h3>
+                <ul className="list-none m-0 p-0 flex flex-wrap gap-2">
+                  {r.related.map(k => <li key={k} className="px-3.5 py-1.5 text-base border border-sf-ink rounded-full">{k}</li>)}
+                </ul>
+              </>
+            )}
           </div>
         </div>
 
@@ -175,7 +183,7 @@ function Result({ r }) {
                       <tr key={i.handle} className="border-b border-sf-line">
                         <th scope="row" className="px-6 py-[18px] font-bold break-all">{i.handle}</th>
                         <td className="px-6 py-[18px]">{i.brand || '—'}</td>
-                        <td className="px-6 py-[18px]">{r.keyword}</td>
+                        <td className="px-6 py-[18px]">{i.keyword || r.keyword}</td>
                         <td className="px-6 py-[18px] text-sf-sub">{i.followers || '—'}</td>
                       </tr>
                     ))}
@@ -561,7 +569,7 @@ export default function Home() {
               <h2 className="m-0 text-[clamp(28px,3.6vw,42px)] leading-[1.25] tracking-[-0.03em] font-bold">전체 리스트와 함께<br />상담을 받아보세요</h2>
               <p className="m-0 text-[17px] text-sf-dim">분석한 제품 기준의 인플루언서 전체 리스트와 진행 방식, 견적을 담당자가 정리해 보내드립니다.{CONTACT_DAYS ? ` 영업일 기준 ${CONTACT_DAYS}일 안에 연락드립니다.` : ''}</p>
             </div>
-            <ContactForm product={product} setProduct={setProduct} analysis={run && resp && !resp.error ? { url: run.url, country: run.country, keyword: resp.keyword } : null} />
+            <ContactForm product={product} setProduct={setProduct} analysis={run && resp && !resp.error ? { url: run.url, country: run.country, keyword: [resp.keyword, ...(resp.matchedKeywords || [])].filter(Boolean).join(', ') } : null} />
           </div>
         </section>
       </main>

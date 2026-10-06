@@ -121,6 +121,7 @@ function extract(html) {
   return {
     title: clean(metas['og:title']) || clean(html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]),
     description: clean(metas['og:description']) || clean(metas.description),
+    keywords: clean(metas.keywords),
   }
 }
 
@@ -163,33 +164,38 @@ export default async function handler(req, res) {
 
 async function analyze(db, target, country, log) {
   try {
-    const { title, description } = extract(await fetchHtml(target))
+    const { title, description, keywords: pageKeywords } = extract(await fetchHtml(target))
     log.title = title
 
     const { data: keywords, error } = await db.from('ad_keywords').select('keyword, category, collected_on, ads, accounts, collab, brand').eq('country', country)
     if (error) throw error
 
-    const text = norm(`${title || ''} ${description || ''}`)
-    const hit = keywords
+    // 제목·설명·페이지 키워드에 들어 있는 검색어 전부(최대 5개). 대표 = 가장 긴 것, 같으면 accounts 큰 쪽
+    const text = norm(`${title || ''} ${description || ''} ${pageKeywords || ''}`)
+    const hits = keywords
       .filter(k => norm(k.keyword) && text.includes(norm(k.keyword)))
-      .sort((a, b) => norm(b.keyword).length - norm(a.keyword).length || (b.accounts ?? 0) - (a.accounts ?? 0))[0]
-    if (!hit) return [200, { matched: false, title }]
-    log.matched_keyword = hit.keyword
+      .sort((a, b) => norm(b.keyword).length - norm(a.keyword).length || (b.accounts ?? 0) - (a.accounts ?? 0))
+      .slice(0, 5)
+    if (!hits.length) return [200, { matched: false, title }]
+    const [hit] = hits
+    const hitNames = hits.map(k => k.keyword)
+    log.matched_keyword = hitNames.join(', ').slice(0, 500)
 
     const related = hit.category
-      ? keywords.filter(k => k.category === hit.category && k.keyword !== hit.keyword).sort((a, b) => (b.accounts ?? 0) - (a.accounts ?? 0)).slice(0, 5).map(k => k.keyword)
+      ? keywords.filter(k => k.category === hit.category && !hitNames.includes(k.keyword)).sort((a, b) => (b.accounts ?? 0) - (a.accounts ?? 0)).slice(0, 5).map(k => k.keyword)
       : []
 
-    // 명단은 서버에만: 응답에는 2명 + 나머지 개수만
-    const { data: rows, error: infErr } = await db.from('ad_influencers').select('handle, brand, followers, type').eq('country', country).eq('keyword', hit.keyword)
+    // 명단은 서버에만: 응답에는 2명 + 나머지 개수만 (맞은 검색어 전체, 계정 중복 제거)
+    const { data: rows, error: infErr } = await db.from('ad_influencers').select('handle, brand, followers, type, keyword').eq('country', country).in('keyword', hitNames)
     if (infErr) throw infErr
-    const score = r => (r.type === '협업' ? 2 : 0) + (r.brand ? 1 : 0)
-    const influencers = [...rows].sort((a, b) => score(b) - score(a)).slice(0, 2).map(({ handle, brand, followers }) => ({ handle, brand, followers }))
+    const score = r => (r.type === '협업' ? 4 : 0) + (r.brand ? 2 : 0) + (r.keyword === hit.keyword ? 1 : 0)
+    const unique = [...new Map([...rows].sort((a, b) => score(a) - score(b)).map(r => [r.handle, r])).values()]
+    const influencers = unique.sort((a, b) => score(b) - score(a)).slice(0, 2).map(({ handle, brand, followers, keyword }) => ({ handle, brand, followers, keyword }))
 
     return [200, {
-      matched: true, title, keyword: hit.keyword, category: hit.category, related, collectedOn: hit.collected_on,
+      matched: true, title, keyword: hit.keyword, matchedKeywords: hitNames.slice(1), category: hit.category, related, collectedOn: hit.collected_on,
       stats: { ads: hit.ads, accounts: hit.accounts, collab: hit.collab, brand: hit.brand },
-      influencers, lockedCount: rows.length - influencers.length,
+      influencers, lockedCount: unique.length - influencers.length,
     }]
   } catch (e) {
     if (e instanceof Fail) return [e.status, { error: e.message }]
