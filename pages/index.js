@@ -86,9 +86,9 @@ const Words = ({ text }) => text.split(' ').map((w, i) => (
   <span key={i} className="sf-in inline-block whitespace-pre-wrap" style={{ animationDelay: `${150 + i * 60}ms` }}>{w + ' '}</span>
 ))
 
-function chatLines(r, country) {
+function chatLines(r, { country, name: typed }) {
   const name = COUNTRY_NAME[country]
-  const first = r.title ? `제품 페이지를 읽었습니다. 제품명은 ‘${r.title}’입니다.` : '제품 페이지를 읽었습니다.'
+  const first = typed ? `입력하신 제품명 ‘${r.title}’ 기준으로 분석했습니다.` : r.title ? `제품 페이지를 읽었습니다. 제품명은 ‘${r.title}’입니다.` : '제품 페이지를 읽었습니다.'
   if (!r.matched) return [first, `${name}에서 수집한 검색어 중 이 제품과 맞는 검색어를 찾지 못했습니다.`]
   return [
     first,
@@ -269,7 +269,7 @@ function ContactForm({ product, setProduct, analysis }) {
     e.preventDefault()
     const f = Object.fromEntries(new FormData(e.currentTarget))
     const t = k => (f[k] || '').trim()
-    const note = analysis && `[분석] ${COUNTRY_NAME[analysis.country]} · ${analysis.keyword ? `검색어 ‘${analysis.keyword}’` : '맞는 검색어 없음'} · ${analysis.url}`
+    const note = analysis && `[분석] ${COUNTRY_NAME[analysis.country]} · ${analysis.keyword ? `검색어 ‘${analysis.keyword}’` : '맞는 검색어 없음'}${analysis.name ? ` · 입력 제품명 ‘${analysis.name}’` : ''} · ${analysis.url}`
     setStatus({ state: 'sending', msg: '보내는 중입니다.' })
     try {
       const res = await fetch('/api/consultation', {
@@ -339,7 +339,7 @@ export default function Home() {
   const [product, setProduct] = useState('')
   const runId = useRef(0)
 
-  const lines = resp && !resp.error ? chatLines(resp, run.country) : []
+  const lines = resp && !resp.error ? chatLines(resp, run) : []
   const done = lines.length > 0 && step >= lines.length
   const busy = run && !resp?.error && !done
 
@@ -357,24 +357,26 @@ export default function Home() {
     if (resp.matched) setTimeout(() => document.getElementById('result')?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth' }), 0)
   }, [done]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function analyze(e) {
-    e.preventDefault()
-    const url = e.currentTarget.url.value.trim()
+  // name: 페이지를 못 읽은 사이트(올리브영·쿠팡 등)에서 방문자가 입력한 제품명
+  async function start(url, country, name) {
     const id = ++runId.current
-    setRun({ id, url, country })
+    setRun({ id, url, country, name })
     setResp(null)
     setStep(0)
     setProduct(url)
     let data
     try {
-      const res = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, country }) })
+      const res = await fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, country, name }) })
       const j = await res.json().catch(() => ({}))
-      data = res.ok ? j : { error: j.error || '분석하지 못했습니다. 잠시 후 다시 시도해 주세요.' }
+      data = res.ok ? j : { error: j.error || '분석하지 못했습니다. 잠시 후 다시 시도해 주세요.', needName: j.needName }
     } catch {
       data = { error: '네트워크 연결을 확인하고 다시 시도해 주세요.' }
     }
     if (id === runId.current) setResp(data)
   }
+
+  const analyze = e => { e.preventDefault(); start(e.currentTarget.url.value.trim(), country) }
+  const analyzeByName = e => { e.preventDefault(); start(run.url, run.country, e.currentTarget.productName.value.trim()) }
 
   const bubble = 'm-0 self-start max-w-full px-[18px] py-3.5 text-base bg-white border border-sf-line rounded-[4px_16px_16px_16px]'
   const navLink = 'inline-flex items-center min-h-[44px] px-3.5 text-[15px] no-underline text-sf-ink hover:text-[#444]'
@@ -429,6 +431,7 @@ export default function Home() {
             {run && (
               <p key={run.id} className="sf-in m-0 self-end max-w-[85%] px-4 py-3 text-base text-white bg-sf-ink rounded-[16px_16px_4px_16px] break-all">{run.url} · {COUNTRY_NAME[run.country]}</p>
             )}
+            {run?.name && <p className="sf-in m-0 self-end max-w-[85%] px-4 py-3 text-base text-white bg-sf-ink rounded-[16px_16px_4px_16px] break-all">제품명: {run.name}</p>}
             <p className="m-0 font-plexmono text-[13px] font-medium">simfle</p>
             {!run && <p className={bubble}>제품 페이지 URL을 넣고 무료 분석을 누르면, 여기에서 분석 과정을 보여드립니다.</p>}
             {step > 0 && (
@@ -447,7 +450,17 @@ export default function Home() {
                 <a href="#contact" className="inline-flex items-center min-h-[44px] px-5 font-bold no-underline text-sf-ink bg-sf-accent border-2 border-sf-ink rounded-[10px]">상담 신청</a>
               </div>
             )}
-            {resp?.error && <p className={`${bubble} sf-in`}>{resp.error}</p>}
+            {resp?.error && !resp.needName && <p className={`${bubble} sf-in`}>{resp.error}</p>}
+            {resp?.needName && (
+              <form onSubmit={analyzeByName} className={`${bubble} sf-in flex flex-col gap-3 w-full`}>
+                <p className="m-0">이 사이트는 외부 조회를 막고 있어 제품 페이지를 읽지 못했습니다. 제품명을 입력하시면 그 이름으로 분석해 드립니다.</p>
+                <label htmlFor="product-name" className="text-sm font-medium">제품명</label>
+                <div className="flex flex-wrap gap-2">
+                  <input id="product-name" name="productName" type="text" required maxLength={200} autoFocus placeholder="예: 라운드랩 독도 토너" className="flex-[1_1_220px] min-w-0 h-12 px-4 text-base text-sf-ink bg-white border-2 border-sf-ink rounded-[10px]" />
+                  <button type="submit" className="h-12 px-5 text-base font-bold text-white bg-sf-ink border-0 rounded-[10px] cursor-pointer">이 이름으로 분석</button>
+                </div>
+              </form>
+            )}
             {busy && (
               <p className="m-0 flex items-center gap-2.5 text-[15px] text-sf-sub">
                 <span aria-hidden="true" className="sf-pulse w-2.5 h-2.5 rounded-full bg-sf-ink" />분석 중
@@ -569,7 +582,7 @@ export default function Home() {
               <h2 className="m-0 text-[clamp(28px,3.6vw,42px)] leading-[1.25] tracking-[-0.03em] font-bold">전체 리스트와 함께<br />상담을 받아보세요</h2>
               <p className="m-0 text-[17px] text-sf-dim">분석한 제품 기준의 인플루언서 전체 리스트와 진행 방식, 견적을 담당자가 정리해 보내드립니다.{CONTACT_DAYS ? ` 영업일 기준 ${CONTACT_DAYS}일 안에 연락드립니다.` : ''}</p>
             </div>
-            <ContactForm product={product} setProduct={setProduct} analysis={run && resp && !resp.error ? { url: run.url, country: run.country, keyword: [resp.keyword, ...(resp.matchedKeywords || [])].filter(Boolean).join(', ') } : null} />
+            <ContactForm product={product} setProduct={setProduct} analysis={run && resp && !resp.error ? { url: run.url, country: run.country, name: run.name, keyword: [resp.keyword, ...(resp.matchedKeywords || [])].filter(Boolean).join(', ') } : null} />
           </div>
         </section>
       </main>

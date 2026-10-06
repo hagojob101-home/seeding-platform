@@ -134,8 +134,9 @@ function clientIp(req) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: '허용되지 않은 요청입니다.' }) }
 
-  const { url, country } = req.body || {}
+  const { url, country, name } = req.body || {}
   if (!COUNTRIES.includes(country)) return res.status(400).json({ error: '국가를 선택해 주세요.' })
+  if (name != null && (typeof name !== 'string' || !name.trim() || name.length > 200)) return res.status(400).json({ error: '제품명은 200자 이내로 입력해 주세요.' })
   let target
   try {
     if (typeof url !== 'string' || url.length > 2000) throw 0
@@ -155,16 +156,17 @@ export default async function handler(req, res) {
   if (count >= HOURLY_LIMIT) return res.status(429).json({ error: '분석 요청이 많습니다. 1시간 뒤에 다시 시도해 주세요.' })
 
   const log = { ip_hash, country, host: target.hostname.slice(0, 255), title: null, matched_keyword: null }
-  const [status, body] = await analyze(db, target, country, log)
+  const [status, body] = await analyze(db, target, country, log, name)
   // 응답 전에 기록 (서버리스는 응답 후 실행이 멈출 수 있음)
   const { error } = await db.from('analyze_requests').insert(log)
   if (error) console.error('analyze log', error)
   return res.status(status).json(body)
 }
 
-async function analyze(db, target, country, log) {
+// name이 있으면 페이지를 읽지 않고 방문자가 입력한 제품명으로 매칭 (봇 차단 사이트용)
+async function analyze(db, target, country, log, name) {
   try {
-    const { title, description, keywords: pageKeywords } = extract(await fetchHtml(target))
+    const { title, description, keywords: pageKeywords } = name ? { title: clean(name) } : extract(await fetchHtml(target))
     log.title = title
 
     const { data: keywords, error } = await db.from('ad_keywords').select('keyword, category, collected_on, ads, accounts, collab, brand').eq('country', country)
@@ -198,7 +200,8 @@ async function analyze(db, target, country, log) {
       influencers, lockedCount: unique.length - influencers.length,
     }]
   } catch (e) {
-    if (e instanceof Fail) return [e.status, { error: e.message }]
+    // 422(읽지 못함)는 제품명 입력으로 다시 시도할 수 있음. 400(차단 주소)은 불가
+    if (e instanceof Fail) return [e.status, { error: e.message, ...(e.status === 422 && { needName: true }) }]
     console.error('analyze', e)
     return [500, { error: '분석 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.' }]
   }
