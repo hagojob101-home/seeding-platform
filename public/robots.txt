@@ -4,5 +4,3 @@ Disallow: /api/
 Disallow: /admin
 Disallow: /client
 Disallow: /influencer
-
-Sitemap: https://www.053ad.kr/sitemap.xml

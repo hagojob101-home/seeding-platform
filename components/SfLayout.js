@@ -1,5 +1,9 @@
+import Head from 'next/head'
+
 // 랜딩·블로그 공통 머리글·바닥글 (simfle)
-export const SITE_URL = 'https://www.053ad.kr'
+// simfle 전용 도메인이 정해지기 전까지 053ad.kr/simfle 아래에 두고 검색 노출은 막는다 (053ad.kr은 053 사이트)
+export const SF = '/simfle'
+export const SITE_URL = 'https://www.053ad.kr/simfle'
 export const sfWrap = 'max-w-[1120px] mx-auto px-6'
 
 const navLink = 'inline-flex items-center min-h-[44px] px-3.5 text-[15px] no-underline text-sf-ink hover:text-[#444]'
@@ -7,13 +11,14 @@ const navLink = 'inline-flex items-center min-h-[44px] px-3.5 text-[15px] no-und
 export function SfHeader() {
   return (
     <header className="border-b border-sf-line">
+      <Head><meta name="robots" content="noindex" /></Head>
       <div className={`${sfWrap} py-4 flex flex-wrap items-center justify-between gap-4`}>
-        <a href="/" className="font-plexmono text-2xl font-medium no-underline text-sf-ink tracking-[-0.02em]">simfle</a>
+        <a href={SF} className="font-plexmono text-2xl font-medium no-underline text-sf-ink tracking-[-0.02em]">simfle</a>
         <nav aria-label="주요 메뉴" className="flex flex-wrap items-center gap-1">
-          <a href="/blog" className={navLink}>블로그</a>
-          <a href="/#pricing" className={navLink}>요금</a>
+          <a href={`${SF}/blog`} className={navLink}>블로그</a>
+          <a href={`${SF}#pricing`} className={navLink}>요금</a>
           <a href="/login" className={navLink}>로그인</a>
-          <a href="/#contact" className="inline-flex items-center min-h-[44px] px-[18px] text-[15px] font-medium no-underline text-white bg-sf-ink rounded-lg">상담 신청</a>
+          <a href={`${SF}#contact`} className="inline-flex items-center min-h-[44px] px-[18px] text-[15px] font-medium no-underline text-white bg-sf-ink rounded-lg">상담 신청</a>
         </nav>
       </div>
     </header>
