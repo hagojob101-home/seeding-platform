@@ -74,7 +74,7 @@ const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('
 const fmt = n => (typeof n === 'number' ? n.toLocaleString('ko-KR') : n)
 const wrap = 'max-w-[1120px] mx-auto px-6'
 const h2 = 'm-0 text-[clamp(28px,3.8vw,44px)] leading-[1.25] tracking-[-0.03em] font-bold'
-const Mark = ({ children }) => <span className="bg-sf-accent px-1.5">{children}</span>
+const Mark = ({ children }) => <span className="sf-mark">{children}</span>
 
 const Check = ({ className = '' }) => (
   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`flex-none mt-1 ${className}`}><path d="M5 12l5 5 9-10" /></svg>
@@ -420,7 +420,7 @@ export default function Home() {
         <section className={`${wrap} pt-24 pb-20 flex flex-col gap-7`}>
           <p className="m-0 text-[15px] font-medium text-sf-sub">세상에서 제일 간단한 인플루언서 시딩 플랫폼</p>
           <h1 className="m-0 text-[clamp(34px,5.2vw,64px)] leading-[1.2] font-bold tracking-[-0.03em] max-w-[880px]">
-            제품 URL 하나로,<br />지금 <span className="bg-sf-accent px-2">광고 중인 인플루언서</span>를 찾습니다
+            제품 URL 하나로,<br />지금 <span className="sf-mark">광고 중인 인플루언서</span>를 찾습니다
           </h1>
           <p className="m-0 text-[19px] text-sf-body max-w-[640px]">제품 페이지를 읽어 카테고리와 연관 검색어를 분석하고, 같은 카테고리에서 실제로 Meta 광고에 등장한 인플루언서를 보여드립니다.</p>
 

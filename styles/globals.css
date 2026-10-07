@@ -42,6 +42,8 @@ body {
 .sf-pc { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
 .sf-pc:hover, .sf-pc:focus-within { transform: translate(-3px,-6px); box-shadow: 6px 8px 0 var(--sf-ink); border-color: var(--sf-ink); }
 .sf summary { cursor: pointer; }
+/* 형광펜: 줄이 바뀌어도 줄마다 따로 칠하고(clone) 위아래 줄 사이에 틈을 둔다 */
+.sf-mark { padding: 0 .12em; background: linear-gradient(transparent 14%, var(--sf-accent) 14%, var(--sf-accent) 92%, transparent 92%); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 @keyframes sf-in { from { opacity: 0; filter: blur(4px); transform: translateY(6px); } }
 @keyframes sf-live { 0% { opacity: .9; transform: scale(.4); } 100% { opacity: 0; transform: scale(1.3); } }
 @keyframes sf-pulse { 50% { opacity: .25; transform: scale(.8); } }
