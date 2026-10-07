@@ -1,9 +1,11 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import RibbonGlow from '../components/originkit/ui/ribbon-glow'
+import { useHome } from '../lib/home'
 
 export default function Login() {
   const router = useRouter()
+  const home = useHome()
   // '동작 줄이기' 설정 사용자에게는 멈춘 배경
   const [still, setStill] = useState(false)
   useEffect(() => setStill(window.matchMedia('(prefers-reduced-motion: reduce)').matches), [])
@@ -14,8 +16,8 @@ export default function Login() {
         <RibbonGlow background="#191919" color1="#ffffff" color2="#8a8a8a" speed={still ? 0 : 50} style={{ minWidth: 0, minHeight: 0 }} />
       </div>
       <div className="fixed top-4 left-4 z-20">
-        <button onClick={() => router.push('/')} className="bg-white border border-line text-ink px-4 py-2 rounded-xl text-sm font-semibold hover:bg-highlight transition">
-          053 Meta 홈
+        <button onClick={() => router.push(home.href)} className="bg-white border border-line text-ink px-4 py-2 rounded-xl text-sm font-semibold hover:bg-highlight transition">
+          {home.label} 홈
         </button>
       </div>
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 sm:p-8">

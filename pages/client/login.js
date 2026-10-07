@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
+import { useHome } from '../../lib/home'
 
 export default function ClientLogin() {
   const router = useRouter()
+  const home = useHome()
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -41,8 +43,8 @@ export default function ClientLogin() {
     <div className="min-h-screen flex items-center justify-center bg-highlight">
       {/* 상단 네비게이션 버튼 */}
       <div className="fixed top-4 left-4 flex gap-2">
-        <button onClick={() => router.push('/')} className="bg-white text-ink px-4 py-2 rounded-xl text-sm font-semibold hover:bg-highlight transition border border-line">
-          053 Meta
+        <button onClick={() => router.push(home.href)} className="bg-white text-ink px-4 py-2 rounded-xl text-sm font-semibold hover:bg-highlight transition border border-line">
+          {home.label}
         </button>
         <button onClick={() => router.push('/login')} className="bg-white text-ink px-4 py-2 rounded-xl text-sm font-semibold hover:bg-highlight transition border border-line">
           시딩 플랫폼
