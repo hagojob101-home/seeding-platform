@@ -13,9 +13,24 @@ const EXAMPLE = {
   lockedCount: 70,
 }
 
-// 대표 확인 전까지 비워 둠 → 비어 있으면 해당 영역을 숨긴다 (지어내지 않음)
-const REVIEWS = [] // { quote, by }
-const STATS = [] // { label, value: '1,200+' }
+// 후기·실적: 디자인 확인용 예시 (화면에 '예시' 표시). 실제 값을 받으면 교체하고 EXAMPLE_PROOF = false
+// 비우면([]) 해당 영역이 숨겨진다
+const EXAMPLE_PROOF = true
+const REVIEWS = [
+  { quote: '1인 브랜드라 막막했는데 너무 편하게 쇼츠 광고 했어요. 매출은 400% 올랐습니다.', by: '[브랜드명] · 1인 브랜드 대표' },
+  { quote: '섭외 DM 보내고 답을 기다리던 시간이 없어졌어요. 요청만 넣으면 계약까지 끝나 있습니다.', by: '[브랜드명] · 대표' },
+  { quote: '이미 광고를 해 본 인플루언서만 추천받으니 콘텐츠 완성도가 처음부터 달랐습니다.', by: '[브랜드명] · 마케팅 담당' },
+  { quote: '어디까지 진행됐는지 대시보드에서 바로 보여서 카톡방을 따로 만들 필요가 없어요.', by: '[브랜드명] · 브랜드 매니저' },
+  { quote: '업로드가 확인된 건만 정산하니 비용이 새는 곳이 없습니다.', by: '[브랜드명] · 운영 팀장' },
+  { quote: '브라질 시딩은 처음이었는데 현지 인플루언서 리스트부터 받아서 수월했어요.', by: '[브랜드명] · 해외사업 담당' },
+  { quote: '담당자 한 명이 캠페인 세 개를 동시에 운영하고 있습니다.', by: '[에이전시명] · AE' },
+]
+const STATS = [
+  { label: '누적 캠페인', value: '1,200+' },
+  { label: '협업 인플루언서', value: '15,000+' },
+  { label: '업로드 확인된 게시물', value: '38,000+' },
+  { label: '브랜드 재계약률', value: '82%' },
+]
 const CONTACT_DAYS = null // 영업일 기준 N일
 const INDUSTRY_ANSWER = null // FAQ '어떤 업종이 가능한가요?'
 
@@ -241,6 +256,7 @@ function StatsBand() {
             </div>
           ))}
         </dl>
+        {EXAMPLE_PROOF && <p className="m-0 mt-5 text-sm text-sf-sub">예시 수치 — 실제 실적으로 교체 필요</p>}
       </div>
     </section>
   )
@@ -265,6 +281,7 @@ function Reviews() {
           {REVIEWS.map((r, i) => card(r, i, true))}
         </div>
       </div>
+      {EXAMPLE_PROOF && <p className={`${wrap} w-full m-0 text-sm text-sf-sub`}>예시 후기 — 실제 고객 후기로 교체 필요</p>}
     </section>
   )
 }
