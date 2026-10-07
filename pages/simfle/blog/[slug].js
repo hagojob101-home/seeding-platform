@@ -1,7 +1,7 @@
 import Head from 'next/head'
-import { POSTS } from '../../lib/posts'
-import { BODIES } from '../../content/blog'
-import { SfHeader, SfFooter, SITE_URL, sfWrap } from '../../components/SfLayout'
+import { POSTS } from '../../../lib/posts'
+import { BODIES } from '../../../content/blog'
+import { SfHeader, SfFooter, SITE_URL, SF, sfWrap } from '../../../components/SfLayout'
 
 export const getStaticPaths = () => ({ paths: POSTS.map(p => ({ params: { slug: p.slug } })), fallback: false })
 export const getStaticProps = ({ params }) => ({ props: { post: POSTS.find(p => p.slug === params.slug) } })
@@ -35,12 +35,12 @@ export default function Post({ post }) {
       <main className={`${sfWrap} max-w-[820px] py-24`}>
         <article className="flex flex-col gap-8">
           <header className="flex flex-col gap-3">
-            <a href="/blog" className="self-start inline-flex items-center min-h-[44px] text-sm text-sf-sub">← 블로그</a>
+            <a href={`${SF}/blog`} className="self-start inline-flex items-center min-h-[44px] text-sm text-sf-sub">← 블로그</a>
             <h1 className="m-0 text-[clamp(28px,3.8vw,44px)] leading-[1.25] tracking-[-0.03em] font-bold">{post.title}</h1>
             <time dateTime={post.date} className="font-plexmono text-sm text-sf-sub">{post.date}{post.updated ? ` · 수정 ${post.updated}` : ''}</time>
           </header>
           <div className="sf-prose"><Body /></div>
-          <a href="/#contact" className="self-start inline-flex items-center min-h-[52px] px-7 font-bold no-underline text-sf-ink bg-sf-accent border-2 border-sf-ink rounded-[10px]">상담 신청</a>
+          <a href={`${SF}#contact`} className="self-start inline-flex items-center min-h-[52px] px-7 font-bold no-underline text-sf-ink bg-sf-accent border-2 border-sf-ink rounded-[10px]">상담 신청</a>
         </article>
       </main>
       <SfFooter />

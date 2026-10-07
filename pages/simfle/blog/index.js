@@ -1,6 +1,6 @@
 import Head from 'next/head'
-import { POSTS } from '../../lib/posts'
-import { SfHeader, SfFooter, SITE_URL, sfWrap } from '../../components/SfLayout'
+import { POSTS } from '../../../lib/posts'
+import { SfHeader, SfFooter, SITE_URL, SF, sfWrap } from '../../../components/SfLayout'
 
 export default function Blog() {
   return (
@@ -17,7 +17,7 @@ export default function Blog() {
           <ul className="list-none m-0 p-0 border-t-2 border-sf-ink">
             {POSTS.map(p => (
               <li key={p.slug} className="border-b border-sf-line">
-                <a href={`/blog/${p.slug}`} className="block py-6 no-underline text-sf-ink hover:text-[#444]">
+                <a href={`${SF}/blog/${p.slug}`} className="block py-6 no-underline text-sf-ink hover:text-[#444]">
                   <time dateTime={p.date} className="font-plexmono text-sm text-sf-sub">{p.date}</time>
                   <h2 className="m-0 mt-1 text-xl font-bold">{p.title}</h2>
                   <p className="m-0 mt-2 text-base text-sf-body">{p.description}</p>
