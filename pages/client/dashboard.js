@@ -3,6 +3,12 @@ import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
 import Footer from '../../components/Footer'
 
+const BUDGET_MAX = 10000000
+const budgetLabel = v => v >= BUDGET_MAX ? '1천만원 이상' : v ? (v / 10000).toLocaleString() + '만원' : '0원'
+const INF_MAX = 100
+const infLabel = v => v >= INF_MAX ? '100명 이상' : v + '명'
+const num = v => v == null ? '-' : v.toLocaleString()
+
 export default function ClientDashboard() {
   const router = useRouter()
   const [user, setUser] = useState(null)
@@ -13,8 +19,10 @@ export default function ClientDashboard() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
     product_name: '', product_url: '', product_price: '',
-    monthly_budget: '', min_influencers: ''
+    monthly_budget: 3000000, min_influencers: 10
   })
+  const [an, setAn] = useState(null) // 제품 분석: { loading } | { error, needName } | { data }
+  const [showAllInf, setShowAllInf] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -42,17 +50,41 @@ export default function ClientDashboard() {
       client_id: clientInfo.id,
       name: form.product_name + ' 캠페인',
       description: (clientInfo.company_name || '') + ' 시딩 캠페인',
-      monthly_budget: parseInt(form.monthly_budget),
+      monthly_budget: form.monthly_budget,
       product_url: form.product_url,
       product_name: form.product_name,
       product_price: parseInt(form.product_price),
-      min_influencers: parseInt(form.min_influencers),
+      min_influencers: form.min_influencers,
       status: '요청'
     })
     if (error) { alert('오류: ' + error.message); return }
     alert('캠페인 요청이 제출되었습니다!')
     setShowForm(false)
     setRequests(await fetchCampaigns(clientInfo.id))
+  }
+
+  // 메인(simfle)과 같은 분석 API. 로그인 토큰을 보내면 관련 인플루언서 명단 전체를 받는다
+  const analyzeProduct = async () => {
+    const url = form.product_url.trim()
+    if (!url) { setAn({ error: '제품 URL을 입력해 주세요.' }); return }
+    // 페이지를 못 읽은 뒤에는 입력한 제품명으로 다시 분석
+    const name = (an?.needName && form.product_name.trim()) || undefined
+    setAn({ loading: true })
+    setShowAllInf(false)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ url, country: 'KR', name }),
+      })
+      const j = await res.json()
+      if (!res.ok) { setAn({ error: j.error || '분석하지 못했습니다. 잠시 후 다시 시도해 주세요.', needName: j.needName }); return }
+      setAn({ data: j })
+      setForm(f => ({ ...f, product_name: j.title || f.product_name, product_price: j.price ?? f.product_price }))
+    } catch {
+      setAn({ error: '분석하지 못했습니다. 잠시 후 다시 시도해 주세요.' })
+    }
   }
 
   const statusBadge = (status) => {
@@ -161,7 +193,7 @@ export default function ClientDashboard() {
                     <div key={r.id} className="flex justify-between items-center py-3 border-b last:border-0">
                       <div>
                         <p className="font-medium text-ink">{r.product_name}</p>
-                        <p className="text-xs text-muted">버짓: {r.monthly_budget?.toLocaleString()}원</p>
+                        <p className="text-xs text-muted">버짓: {budgetLabel(r.monthly_budget)}</p>
                       </div>
                       <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusBadge(r.status)}`}>
                         {r.status}
@@ -181,34 +213,122 @@ export default function ClientDashboard() {
             <div className="bg-white rounded-2xl shadow p-8 max-w-xl">
               <form onSubmit={handleSubmitRequest} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">제품명</label>
-                  <input required placeholder="예: 참이슬 오리지널" value={form.product_name}
+                  <label htmlFor="product_url" className="block text-sm font-medium text-ink mb-1">제품 URL</label>
+                  <div className="flex gap-2">
+                    <input id="product_url" required type="url" placeholder="https://..." value={form.product_url}
+                      onChange={e => setForm({...form, product_url: e.target.value})}
+                      className="flex-1 min-w-0 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
+                    <button type="button" onClick={analyzeProduct} disabled={an?.loading}
+                      className="shrink-0 border border-ink text-ink px-5 rounded-xl font-semibold hover:bg-ink hover:text-white transition disabled:opacity-50">
+                      {an?.loading ? '분석 중…' : '분석'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted mt-1">분석하면 제품명·가격을 채우고, 관련 키워드와 인플루언서를 찾아드려요.</p>
+                </div>
+
+                <div aria-live="polite">
+                  {an?.error && (
+                    <p className="text-sm text-red-600">{an.error}{an.needName && ' 아래에 제품명을 입력하고 다시 분석을 눌러 주세요.'}</p>
+                  )}
+                  {an?.data && !an.data.matched && (
+                    <p className="text-sm text-muted bg-bg rounded-xl p-4">관련 광고 데이터를 찾지 못했어요. 제품명·가격을 확인하고 요청을 제출해 주세요.</p>
+                  )}
+                  {an?.data?.matched && (() => {
+                    const r = an.data
+                    const list = showAllInf ? r.influencers : r.influencers.slice(0, 10)
+                    return (
+                      <div className="bg-bg rounded-xl p-4 space-y-4">
+                        <p className="text-xs text-muted">분석 결과{r.collectedOn && ` · ${r.collectedOn} 수집 데이터 기준`}{r.similar && ' · 비슷한 키워드로 찾음'}</p>
+                        <div>
+                          <p className="text-xs text-muted mb-1.5">제품 키워드</p>
+                          <ul className="flex flex-wrap gap-1.5">
+                            {[r.keyword, ...r.matchedKeywords].map((k, i) => (
+                              <li key={k} className={`text-sm px-3 py-1 rounded-full border ${i ? 'border-line text-ink' : 'bg-ink border-ink text-white'}`}>{k}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        {r.related.length > 0 && (
+                          <div>
+                            <p className="text-xs text-muted mb-1.5">같은 카테고리{r.category && ` (${r.category})`} 키워드</p>
+                            <ul className="flex flex-wrap gap-1.5">
+                              {r.related.map(k => <li key={k} className="text-sm px-3 py-1 rounded-full border border-line text-ink">{k}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                        <dl className="grid grid-cols-3 gap-2">
+                          {[['광고 수', r.stats.ads], ['광고 계정', r.stats.accounts], ['협업 광고', r.stats.collab]].map(([k, v]) => (
+                            <div key={k} className="bg-white rounded-lg px-3 py-2">
+                              <dt className="text-xs text-muted">{k}</dt>
+                              <dd className="font-bold text-ink">{num(v)}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                        <div>
+                          <p className="text-sm font-semibold text-ink mb-1.5">관련 인플루언서 <span className="text-muted font-normal">{num(r.influencers.length + r.lockedCount)}명</span></p>
+                          {r.influencers.length === 0 ? <p className="text-sm text-muted">아직 찾은 인플루언서가 없어요.</p> : (
+                            <table className="w-full text-sm">
+                              <thead><tr className="text-xs text-muted text-left"><th className="font-normal py-1">계정</th><th className="font-normal">협업 브랜드</th><th className="font-normal text-right">팔로워</th></tr></thead>
+                              <tbody>
+                                {list.map(i => (
+                                  <tr key={i.handle} className="border-t">
+                                    <td className="py-1.5">
+                                      <a href={`https://www.instagram.com/${encodeURIComponent(i.handle.replace(/^@/, ''))}/`} target="_blank" rel="noopener noreferrer" className="text-ink hover:underline">{i.handle}</a>
+                                    </td>
+                                    <td className="text-muted">{i.brand || '-'}</td>
+                                    <td className="text-right">{num(i.followers)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                          {r.influencers.length > 10 && (
+                            <button type="button" onClick={() => setShowAllInf(v => !v)} className="w-full mt-2 text-sm border rounded-xl py-2 hover:bg-white transition">
+                              {showAllInf ? '접기' : `더 보기 (${num(r.influencers.length - 10)}명)`}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </div>
+
+                <div>
+                  <label htmlFor="product_name" className="block text-sm font-medium text-ink mb-1">제품명</label>
+                  <input id="product_name" required placeholder="예: 참이슬 오리지널" value={form.product_name}
                     onChange={e => setForm({...form, product_name: e.target.value})}
                     className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">제품 URL</label>
-                  <input required placeholder="https://..." value={form.product_url}
-                    onChange={e => setForm({...form, product_url: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-ink mb-1">제품 가격 (원)</label>
-                  <input required type="number" placeholder="예: 15000" value={form.product_price}
+                  <label htmlFor="product_price" className="block text-sm font-medium text-ink mb-1">제품 가격 (원)</label>
+                  <input id="product_price" required type="number" min="0" placeholder="예: 15000" value={form.product_price}
                     onChange={e => setForm({...form, product_price: e.target.value})}
                     className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">1개월 버짓 (원)</label>
-                  <input required type="number" placeholder="예: 3000000" value={form.monthly_budget}
-                    onChange={e => setForm({...form, monthly_budget: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
+                  <div className="flex justify-between items-baseline mb-2">
+                    <label htmlFor="monthly_budget" className="text-sm font-medium text-ink">1개월 버짓</label>
+                    <output htmlFor="monthly_budget" className="text-lg font-bold text-ink">{budgetLabel(form.monthly_budget)}</output>
+                  </div>
+                  <input id="monthly_budget" type="range" min="0" max={BUDGET_MAX} step="100000" value={form.monthly_budget}
+                    aria-valuetext={budgetLabel(form.monthly_budget)}
+                    onChange={e => setForm({...form, monthly_budget: Number(e.target.value)})}
+                    className="w-full accent-ink cursor-pointer" />
+                  <div className="flex justify-between text-xs text-muted mt-1">
+                    <span>0원</span><span>500만원</span><span>1천만원 이상</span>
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">최소 인플루언서 수</label>
-                  <input required type="number" placeholder="예: 10" value={form.min_influencers}
-                    onChange={e => setForm({...form, min_influencers: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
+                  <div className="flex justify-between items-baseline mb-2">
+                    <label htmlFor="min_influencers" className="text-sm font-medium text-ink">최소 인플루언서 수</label>
+                    <output htmlFor="min_influencers" className="text-lg font-bold text-ink">{infLabel(form.min_influencers)}</output>
+                  </div>
+                  <input id="min_influencers" type="range" min="1" max={INF_MAX} step="1" value={form.min_influencers}
+                    aria-valuetext={infLabel(form.min_influencers)}
+                    onChange={e => setForm({...form, min_influencers: Number(e.target.value)})}
+                    className="w-full accent-ink cursor-pointer" />
+                  <div className="flex justify-between text-xs text-muted mt-1">
+                    <span>1명</span><span>50명</span><span>100명 이상</span>
+                  </div>
                 </div>
                 <button type="submit"
                   className="w-full bg-ink text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
@@ -238,7 +358,7 @@ export default function ClientDashboard() {
                       <div>
                         <h3 className="font-bold text-ink text-lg">{r.product_name}</h3>
                         <p className="text-sm text-muted">
-                          버짓: {r.monthly_budget?.toLocaleString()}원 · 최소 {r.min_influencers}명
+                          버짓: {budgetLabel(r.monthly_budget)} · 최소 {r.min_influencers}명
                         </p>
                       </div>
                       <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusBadge(r.status)}`}>{r.status}</span>
@@ -276,7 +396,7 @@ export default function ClientDashboard() {
                       <div>
                         <h3 className="font-bold text-ink text-lg">{r.product_name}</h3>
                         <p className="text-sm text-muted">
-                          버짓: {r.monthly_budget?.toLocaleString()}원 · 최소 {r.min_influencers}명
+                          버짓: {budgetLabel(r.monthly_budget)} · 최소 {r.min_influencers}명
                         </p>
                       </div>
                       <span className="text-xs px-3 py-1 rounded-full font-semibold bg-highlight text-ink">검토중</span>
@@ -306,7 +426,7 @@ export default function ClientDashboard() {
                       <div>
                         <h3 className="font-bold text-ink text-lg">{r.product_name}</h3>
                         <p className="text-sm text-muted">
-                          버짓: {r.monthly_budget?.toLocaleString()}원
+                          버짓: {budgetLabel(r.monthly_budget)}
                         </p>
                       </div>
                       <span className="text-xs px-3 py-1 rounded-full font-semibold bg-highlight text-ink">거절</span>
