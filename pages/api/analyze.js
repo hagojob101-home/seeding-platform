@@ -5,6 +5,7 @@ import net from 'net'
 import http from 'http'
 import https from 'https'
 import zlib from 'zlib'
+import { getRequestUser } from '../../lib/supabaseServer'
 
 export const config = { api: { bodyParser: { sizeLimit: '8kb' } } }
 
@@ -122,8 +123,12 @@ function extract(html) {
     title: clean(metas['og:title']) || clean(html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]),
     description: clean(metas['og:description']) || clean(metas.description),
     keywords: clean(metas.keywords),
+    price: toPrice(metas['product:price:amount'] || metas['og:price:amount'] || html.match(/"price"\s*:\s*"?([\d.,]+)/)?.[1]),
   }
 }
+
+// '32,000' · '32000.00' → 32000
+const toPrice = s => { const n = Math.round(parseFloat(String(s || '').replace(/,/g, ''))); return n > 0 ? n : null }
 
 const norm = s => (s || '').normalize('NFC').toLowerCase().replace(/\s+/g, '')
 
@@ -168,8 +173,13 @@ export default async function handler(req, res) {
   if (countErr) { console.error('analyze count', countErr); return res.status(500).json({ error: '잠시 후 다시 시도해 주세요.' }) }
   if (count >= HOURLY_LIMIT) return res.status(429).json({ error: '분석 요청이 많습니다. 1시간 뒤에 다시 시도해 주세요.' })
 
+  // 로그인한 광고주·관리자는 명단 전체를 받는다
+  const { client: authed, user } = await getRequestUser(req)
+  const { data: me } = user ? await authed.from('users').select('role').eq('id', user.id).single() : {}
+  const full = ['client', 'admin'].includes(me?.role)
+
   const log = { ip_hash, country, host: target.hostname.slice(0, 255), title: null, matched_keyword: null }
-  const [status, body] = await analyze(db, target, country, log, name)
+  const [status, body] = await analyze(db, target, country, log, name, full)
   // 응답 전에 기록 (서버리스는 응답 후 실행이 멈출 수 있음)
   const { error } = await db.from('analyze_requests').insert(log)
   if (error) console.error('analyze log', error)
@@ -177,9 +187,9 @@ export default async function handler(req, res) {
 }
 
 // name이 있으면 페이지를 읽지 않고 방문자가 입력한 제품명으로 매칭 (봇 차단 사이트용)
-async function analyze(db, target, country, log, name) {
+async function analyze(db, target, country, log, name, full) {
   try {
-    const { title, description, keywords: pageKeywords } = name ? { title: clean(name) } : extract(await fetchHtml(target))
+    const { title, description, keywords: pageKeywords, price } = name ? { title: clean(name) } : extract(await fetchHtml(target))
     log.title = title
 
     const { data: keywords, error } = await db.from('ad_keywords').select('keyword, category, collected_on, ads, accounts, collab, brand').eq('country', country)
@@ -202,7 +212,7 @@ async function analyze(db, target, country, log, name) {
         .slice(0, 3)
         .map(x => x.k)
     }
-    if (!hits.length) return [200, { matched: false, title }]
+    if (!hits.length) return [200, { matched: false, title, price }]
     const [hit] = hits
     const hitNames = hits.map(k => k.keyword)
     // 비슷한 검색어로 찾은 건 '≈ '로 구분 (나중에 추출할 제품 목록용)
@@ -212,15 +222,15 @@ async function analyze(db, target, country, log, name) {
       ? keywords.filter(k => k.category === hit.category && !hitNames.includes(k.keyword)).sort((a, b) => (b.accounts ?? 0) - (a.accounts ?? 0)).slice(0, 5).map(k => k.keyword)
       : []
 
-    // 명단은 서버에만: 응답에는 2명 + 나머지 개수만 (맞은 검색어 전체, 계정 중복 제거)
+    // 명단은 서버에만: 비로그인 응답에는 2명 + 나머지 개수만, 광고주·관리자는 최대 200명 (맞은 검색어 전체, 계정 중복 제거)
     const { data: rows, error: infErr } = await db.from('ad_influencers').select('handle, brand, followers, type, keyword').eq('country', country).in('keyword', hitNames)
     if (infErr) throw infErr
     const score = r => (r.type === '협업' ? 4 : 0) + (r.brand ? 2 : 0) + (r.keyword === hit.keyword ? 1 : 0)
     const unique = [...new Map([...rows].sort((a, b) => score(a) - score(b)).map(r => [r.handle, r])).values()]
-    const influencers = unique.sort((a, b) => score(b) - score(a)).slice(0, 2).map(({ handle, brand, followers, keyword }) => ({ handle, brand, followers, keyword }))
+    const influencers = unique.sort((a, b) => score(b) - score(a)).slice(0, full ? 200 : 2).map(({ handle, brand, followers, keyword }) => ({ handle, brand, followers, keyword }))
 
     return [200, {
-      matched: true, similar, title, keyword: hit.keyword, matchedKeywords: hitNames.slice(1), category: hit.category, related, collectedOn: hit.collected_on,
+      matched: true, similar, title, price, keyword: hit.keyword, matchedKeywords: hitNames.slice(1), category: hit.category, related, collectedOn: hit.collected_on,
       stats: { ads: hit.ads, accounts: hit.accounts, collab: hit.collab, brand: hit.brand },
       influencers, lockedCount: unique.length - influencers.length,
     }]
