@@ -40,6 +40,13 @@ body {
 .sf-mq { animation: sf-mq 45s linear infinite; }
 .sf-mqw:hover .sf-mq, .sf-mqw:focus-within .sf-mq { animation-play-state: paused; }
 .sf-mq-rev { animation-direction: reverse; }
+/* 상담 폼 슬라이더: 손가락으로 잡기 쉬운 큰 원(32px) */
+.sf-range { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; margin: 0; background: transparent; cursor: pointer; }
+.sf-range::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: #3A3A3A; }
+.sf-range::-moz-range-track { height: 6px; border-radius: 3px; background: #3A3A3A; }
+.sf-range::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; margin-top: -13px; border-radius: 50%; background: var(--sf-accent); border: 3px solid var(--sf-ink); box-shadow: 0 0 0 2px var(--sf-accent); }
+.sf-range::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: var(--sf-accent); border: 3px solid var(--sf-ink); box-shadow: 0 0 0 2px var(--sf-accent); }
+.sf-range::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--sf-accent); }
 .sf-pc { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
 .sf-pc:hover, .sf-pc:focus-within { transform: translate(-3px,-6px); box-shadow: 6px 8px 0 var(--sf-ink); border-color: var(--sf-ink); }
 .sf summary { cursor: pointer; }

@@ -324,8 +324,31 @@ function Reviews() {
   )
 }
 
+// 월 예산: 0 = 모름, 1~24 = 20만원 단위, 25 = 500만원 이상 / 쇼츠: 0 = 모름, 100 = 100개 이상
+const budgetLabel = b => (b === 0 ? '모름' : b === 25 ? '500만원 이상' : `${b * 20}만원`)
+const shortsLabel = s => (s === 0 ? '모름' : s === 100 ? '100개 이상' : `${s}개`)
+const planHint = b => (b === 0 ? '' : b * 20 < 69 ? '이 예산이면 7일 체험(0원)으로 먼저 시작해 보세요.' : b * 20 < 270 ? '이 예산이면 프로(월 69만원)부터 상담드려요.' : '이 예산이면 맥스(월 270만원) 또는 엔터프라이즈로 상담드려요.')
+
+function RangeField({ id, label, value, setValue, max, text, ends, children }) {
+  return (
+    <div className="flex flex-col gap-2.5 p-5 border border-sf-body rounded-xl">
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={id} className="text-sm font-medium">{label}</label>
+        <output htmlFor={id} className="font-plexmono text-[22px] font-medium">
+          <span className={value ? 'bg-sf-accent text-sf-ink px-1.5' : 'px-1.5'}>{text}</span>
+        </output>
+      </div>
+      <input id={id} name={id} type="range" min="0" max={max} step="1" value={value} onChange={e => setValue(+e.target.value)} aria-valuetext={text} className="sf-range" />
+      <div aria-hidden="true" className="flex justify-between text-[13px] text-sf-dim">{ends.map(t => <span key={t}>{t}</span>)}</div>
+      {children}
+    </div>
+  )
+}
+
 function ContactForm({ product, setProduct, analysis }) {
   const [status, setStatus] = useState({ state: 'idle', msg: '' })
+  const [budget, setBudget] = useState(0)
+  const [shorts, setShorts] = useState(0)
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -342,7 +365,7 @@ function ContactForm({ product, setProduct, analysis }) {
           job_title: t('company'), // 기존 API 필수 항목 → 회사·브랜드명으로 채움
           phone_number: t('phone'),
           website_url: t('product'),
-          inquiry_message: [`[회사·브랜드] ${t('company')}`, note, t('message') || '전체 리스트와 상담을 요청합니다.'].filter(Boolean).join('\n').slice(0, 2000),
+          inquiry_message: [`[회사·브랜드] ${t('company')}`, `[월 예산] ${budgetLabel(budget)} · [희망 쇼츠] ${shortsLabel(shorts)}`, note, t('message') || '전체 리스트와 상담을 요청합니다.'].filter(Boolean).join('\n').slice(0, 2000),
           company_fax: f.company_fax || '',
         }),
       })
@@ -377,6 +400,11 @@ function ContactForm({ product, setProduct, analysis }) {
         <label htmlFor="product" className={label}>제품 링크</label>
         <input id="product" name="product" type="url" placeholder="https://" maxLength={300} value={product} onChange={e => setProduct(e.target.value)} className={input} />
       </div>
+      <RangeField id="budget" label="월 예산" value={budget} setValue={setBudget} max={25} text={budgetLabel(budget)} ends={['모름', '20만원 단위', '500만원 이상']}>
+        {budget > 0 && <p className="m-0 text-sm text-sf-accent">{planHint(budget)}</p>}
+      </RangeField>
+      <RangeField id="shorts" label="희망 쇼츠 광고 개수" value={shorts} setValue={setShorts} max={100} text={shortsLabel(shorts)} ends={['모름', '1개 단위', '100개 이상']} />
+      <p className="m-0 -mt-1 text-[13px] text-sf-dim">예산과 개수는 모르셔도 괜찮습니다. 상담에서 함께 정해 드립니다.</p>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="message" className={label}>문의 내용</label>
         <textarea id="message" name="message" rows={4} maxLength={1500} className="w-full px-4 py-3 text-base text-sf-ink bg-white border-0 rounded-lg resize-y" />
