@@ -262,6 +262,35 @@ function StatsBand() {
   )
 }
 
+// 수집한 Meta 광고(2026-10-05, 한국 뷰티 검색어 30개)에 등장한 브랜드 중 올리브영 입점 화장품 브랜드. 로고 대신 이름만 (제휴로 보이지 않게)
+const BRANDS = [
+  '메디큐브', '메디힐', '셀리맥스', '에스네이처', '이니스프리', '에이프릴스킨', '달바', '구달', '넘버즈인', '라운드랩',
+  '브링그린', '더마토리', '프리메라', '아렌시아', 'JM솔루션', '오호라', '클라뷰', '다슈', '닥터포헤어', '닥터디퍼런트',
+  '마녀공장', '스킨1004', '코스알엑스', '아비브', '바이오힐보', '성분에디터', '아로마티카', '코스노리', '토리든', '아누아',
+]
+
+function BrandRows() {
+  const rows = [BRANDS.slice(0, 10), BRANDS.slice(10, 20), BRANDS.slice(20)]
+  const item = (b, hidden) => <li key={b} aria-hidden={hidden || undefined} className="flex-none px-6 text-[clamp(20px,2.4vw,28px)] font-bold tracking-[-0.02em] text-sf-sub">{b}</li>
+  return (
+    <section aria-labelledby="brands-h" className="pt-24 flex flex-col gap-8">
+      <div className={`${wrap} w-full flex flex-col gap-3`}>
+        <p className="m-0 text-[15px] font-medium text-sf-sub">올리브영에서 만나는 브랜드</p>
+        <h2 id="brands-h" className={h2}>이 브랜드들과 광고한 인플루언서, <Mark>모두 찾아드립니다</Mark></h2>
+      </div>
+      <div className="sf-mqw flex flex-col gap-4 overflow-hidden grayscale" style={{ maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)', WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)' }}>
+        {rows.map((r, i) => (
+          <ul key={i} className={`sf-mq list-none m-0 p-0 flex gap-4 w-max ${i % 2 ? 'sf-mq-rev' : ''}`} style={{ animationDuration: `${[40, 48, 44].at(i)}s` }}>
+            {r.map(b => item(b))}
+            {r.map(b => item(b, true))}
+          </ul>
+        ))}
+      </div>
+      <p className={`${wrap} w-full m-0 text-sm text-sf-sub`}>수집한 Meta 광고에 등장한 브랜드 중 일부 · 브랜드와 simfle의 제휴를 뜻하지 않습니다</p>
+    </section>
+  )
+}
+
 function Reviews() {
   const card = (r, i, hidden) => (
     <figure key={`${hidden ? 'c' : 'o'}${i}`} aria-hidden={hidden || undefined} className="flex-none w-[340px] m-0 p-6 flex flex-col justify-between gap-5 bg-white border border-sf-line rounded-[14px]">
@@ -496,6 +525,8 @@ export default function Home() {
             <p className="m-0 text-lg text-sf-body">Meta 광고에 실제로 등장한 인플루언서만 골라냅니다. 브랜드 협업이 어떻게 진행되는지 이미 아는 사람들입니다.</p>
           </div>
         </section>
+
+        <BrandRows />
 
         <section id="flow" className={`${wrap} pt-24 flex flex-col gap-10`}>
           <div className="flex flex-col gap-3 max-w-[760px]">
