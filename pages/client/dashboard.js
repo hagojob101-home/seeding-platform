@@ -3,6 +3,9 @@ import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
 import Footer from '../../components/Footer'
 
+const BUDGET_MAX = 10000000
+const budgetLabel = v => v >= BUDGET_MAX ? '1천만원 이상' : v ? (v / 10000).toLocaleString() + '만원' : '0원'
+
 export default function ClientDashboard() {
   const router = useRouter()
   const [user, setUser] = useState(null)
@@ -13,7 +16,7 @@ export default function ClientDashboard() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
     product_name: '', product_url: '', product_price: '',
-    monthly_budget: '', min_influencers: ''
+    monthly_budget: 3000000, min_influencers: ''
   })
 
   useEffect(() => {
@@ -42,7 +45,7 @@ export default function ClientDashboard() {
       client_id: clientInfo.id,
       name: form.product_name + ' 캠페인',
       description: (clientInfo.company_name || '') + ' 시딩 캠페인',
-      monthly_budget: parseInt(form.monthly_budget),
+      monthly_budget: form.monthly_budget,
       product_url: form.product_url,
       product_name: form.product_name,
       product_price: parseInt(form.product_price),
@@ -161,7 +164,7 @@ export default function ClientDashboard() {
                     <div key={r.id} className="flex justify-between items-center py-3 border-b last:border-0">
                       <div>
                         <p className="font-medium text-ink">{r.product_name}</p>
-                        <p className="text-xs text-muted">버짓: {r.monthly_budget?.toLocaleString()}원</p>
+                        <p className="text-xs text-muted">버짓: {budgetLabel(r.monthly_budget)}</p>
                       </div>
                       <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusBadge(r.status)}`}>
                         {r.status}
@@ -199,10 +202,17 @@ export default function ClientDashboard() {
                     className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">1개월 버짓 (원)</label>
-                  <input required type="number" placeholder="예: 3000000" value={form.monthly_budget}
-                    onChange={e => setForm({...form, monthly_budget: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ink" />
+                  <div className="flex justify-between items-baseline mb-2">
+                    <label htmlFor="monthly_budget" className="text-sm font-medium text-ink">1개월 버짓</label>
+                    <output htmlFor="monthly_budget" className="text-lg font-bold text-ink">{budgetLabel(form.monthly_budget)}</output>
+                  </div>
+                  <input id="monthly_budget" type="range" min="0" max={BUDGET_MAX} step="100000" value={form.monthly_budget}
+                    aria-valuetext={budgetLabel(form.monthly_budget)}
+                    onChange={e => setForm({...form, monthly_budget: Number(e.target.value)})}
+                    className="w-full accent-ink cursor-pointer" />
+                  <div className="flex justify-between text-xs text-muted mt-1">
+                    <span>0원</span><span>500만원</span><span>1천만원 이상</span>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-ink mb-1">최소 인플루언서 수</label>
@@ -238,7 +248,7 @@ export default function ClientDashboard() {
                       <div>
                         <h3 className="font-bold text-ink text-lg">{r.product_name}</h3>
                         <p className="text-sm text-muted">
-                          버짓: {r.monthly_budget?.toLocaleString()}원 · 최소 {r.min_influencers}명
+                          버짓: {budgetLabel(r.monthly_budget)} · 최소 {r.min_influencers}명
                         </p>
                       </div>
                       <span className={`text-xs px-3 py-1 rounded-full font-semibold ${statusBadge(r.status)}`}>{r.status}</span>
@@ -276,7 +286,7 @@ export default function ClientDashboard() {
                       <div>
                         <h3 className="font-bold text-ink text-lg">{r.product_name}</h3>
                         <p className="text-sm text-muted">
-                          버짓: {r.monthly_budget?.toLocaleString()}원 · 최소 {r.min_influencers}명
+                          버짓: {budgetLabel(r.monthly_budget)} · 최소 {r.min_influencers}명
                         </p>
                       </div>
                       <span className="text-xs px-3 py-1 rounded-full font-semibold bg-highlight text-ink">검토중</span>
@@ -306,7 +316,7 @@ export default function ClientDashboard() {
                       <div>
                         <h3 className="font-bold text-ink text-lg">{r.product_name}</h3>
                         <p className="text-sm text-muted">
-                          버짓: {r.monthly_budget?.toLocaleString()}원
+                          버짓: {budgetLabel(r.monthly_budget)}
                         </p>
                       </div>
                       <span className="text-xs px-3 py-1 rounded-full font-semibold bg-highlight text-ink">거절</span>
