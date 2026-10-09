@@ -267,11 +267,20 @@ const BRANDS = [
   '메디큐브', '메디힐', '셀리맥스', '에스네이처', '이니스프리', '에이프릴스킨', '달바', '구달', '넘버즈인', '라운드랩',
   '브링그린', '더마토리', '프리메라', '아렌시아', 'JM솔루션', '오호라', '클라뷰', '다슈', '닥터포헤어', '닥터디퍼런트',
   '마녀공장', '스킨1004', '코스알엑스', '아비브', '바이오힐보', '성분에디터', '아로마티카', '코스노리', '토리든', '아누아',
+].map(b => b.slice(0, 1) + '*' + b.slice(2)) // 두 번째 글자를 *로 가림
+
+// 브랜드마다 다른 글꼴 (로고처럼 보이되 실제 로고는 쓰지 않음). 화면에 나오는 글자만 받아옴(text=)
+const BRAND_FONTS = [
+  ['Black Han Sans', 400], ['Noto Serif KR', 900], ['Do Hyeon', 400], ['Gothic A1', 900], ['Nanum Myeongjo', 800], ['Hahmlet', 700],
 ]
+const BRAND_FONT_URL = `https://fonts.googleapis.com/css2?${BRAND_FONTS.map(([f, w]) => `family=${f.replace(/ /g, '+')}:wght@${w}`).join('&')}&display=swap&text=${encodeURIComponent([...new Set(BRANDS.join(''))].join(''))}`
 
 function BrandRows() {
   const rows = [BRANDS.slice(0, 10), BRANDS.slice(10, 20), BRANDS.slice(20)]
-  const item = (b, hidden) => <li key={b} aria-hidden={hidden || undefined} className="flex-none px-6 text-[clamp(20px,2.4vw,28px)] font-bold tracking-[-0.02em] text-sf-sub">{b}</li>
+  const item = (b, hidden) => {
+    const [family, weight] = BRAND_FONTS.at(BRANDS.indexOf(b) % BRAND_FONTS.length)
+    return <li key={b} aria-hidden={hidden || undefined} className="flex-none px-6 text-[clamp(20px,2.4vw,28px)] tracking-[-0.01em] text-sf-sub" style={{ fontFamily: `'${family}', sans-serif`, fontWeight: weight }}>{b}</li>
+  }
   return (
     <section aria-labelledby="brands-h" className="pt-24 flex flex-col gap-8">
       <div className={`${wrap} w-full flex flex-col gap-3`}>
@@ -439,6 +448,7 @@ export default function Home() {
         <title>simfle — 제품 URL로 광고 중인 인플루언서 찾기</title>
         <meta name="description" content="제품 페이지 URL 하나로, 같은 카테고리에서 실제로 Meta 광고에 등장한 인플루언서를 보여드립니다." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href={BRAND_FONT_URL} />
         <link rel="canonical" href={`${SITE_URL}/`} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: FAQ_LD }} />
       </Head>
