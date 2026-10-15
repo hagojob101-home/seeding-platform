@@ -11,8 +11,10 @@ export default function ForgotPassword() {
     e.preventDefault()
     setLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` })
-    // 가입 여부를 드러내지 않도록 결과와 무관하게 같은 안내 (요청 제한 등 오류만 따로 표시)
-    setMessage(error?.status === 429 ? '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' : '가입된 이메일이라면 비밀번호 재설정 링크를 보냈습니다. 메일함(스팸함 포함)을 확인해주세요.')
+    // 미가입 이메일도 Supabase는 성공으로 응답 → 가입 여부는 드러나지 않고, 오류는 실제 발송 실패뿐
+    setMessage(!error ? '가입된 이메일이라면 비밀번호 재설정 링크를 보냈습니다. 메일함(스팸함 포함)을 확인해주세요.'
+      : error.status === 429 ? '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.'
+      : '메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.')
     setLoading(false)
   }
 
