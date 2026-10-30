@@ -1,9 +1,9 @@
 import Head from 'next/head'
 
 // 랜딩·블로그 공통 머리글·바닥글 (simfle)
-// simfle 전용 도메인이 정해지기 전까지 053ad.kr/simfle 아래에 두고 검색 노출은 막는다 (053ad.kr은 053 사이트)
+// simfle 전용 도메인이 정해지기 전까지 Vercel 주소/simfle 아래에 두고 검색 노출은 막는다 (053ad.kr은 053 사이트)
 export const SF = '/simfle'
-export const SITE_URL = 'https://www.053ad.kr/simfle'
+export const SITE_URL = 'https://seeding-platform.vercel.app/simfle'
 export const sfWrap = 'max-w-[1120px] mx-auto px-6'
 
 const navLink = 'inline-flex items-center min-h-[44px] px-3.5 text-[15px] no-underline text-sf-ink hover:text-[#444]'
